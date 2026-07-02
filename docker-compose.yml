@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: ./90_System/dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "5180:5180"
+      - "3010:3010"
+    environment:
+      - PORT=3010
+      - VITE_API_URL=http://localhost:3010
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      # Mount workspace root to preserve relative path calculations for the vault
+      - .:/app
+      # Avoid mounting host node_modules over container node_modules
+      - /app/90_System/dashboard/node_modules
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

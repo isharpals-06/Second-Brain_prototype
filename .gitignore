@@ -1,0 +1,40 @@
+# Dependency directories
+node_modules/
+90_System/dashboard/node_modules/
+90_System/dashboard/dist/
+
+# Local environment variables and secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+90_System/dashboard/.env
+90_System/dashboard/.env.local
+
+# Cache and built indexes
+metadata_cache.json
+90_System/dashboard/server/metadata_cache.json
+graphify-out/
+
+# Local Obsidian settings and logs
+.obsidian/
+*.log
+scratchpad.md
+90_System/dashboard/scratchpad.md
+
+# 📂 Git Tracking Exclusions for Subjects & Sources
+# Ignore all subject folders except the central MOCs folder
+10_Subjects/*
+!10_Subjects/00_MOCs/
+
+# Ignore the entire sources folder
+20_Sources/
+
+# Graphify community temp files
+_COMMUNITY_*.md
+Untitled.base
+
+# OS files
+.DS_Store
+Thumbs.db

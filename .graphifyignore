@@ -1,0 +1,13 @@
+notes/
+raw/
+*.pdf
+*.webm
+*.mp4
+*.png
+*.jpg
+*.jpeg
+*.zip
+*.tar.gz
+*.gz
+*.7z
+*.rar
