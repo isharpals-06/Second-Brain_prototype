@@ -173,19 +173,6 @@ Tasks are synchronized directly from `00_Inbox/Tasks.md` via markdown bullet box
 
 ---
 
-## 📊 Graphify Knowledge Indexing
-
-The vault uses **Graphify** for semantic indexing and clustering:
-*   **Config Ignore**: `.graphifyignore` defines directories to skip (e.g., node_modules, system directories).
-*   **Communities**: Renders nodes in groups called `communities` representing subjects and related research domains.
-*   **AST Updates**: Rebuild the graph's connections using structural analysis by executing:
-    ```bash
-    graphify update .
-    ```
-    This updates `graphify-out/graph.json` and produces architecture audit files like `GRAPH_REPORT.md`.
-
----
-
 ## 🎨 Design System & Theme Customization
 
 The system utilizes custom CSS variables inside `index.css` to render its glassmorphism interfaces:
