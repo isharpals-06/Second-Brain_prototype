@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { 
   LayoutDashboard, 
   FileText, 
-  Share2, 
   Cpu, 
   Layers, 
   Sparkles,
@@ -11,7 +10,6 @@ import {
 } from 'lucide-react';
 import DashboardOverview from './components/DashboardOverview';
 import NotesExplorer from './components/NotesExplorer';
-import GraphView from './components/GraphView';
 import CoprocessorConsole from './components/CoprocessorConsole';
 import FlashcardsView from './components/FlashcardsView';
 import AIChatConsole from './components/AIChatConsole';
@@ -31,7 +29,6 @@ function App() {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'notes', label: 'Notes Vault', icon: FileText },
-    { id: 'graph', label: 'Knowledge Graph', icon: Share2 },
     { id: 'chat', label: 'AI Chat Console', icon: MessageSquare },
     { id: 'coprocessor', label: 'AI Coprocessor', icon: Cpu },
     { id: 'flashcards', label: 'Flashcards', icon: Layers },
@@ -55,10 +52,6 @@ function App() {
             initialSelectedFile={selectedFile} 
             clearInitialSelected={() => setSelectedFile(null)} 
           />
-        );
-      case 'graph':
-        return (
-          <GraphView onSelectNote={handleSelectNote} />
         );
       case 'chat':
         return (
