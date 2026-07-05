@@ -38,3 +38,8 @@ Untitled.base
 # OS files
 .DS_Store
 Thumbs.db
+
+# Databases & Cache
+*.db
+embeddings_cache.json
+90_System/backups/

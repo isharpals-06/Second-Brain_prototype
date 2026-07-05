@@ -30,6 +30,8 @@ Below is the directory of all subject-specific Map of Content notes. Click any l
 
 ## 📥 Academic Inbox & Staging
 
+*   [[00_Inbox/inbox_notes/courses/2026-07-03-so-i-am-giving-you-few-courses|So i am giving you few courses... (Chat Session)]] - *Saved on 2026-07-03* (Inbox: Courses)
+
 *   [[00_Inbox/inbox_notes/courses_moc/2026-06-28-courses|Courses (Chat Session)]] - *Saved on 2026-06-28 (Inbox: courses_moc)*
 
 ---

@@ -1,4 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap');
+
 :root {
+  /* Fonts */
+  --font-hud: 'Orbitron', sans-serif;
+  --font-tech: 'Share Tech Mono', monospace;
+  
   /* Colors */
   --bg-primary: #0a0b10;
   --bg-secondary: #12131a;

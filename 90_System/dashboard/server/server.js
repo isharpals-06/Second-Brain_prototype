@@ -6,6 +6,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
 import dotenv from 'dotenv';
+import multer from 'multer';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pdf = require('pdf-parse');
+import { DatabaseSync } from 'node:sqlite';
+import chokidar from 'chokidar';
 
 // Configure dotenv
 dotenv.config();
@@ -18,10 +24,233 @@ const VAULT_ROOT = path.resolve(__dirname, '../../../');
 const REFINED_NOTES_DIR = path.join(VAULT_ROOT, '10_Subjects');
 const GRAPH_FILE = path.join(VAULT_ROOT, '90_System', 'graphify-out', 'graph.json');
 
+// Multer configuration
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Cased subject subfolder mapping
+const SUBJECT_FOLDER_MAP = {
+  'OS': '01_Operating_Systems',
+  'DSA': '02_Data_Structures',
+  'DBMS': '03_Database_Systems',
+  'DISCRETE': '04_Discrete_Mathematics',
+  'CSA': '05_Computer_Architecture',
+  'CYBER_CN': '06_Computer_Networks',
+  'ML': '07_Machine_Learning',
+  'OPPS': '08_OOPs',
+  'STATISTICS': '09_Statistics'
+};
+
 const app = express();
 const PORT = process.env.PORT || 3010;
 
 app.use(cors());
+
+// Initialize SQLite database
+const dbPath = path.join(__dirname, 'vault_assistant.db');
+const db = new DatabaseSync(dbPath);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS flashcards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    note_path TEXT,
+    question TEXT,
+    answer TEXT,
+    easiness REAL DEFAULT 2.5,
+    interval INTEGER DEFAULT 1,
+    repetitions INTEGER DEFAULT 0,
+    due_date TEXT,
+    last_reviewed TEXT
+  );
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS inbox_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    note_path TEXT,
+    detected_at TEXT,
+    status TEXT  -- 'unfiled' | 'filed' | 'ignored'
+  );
+`);
+
+db.exec(`
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_flashcards_path_q ON flashcards(note_path, question);
+`);
+
+db.exec(`
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_inbox_path ON inbox_log(note_path);
+`);
+
+const JARVIS_SYSTEM_PROMPTS = {
+  coding: `You are J.A.R.V.I.S., Tony Stark's advanced AI coprocessor specialized in software engineering and systems architecture.
+Guidelines:
+- Provide highly optimized, correct, and clean code.
+- Explain design patterns, architectural choices, and complexity analysis (Time/Space) briefly.
+- Structure explanations with clear directory maps or module dependencies when describing projects.
+- Keep comments concise and focus on explaining the "why" rather than the obvious "what".`,
+
+  math: `You are J.A.R.V.I.S., Tony Stark's advanced AI coprocessor specialized in mathematics, proofs, and statistical calculations.
+Guidelines:
+- Format all equations using standard LaTeX syntax block notation ($$ ... $$) for multiline math or inline notation ($ ... $) for inline variables.
+- Break down multi-step mathematical derivations step-by-step with logical justifications for each transition.
+- Focus on clarity and accuracy in proofs, explaining the assumptions, theorems used, and final conclusions.`,
+
+  research: `You are J.A.R.V.I.S., Tony Stark's advanced AI coprocessor specialized in academic research, synthesis, and active recall.
+Guidelines:
+- Synthesize complex information into clear, nested markdown bullet points.
+- Highlight key definitions, core concepts, and vocabulary terms in bold.
+- Formulate 2-3 active recall questions and answers at the very bottom in the format: "Question :: Answer" (separated by double colons) tagged with #flashcards.
+- Cross-reference related files or subtopics where possible.`,
+
+  brainstorming: `You are J.A.R.V.I.S., Tony Stark's advanced AI coprocessor specialized in lateral thinking, ideation, and problem-solving.
+Guidelines:
+- Generate multiple alternative approaches, design options, or creative paths for the user's query.
+- Use comparative tables (pros vs. cons, speed vs. cost) to compare different choices.
+- Frame your suggestions in structured mind-maps or logical categories to spark inspiration.`
+};
+
+// Helper function to classify intent and auto-route prompts to the best local model
+function classifyTaskAndModel(promptText, availableModels) {
+  const result = {
+    model: null,
+    category: 'brainstorming'
+  };
+
+  if (!availableModels || availableModels.length === 0) {
+    return result; 
+  }
+
+  const promptLower = promptText.toLowerCase();
+
+  // 1. Check if the task is coding-related
+  const codingKeywords = [
+    'code', 'function', 'class', 'const', 'import', 'let', 'bug', 'compile', 'debug',
+    'python', 'javascript', 'html', 'css', 'typescript', 'java', 'c++', 'react', 'express',
+    'docker', 'database', 'sql', 'api', 'json', 'program', 'script', 'synthesize', 'project'
+  ];
+  const isCoding = codingKeywords.some(kw => promptLower.includes(kw));
+
+  if (isCoding) {
+    result.category = 'coding';
+    const codeModel = availableModels.find(m => 
+      m.name.toLowerCase().includes('coder') || 
+      m.name.toLowerCase().includes('code')
+    );
+    if (codeModel) {
+      result.model = codeModel.name;
+      return result;
+    }
+  }
+
+  // 2. Check if the task is math-related
+  const mathKeywords = [
+    'math', 'equation', 'formula', 'statistics', 'anova', 'probability', 'proof', 'theorem',
+    'variance', 'mean', 'median', 'stddev', 'calculus', 'algebra', 'matrix', 'integral', 'fraction'
+  ];
+  const isMath = mathKeywords.some(kw => promptLower.includes(kw));
+
+  if (isMath) {
+    result.category = 'math';
+    const mathModel = availableModels.find(m => 
+      m.name.toLowerCase().includes('math')
+    );
+    if (mathModel) {
+      result.model = mathModel.name;
+      return result;
+    }
+  }
+
+  // 3. Check if the task is research/summary-related
+  const researchKeywords = [
+    'research', 'summary', 'summarize', 'note', 'define', 'explain', 'concept', 'study',
+    'flashcard', 'recall', 'read', 'paper', 'article', 'lecture', 'subject'
+  ];
+  const isResearch = researchKeywords.some(kw => promptLower.includes(kw));
+  if (isResearch) {
+    result.category = 'research';
+  }
+
+  // Fallback to general models
+  const generalModel = availableModels.find(m => 
+    m.name.toLowerCase().includes('llama') || 
+    m.name.toLowerCase().includes('mistral') || 
+    m.name.toLowerCase().includes('gemma') ||
+    m.name.toLowerCase().includes('phi')
+  );
+  result.model = generalModel ? generalModel.name : availableModels[0].name;
+  return result;
+}
+// Backup function: zips clean codebase and key notes folder, keeping only 5 recent backups
+async function runBackup() {
+  const backupDir = path.join(__dirname, '..', '..', 'backups');
+  
+  // Ensure backups directory exists
+  try {
+    await fs.mkdir(backupDir, { recursive: true });
+  } catch (_) {}
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const destinationZip = path.join(backupDir, `second_brain_backup_${timestamp}.zip`);
+  
+  // Clean list of tracked project files and directories
+  const pathsToBackup = [
+    '10_Subjects/00_MOCs',
+    '00_Inbox',
+    '90_System/dashboard/server/server.js',
+    'README.md',
+    'Developer_handbook.md',
+    'docker-compose.yml',
+    'requirements.txt',
+    'start_second_brain.bat'
+  ];
+
+  // Resolve path tokens into fully qualified Windows paths, filtering only existing paths
+  const absolutePaths = pathsToBackup
+    .map(p => path.resolve(__dirname, '..', '..', '..', p))
+    .filter(p => fsSync.existsSync(p))
+    .map(p => `'${p}'`)
+    .join(', ');
+
+  const command = `powershell -Command "Compress-Archive -Path ${absolutePaths} -DestinationPath '${destinationZip}' -Force"`;
+
+  return new Promise((resolve, reject) => {
+    exec(command, async (error, stdout, stderr) => {
+      if (error) {
+        console.error('[JARVIS Backup] Failed to create backup:', stderr || error.message);
+        return reject(error);
+      }
+      
+      console.log(`[JARVIS Backup] Backup successfully generated at: ${destinationZip}`);
+      
+      // Pruning logic: keep only the 5 most recent backups
+      try {
+        const files = await fs.readdir(backupDir);
+        const backupFiles = files
+          .filter(f => f.startsWith('second_brain_backup_') && f.endsWith('.zip'))
+          .map(f => ({ name: f, path: path.join(backupDir, f) }));
+        
+        for (const file of backupFiles) {
+          const stats = await fs.stat(file.path);
+          file.mtime = stats.mtime.getTime();
+        }
+        
+        backupFiles.sort((a, b) => b.mtime - a.mtime);
+        
+        if (backupFiles.length > 5) {
+          const toDelete = backupFiles.slice(5);
+          for (const file of toDelete) {
+            await fs.unlink(file.path);
+            console.log(`[JARVIS Backup] Evicted old backup: ${file.name}`);
+          }
+        }
+      } catch (cleanErr) {
+        console.warn('[JARVIS Backup] Pruning old backups failed:', cleanErr.message);
+      }
+      
+      resolve(destinationZip);
+    });
+  });
+}
+
 app.use(express.json({ limit: '50mb' }));
 
 // Helper to recursively get markdown files
@@ -54,6 +283,125 @@ async function getMarkdownFiles(dir) {
 }
 
 const CACHE_FILE = path.join(__dirname, 'metadata_cache.json');
+const EMBEDDINGS_CACHE_FILE = path.join(__dirname, 'embeddings_cache.json');
+
+// Vector math helper: Cosine Similarity
+function cosineSimilarity(vecA, vecB) {
+  if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
+  let dotProduct = 0.0;
+  let normA = 0.0;
+  let normB = 0.0;
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+  if (normA === 0 || normB === 0) return 0;
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+// Fetch single embedding using local Ollama model (nomic-embed-text)
+async function getEmbedding(text) {
+  const ollamaUrl = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
+  try {
+    const response = await fetch(`${ollamaUrl}/api/embeddings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'nomic-embed-text',
+        prompt: text
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`Embedding generation failed: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data.embedding; 
+  } catch (e) {
+    console.error('[JARVIS RAG] Error fetching embedding:', e.message);
+    return null;
+  }
+}
+
+// Background builder: scans subjects notes and updates vector index
+async function buildEmbeddingsCache() {
+  console.log('[JARVIS RAG] Starting background vault embeddings indexer...');
+  let cache = {};
+  
+  try {
+    const cacheData = await fs.readFile(EMBEDDINGS_CACHE_FILE, 'utf-8');
+    cache = JSON.parse(cacheData);
+  } catch (_) {
+    cache = {};
+  }
+
+  // Get current notes list
+  const refinedFiles = await getMarkdownFiles(REFINED_NOTES_DIR);
+  
+  // Evict deleted files from embeddings cache
+  const currentPathsSet = new Set(refinedFiles);
+  let cacheChanged = false;
+  for (const cachedPath in cache) {
+    if (!currentPathsSet.has(cachedPath)) {
+      delete cache[cachedPath];
+      cacheChanged = true;
+    }
+  }
+
+  // Check if Ollama has nomic-embed-text model
+  const ollamaUrl = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
+  let hasEmbedModel = false;
+  try {
+    const tagsRes = await fetch(`${ollamaUrl}/api/tags`);
+    if (tagsRes.ok) {
+      const tagsData = await tagsRes.json();
+      hasEmbedModel = (tagsData.models || []).some(m => m.name.includes('nomic-embed-text'));
+    }
+  } catch (_) {}
+
+  if (!hasEmbedModel) {
+    console.warn('[JARVIS RAG] Model "nomic-embed-text" not found in local Ollama tags. RAG indexing skipped.');
+    console.warn('[JARVIS RAG] Run "ollama pull nomic-embed-text" to enable local contextual search.');
+    return;
+  }
+
+  // Sync vectors incrementally
+  for (const filePath of refinedFiles) {
+    try {
+      const stats = await fs.stat(filePath);
+      const mtimeMs = stats.mtime.getTime();
+      const size = stats.size;
+      
+      const cached = cache[filePath];
+      if (!cached || cached.updatedAt !== mtimeMs || cached.size !== size) {
+        const content = await fs.readFile(filePath, 'utf-8');
+        const cleanedText = content.replace(/[\#\*\`\[\]]/g, ' ').slice(0, 3000); 
+        const vector = await getEmbedding(cleanedText);
+        
+        if (vector) {
+          cache[filePath] = {
+            vector,
+            updatedAt: mtimeMs,
+            size,
+            title: path.basename(filePath, '.md'),
+            relativePath: path.relative(VAULT_ROOT, filePath).replace(/\\/g, '/')
+          };
+          cacheChanged = true;
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
+      }
+    } catch (err) {
+      console.error(`[JARVIS RAG] Failed to index ${filePath}:`, err.message);
+    }
+  }
+
+  if (cacheChanged) {
+    await fs.writeFile(EMBEDDINGS_CACHE_FILE, JSON.stringify(cache, null, 2), 'utf-8');
+    console.log('[JARVIS RAG] Vault embeddings cache synced and saved.');
+  } else {
+    console.log('[JARVIS RAG] Vault embeddings index is already up to date.');
+  }
+}
 
 // Helper to sync and flattened cached notes and flashcards
 async function syncMetadataCache() {
@@ -410,6 +758,291 @@ app.post('/api/tasks/toggle', (req, res) => {
   }
 });
 
+app.post('/api/notes/upload-slides', upload.single('file'), async (req, res) => {
+  try {
+    const subject = req.body.subject;
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No file uploaded.' });
+    }
+    if (!subject || !SUBJECT_FOLDER_MAP[subject]) {
+      return res.status(400).json({ success: false, error: `Invalid subject: ${subject}` });
+    }
+
+    // Parse PDF text
+    const pdfBuffer = req.file.buffer;
+    const parsedPdf = await pdf(pdfBuffer);
+    const textContent = parsedPdf.text;
+
+    if (!textContent || !textContent.trim()) {
+      return res.status(400).json({ success: false, error: 'PDF file is empty or could not be parsed.' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+    if (!apiKey) {
+      return res.status(500).json({ success: false, error: 'Gemini API key is not configured.' });
+    }
+
+    const prompt = `You are J.A.R.V.I.S., Tony Stark's advanced AI processor.
+Your task is to parse the raw text extracted from a university lecture slides PDF and slice/refine it into atomic concept notes.
+Each concept note must be returned as a separate block with a special delimiter: "=== NOTE_START ===" and "=== NOTE_END ===".
+
+For each concept note:
+1. Generate a descriptive title (used as the filename, e.g. "Virtual Memory Pages").
+2. Format the body of the note using beautiful, structured markdown.
+3. Every note must follow these formatting constraints:
+   - YAML metadata block at the top:
+     ---
+     title: "Note Title"
+     subject: "${subject}"
+     type: concept
+     ---
+   - Link at the top back to the subject's MOC file: "Up: [[${subject} MOC]]"
+   - Include clear definitions, lists, and LaTeX equations if relevant. Use $$ ... $$ for blocks and $ ... $ for inline math.
+   - At the bottom, include 2-3 Active Recall Flashcards formatted with double colons: "Question :: Answer" or double question marks: "Question ?? Answer" and tagged with #flashcards.
+   - Keep code blocks clean.
+4. Output format:
+=== NOTE_START ===
+FILENAME: Note Title
+---
+yaml...
+---
+Up: [[${subject} MOC]]
+# Note Title
+...body...
+#flashcards
+Question :: Answer
+=== NOTE_END ===
+
+Do not output any introductory or concluding text. Return only the note blocks.`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: `${prompt}\n\n==================== RAW SLIDES TEXT ====================\n${textContent}` }]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Gemini API error: ${err}`);
+    }
+
+    const json = await response.json();
+    const responseText = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // Process the response and save files
+    const noteBlocks = responseText.split('=== NOTE_START ===');
+    const savedNotes = [];
+
+    for (let block of noteBlocks) {
+      if (!block.trim()) continue;
+      const endIdx = block.indexOf('=== NOTE_END ===');
+      let cleanBlock = block;
+      if (endIdx !== -1) {
+        cleanBlock = block.substring(0, endIdx);
+      }
+
+      const lines = cleanBlock.trim().split('\n');
+      let filenameLine = lines.find(l => l.trim().startsWith('FILENAME:'));
+      if (!filenameLine) continue;
+
+      const filename = filenameLine.replace('FILENAME:', '').trim();
+      const cleanFilename = filename.replace(/[\\/:*?"<>|]/g, '_') + '.md';
+      const contentLines = lines.filter(l => !l.trim().startsWith('FILENAME:'));
+      const content = contentLines.join('\n').trim();
+
+      const subjectFolder = SUBJECT_FOLDER_MAP[subject];
+      const targetDir = path.join(REFINED_NOTES_DIR, subjectFolder);
+      
+      // Ensure target directory exists
+      await fs.mkdir(targetDir, { recursive: true });
+      const targetFilePath = path.join(targetDir, cleanFilename);
+
+      await fs.writeFile(targetFilePath, content, 'utf8');
+      savedNotes.push(cleanFilename);
+    }
+
+    // Automatically update the subject MOC to index the new files!
+    const mocFilename = `${subject} MOC.md`;
+    const mocDir = path.join(REFINED_NOTES_DIR, '00_MOCs');
+    const mocPath = path.join(mocDir, mocFilename);
+    
+    let mocContent = '';
+    try {
+      mocContent = await fs.readFile(mocPath, 'utf8');
+    } catch (_) {
+      mocContent = `---\ntitle: "${subject} MOC"\ntype: moc\n---\n\n# ${subject} Map of Content\n\n## Core Concepts\n`;
+    }
+
+    let updatedMocContent = mocContent;
+    for (const cleanName of savedNotes) {
+      const baseName = cleanName.replace('.md', '');
+      const linkStr = `- [[${baseName}]]`;
+      if (!mocContent.includes(`[[${baseName}]]`)) {
+        updatedMocContent += `\n${linkStr}`;
+      }
+    }
+
+    await fs.mkdir(mocDir, { recursive: true });
+    await fs.writeFile(mocPath, updatedMocContent, 'utf8');
+
+    res.json({
+      success: true,
+      message: `Successfully processed ${savedNotes.length} concept notes.`,
+      notes: savedNotes
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+async function getUnlinkedNotes() {
+  const mocsDir = path.join(REFINED_NOTES_DIR, '00_MOCs');
+  const mocLinks = new Set();
+  try {
+    const mocFiles = await fs.readdir(mocsDir);
+    for (const file of mocFiles) {
+      if (file.endsWith('.md')) {
+        const content = await fs.readFile(path.join(mocsDir, file), 'utf8');
+        const matches = content.match(/\[\[(.*?)\]\]/g) || [];
+        for (const match of matches) {
+          const cleanLink = match.slice(2, -2).trim();
+          mocLinks.add(cleanLink.toLowerCase());
+        }
+      }
+    }
+  } catch (_) {}
+
+  const allNotes = [];
+  async function scan(dir) {
+    const list = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of list) {
+      const resPath = path.resolve(dir, entry.name);
+      if (entry.isDirectory()) {
+        const nameLower = entry.name.toLowerCase();
+        if (nameLower === '00_mocs' || nameLower === 'node_modules' || nameLower === '.git' || nameLower === 'dashboard' || nameLower === 'graphify-out') continue;
+        await scan(resPath);
+      } else if (entry.name.endsWith('.md')) {
+        allNotes.push(resPath);
+      }
+    }
+  }
+  
+  try {
+    await scan(REFINED_NOTES_DIR);
+  } catch (_) {}
+
+  const unlinked = [];
+  for (const file of allNotes) {
+    const baseName = path.basename(file, '.md');
+    if (baseName.toLowerCase().endsWith(' moc')) continue;
+    if (!mocLinks.has(baseName.toLowerCase())) {
+      unlinked.push({
+        title: baseName,
+        absolutePath: file,
+        relativePath: path.relative(VAULT_ROOT, file).replace(/\\/g, '/')
+      });
+    }
+  }
+  return unlinked;
+}
+
+app.post('/api/review', express.json(), async (req, res) => {
+  const { card_id, quality } = req.body;
+  if (card_id === undefined || quality === undefined) {
+    return res.status(400).json({ error: 'card_id and quality are required' });
+  }
+
+  const q = parseInt(quality, 10);
+  if (isNaN(q) || q < 0 || q > 5) {
+    return res.status(400).json({ error: 'Quality must be between 0 and 5' });
+  }
+
+  try {
+    const selectQuery = db.prepare(`SELECT * FROM flashcards WHERE id = ?`);
+    const card = selectQuery.get(card_id);
+    if (!card) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+
+    let easiness = card.easiness;
+    let interval = card.interval;
+    let repetitions = card.repetitions;
+
+    // SM-2 calculation
+    easiness = easiness + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+    if (easiness < 1.3) easiness = 1.3;
+
+    if (q < 3) {
+      repetitions = 0;
+      interval = 1;
+    } else {
+      repetitions += 1;
+      if (repetitions === 1) {
+        interval = 1;
+      } else if (repetitions === 2) {
+        interval = 6;
+      } else {
+        interval = Math.round(interval * easiness);
+      }
+    }
+
+    const nextDueDate = new Date();
+    nextDueDate.setDate(nextDueDate.getDate() + interval);
+    const dueStr = nextDueDate.toISOString().split('T')[0];
+    const lastReviewedStr = new Date().toISOString().split('T')[0];
+
+    const updateStmt = db.prepare(`
+      UPDATE flashcards 
+      SET easiness = ?, interval = ?, repetitions = ?, due_date = ?, last_reviewed = ?
+      WHERE id = ?
+    `);
+    updateStmt.run(easiness, interval, repetitions, dueStr, lastReviewedStr, card_id);
+
+    res.json({
+      success: true,
+      card: {
+        id: card_id,
+        easiness,
+        interval,
+        repetitions,
+        due_date: dueStr
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/daily-brief', async (req, res) => {
+  try {
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    // 1. Cards due
+    const cardsQuery = db.prepare(`SELECT * FROM flashcards WHERE due_date <= ?`);
+    const cardsDue = cardsQuery.all(todayStr);
+
+    // 2. Unfiled notes
+    const unfiledQuery = db.prepare(`SELECT * FROM inbox_log WHERE status = 'unfiled'`);
+    const unfiledNotes = unfiledQuery.all();
+
+    // 3. Unlinked notes
+    const unlinkedNotes = await getUnlinkedNotes();
+
+    res.json({
+      cards_due: cardsDue,
+      unfiled_notes: unfiledNotes,
+      unlinked_notes: unlinkedNotes
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // 2. List all notes
 app.get('/api/notes', async (req, res) => {
@@ -564,15 +1197,41 @@ async function generateRefinementText({ provider, model, prompt, content, apiKey
 
   } else if (provider === 'ollama') {
     const ollamaUrl = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
-    const selectedModel = model || 'llama3';
-    const url = `${ollamaUrl}/api/generate`;
+    let selectedModel = model || 'auto';
+    let detectedCategory = 'research'; // Default to research formatting for note refinements
 
+    if (selectedModel === 'auto') {
+      try {
+        const tagsResponse = await fetch(`${ollamaUrl}/api/tags`);
+        if (tagsResponse.ok) {
+          const tagsData = await tagsResponse.json();
+          const sampleText = `${prompt} ${content}`;
+          const classification = classifyTaskAndModel(sampleText, tagsData.models || []);
+          if (classification.model) {
+            selectedModel = classification.model;
+            detectedCategory = classification.category;
+            console.log(`[JARVIS Router] Auto-routed refinement to model: ${selectedModel} | Category: ${detectedCategory}`);
+          }
+        }
+      } catch (e) {
+        console.warn('[JARVIS Router] Failed to fetch tags for auto-routing, using default.', e.message);
+      }
+    }
+
+    // Default fallback if auto failed to find a model
+    if (selectedModel === 'auto') selectedModel = 'llama3';
+
+    const baseSystemPrompt = JARVIS_SYSTEM_PROMPTS[detectedCategory] || JARVIS_SYSTEM_PROMPTS.research;
+
+    const url = `${ollamaUrl}/api/generate`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: selectedModel,
+        system: baseSystemPrompt,
         prompt: `${prompt}\n\nContent to refine:\n${content}`,
+        keep_alive: "5m", // Automatically unload model from memory after 5 minutes of idle time
         stream: false
       })
     });
@@ -707,15 +1366,106 @@ app.post('/api/chat', async (req, res) => {
 
     } else if (provider === 'ollama') {
       const ollamaUrl = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
-      const selectedModel = model || 'llama3';
-      const url = `${ollamaUrl}/api/chat`;
+      let selectedModel = model || 'auto';
+      let detectedCategory = 'brainstorming';
 
+      if (selectedModel === 'auto') {
+        try {
+          const tagsResponse = await fetch(`${ollamaUrl}/api/tags`);
+          if (tagsResponse.ok) {
+            const tagsData = await tagsResponse.json();
+            const lastUserMessage = messages[messages.length - 1]?.content || '';
+            const classification = classifyTaskAndModel(lastUserMessage, tagsData.models || []);
+            if (classification.model) {
+              selectedModel = classification.model;
+              detectedCategory = classification.category;
+              console.log(`[JARVIS Router] Auto-routed chat query to model: ${selectedModel} | Category: ${detectedCategory}`);
+            }
+          }
+        } catch (e) {
+          console.warn('[JARVIS Router] Failed to fetch tags for auto-routing, using default.', e.message);
+        }
+      }
+
+      // Default fallback if auto failed to find a model
+      if (selectedModel === 'auto') selectedModel = 'llama3';
+
+      // Retrieve contextual notes using local RAG (Cosine Similarity search)
+      let contextString = '';
+      try {
+        const queryText = messages[messages.length - 1]?.content || '';
+        const queryVector = await getEmbedding(queryText);
+        
+        if (queryVector) {
+          let embedCache = {};
+          try {
+            const cacheData = await fs.readFile(EMBEDDINGS_CACHE_FILE, 'utf-8');
+            embedCache = JSON.parse(cacheData);
+          } catch (_) {}
+
+          const ranked = [];
+          for (const filePath in embedCache) {
+            const similarity = cosineSimilarity(queryVector, embedCache[filePath].vector);
+            ranked.push({
+              filePath,
+              similarity,
+              title: embedCache[filePath].title
+            });
+          }
+
+          ranked.sort((a, b) => b.similarity - a.similarity);
+          
+          // Get top 3 notes with similarity score above 0.45
+          const topNotes = ranked.filter(n => n.similarity > 0.45).slice(0, 3);
+          
+          if (topNotes.length > 0) {
+            const chunks = [];
+            for (const note of topNotes) {
+              const content = await fs.readFile(note.filePath, 'utf-8');
+              chunks.push(`--- Note: ${note.title} (Relevance: ${Math.round(note.similarity * 100)}%) ---\n${content.slice(0, 2000)}`);
+            }
+            contextString = chunks.join('\n\n');
+            console.log(`[JARVIS RAG] Retrieved ${topNotes.length} context notes for query: "${queryText.slice(0, 30)}..."`);
+          }
+        }
+      } catch (ragErr) {
+        console.warn('[JARVIS RAG] Context retrieval error:', ragErr.message);
+      }
+
+      let modifiedMessages = [...messages];
+      const baseSystemPrompt = JARVIS_SYSTEM_PROMPTS[detectedCategory] || JARVIS_SYSTEM_PROMPTS.brainstorming;
+      
+      let systemPrompt = `${baseSystemPrompt}`;
+      
+      if (contextString) {
+        systemPrompt += `\n\nYou have access to the user's local notes vault. Use the following context from their notes to answer their question accurately. If the context doesn't contain the answer, use your general knowledge, but reference the notes where applicable.
+
+================ CONTEXT FROM USER NOTES ================
+${contextString}
+=========================================================`;
+      }
+
+      const existingSystemIdx = modifiedMessages.findIndex(m => m.role === 'system');
+      if (existingSystemIdx !== -1) {
+        modifiedMessages[existingSystemIdx] = {
+          role: 'system',
+          content: `${systemPrompt}\n\nOriginal System Instructions:\n${modifiedMessages[existingSystemIdx].content}`
+        };
+      } else {
+        modifiedMessages.unshift({
+          role: 'system',
+          content: systemPrompt
+        });
+      }
+
+      const url = `${ollamaUrl}/api/chat`;
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: selectedModel,
-          messages: messages,
+          messages: modifiedMessages,
+          keep_alive: "5m", // Automatically unload model from memory after 5 minutes of idle time
           stream: false
         })
       });
@@ -1003,7 +1753,17 @@ app.get('/api/chat/history', async (req, res) => {
   }
 });
 
-// 12. List Ollama local models dynamically
+// 12. Manual Backup Trigger Route
+app.post('/api/backup/trigger', async (req, res) => {
+  try {
+    const zipPath = await runBackup();
+    res.json({ success: true, file: path.basename(zipPath) });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 13. List Ollama local models dynamically
 app.get('/api/ollama/models', async (req, res) => {
   try {
     const ollamaUrl = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
@@ -1016,12 +1776,157 @@ app.get('/api/ollama/models', async (req, res) => {
       id: m.name,
       name: `${m.name} (${Math.round(m.size / (1024*1024*102.4)) / 10} GB)`
     }));
+    models.unshift({ id: 'auto', name: '🤖 Auto-Route (JARVIS)' });
     res.json(models);
   } catch (error) {
     res.json([]);
   }
 });
 
+function startLibrarianWatcher() {
+  const inboxPath = path.join(VAULT_ROOT, '00_Inbox');
+  console.log('[Librarian] Initializing file watcher on:', inboxPath);
+
+  const watcher = chokidar.watch(inboxPath, {
+    ignored: /(^|[\/\\])\../,
+    persistent: true,
+    ignoreInitial: true
+  });
+
+  watcher.on('add', async (filePath) => {
+    if (!filePath.endsWith('.md')) return;
+    
+    const relativePath = path.relative(VAULT_ROOT, filePath).replace(/\\/g, '/');
+    console.log(`[Librarian] Detected new capture note: ${relativePath}`);
+
+    try {
+      const todayStr = new Date().toISOString();
+      const insertInbox = db.prepare(`
+        INSERT OR IGNORE INTO inbox_log (note_path, detected_at, status)
+        VALUES (?, ?, 'unfiled')
+      `);
+      insertInbox.run(relativePath, todayStr);
+    } catch (err) {
+      console.error('[Librarian] DB insert failed:', err.message);
+    }
+
+    try {
+      const fileContent = await fs.readFile(filePath, 'utf8');
+      if (!fileContent.trim()) {
+        console.log(`[Librarian] Note is empty, skipping auto-filing for now.`);
+        return;
+      }
+
+      const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+      if (!apiKey) {
+        throw new Error('Gemini API key is not configured.');
+      }
+
+      const systemPrompt = `You are J.A.R.V.I.S., Tony Stark's advanced AI processor.
+Your task is to classify this quick capture note and recommend filing details.
+Examine the content and choose the best matching university subject.
+
+Available subjects MUST be one of:
+- OS (Operating Systems)
+- DSA (Data Structures)
+- DBMS (Database Systems)
+- DISCRETE (Discrete Mathematics)
+- CSA (Computer System Architecture)
+- CYBER_CN (Computer Networks / Cyber Security)
+- ML (Machine Learning)
+- OPPS (Object Oriented Programming)
+- STATISTICS (Probability and Statistics)
+
+You must return a raw JSON object ONLY, containing:
+{
+  "subject": "OS" | "DSA" | "DBMS" | "DISCRETE" | "CSA" | "CYBER_CN" | "ML" | "OPPS" | "STATISTICS",
+  "filename": "A clean, concise 2-4 word filename describing the concept",
+  "tags": ["an", "array", "of", "lowercase", "keywords"]
+}
+
+Do not include markdown fences, preambles, or explanations. Return the raw JSON block directly.`;
+
+      const responseText = await generateRefinementText({
+        provider: 'gemini',
+        model: 'gemini-2.5-flash',
+        prompt: systemPrompt,
+        content: fileContent,
+        apiKeyOverride: apiKey
+      });
+
+      let cleanedJsonStr = responseText.trim();
+      cleanedJsonStr = cleanedJsonStr.replace(/^```json\s*/i, '');
+      cleanedJsonStr = cleanedJsonStr.replace(/^```\s*/i, '');
+      cleanedJsonStr = cleanedJsonStr.replace(/```$/, '');
+      cleanedJsonStr = cleanedJsonStr.trim();
+
+      const metadata = JSON.parse(cleanedJsonStr);
+      const { subject, filename, tags } = metadata;
+
+      if (!subject || !SUBJECT_FOLDER_MAP[subject]) {
+        throw new Error(`Invalid subject returned by model: ${subject}`);
+      }
+
+      const subjectFolder = SUBJECT_FOLDER_MAP[subject];
+      const targetDir = path.join(REFINED_NOTES_DIR, subjectFolder);
+      const cleanFilename = (filename || 'quick_note').replace(/[\\/:*?"<>|]/g, '_') + '.md';
+      const targetFilePath = path.join(targetDir, cleanFilename);
+
+      const frontmatter = `---
+title: "${filename}"
+subject: "${subject}"
+type: concept
+tags: [${(tags || []).map(t => `"${t}"`).join(', ')}]
+---
+
+Up: [[${subject} MOC]]
+
+`;
+      
+      const refinedContent = frontmatter + fileContent;
+      await fs.mkdir(targetDir, { recursive: true });
+      await fs.writeFile(targetFilePath, refinedContent, 'utf8');
+
+      await fs.unlink(filePath);
+      console.log(`[Librarian] Successfully filed ${relativePath} -> ${path.relative(VAULT_ROOT, targetFilePath)}`);
+
+      const mocFilename = `${subject} MOC.md`;
+      const mocDir = path.join(REFINED_NOTES_DIR, '00_MOCs');
+      const mocPath = path.join(mocDir, mocFilename);
+      
+      let mocContent = '';
+      try {
+        mocContent = await fs.readFile(mocPath, 'utf8');
+      } catch (_) {
+        mocContent = `---\ntitle: "${subject} MOC"\ntype: moc\n---\n\n# ${subject} Map of Content\n\n## Core Concepts\n`;
+      }
+
+      const noteBaseName = cleanFilename.replace('.md', '');
+      const linkStr = `- [[${noteBaseName}]]`;
+      if (!mocContent.includes(`[[${noteBaseName}]]`)) {
+        const updatedMocContent = mocContent.trim() + `\n${linkStr}\n`;
+        await fs.mkdir(mocDir, { recursive: true });
+        await fs.writeFile(mocPath, updatedMocContent, 'utf8');
+        console.log(`[Librarian] Appended link [[${noteBaseName}]] to MOC: ${mocFilename}`);
+      }
+
+      const updateInbox = db.prepare(`
+        UPDATE inbox_log SET status = 'filed' WHERE note_path = ?
+      `);
+      updateInbox.run(relativePath);
+
+      // Trigger automatic rebuild of the search index
+      syncMetadataCache().catch(console.error);
+
+    } catch (err) {
+      console.error(`[Librarian] Failed to auto-file ${relativePath}:`, err.message);
+    }
+  });
+}
+
 app.listen(PORT, () => {
   console.log(`Second Brain Backend running at http://localhost:${PORT}`);
+  buildEmbeddingsCache().catch(err => console.error('[JARVIS RAG] Background indexer failed:', err));
+  runBackup().catch(err => console.error('[JARVIS Backup] Startup backup failed:', err));
+  startLibrarianWatcher();
 });

@@ -1,11 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Save, Edit2, Eye, FileText, ChevronRight, Folder, BookOpen, Clock, Cpu } from 'lucide-react';
 
-export default function NotesExplorer({ initialSelectedFile, clearInitialSelected }) {
+export default function NotesExplorer({ 
+  initialSelectedFile, 
+  clearInitialSelected,
+  globalSearchFilter,
+  clearGlobalSearchFilter
+}) {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('ALL');
+
+  // Trigger search filter when injected from Global Command Bar
+  useEffect(() => {
+    if (globalSearchFilter) {
+      setSearchQuery(globalSearchFilter);
+      setActiveMocHub(null); // Close active MOC hub to reveal search matches
+      if (clearGlobalSearchFilter) clearGlobalSearchFilter();
+    }
+  }, [globalSearchFilter]);
   
   // Active note state
   const [activeNote, setActiveNote] = useState(null);
@@ -19,6 +33,78 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
   const [mocTab, setMocTab] = useState('concepts');
   const [cardIndex, setCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+
+  // PDF Slide Ingestion HUD states
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('idle');
+  const [uploadMessage, setUploadMessage] = useState('');
+  const [uploadSubject, setUploadSubject] = useState('OS');
+
+  // Drag and drop event handlers
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type !== 'application/pdf') {
+        setUploadStatus('error');
+        setUploadMessage('Format must be PDF.');
+        setTimeout(() => setUploadStatus('idle'), 4000);
+        return;
+      }
+      await uploadFile(file);
+    }
+  };
+
+  const handleFileChange = async (e) => {
+    if (e.target.files && e.target.files[0]) {
+      await uploadFile(e.target.files[0]);
+    }
+  };
+
+  const uploadFile = async (file) => {
+    setUploadStatus('uploading');
+    setUploadMessage('Parsing slides...');
+    
+    const targetSub = selectedSubject !== 'ALL' ? selectedSubject : uploadSubject;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('subject', targetSub);
+
+    try {
+      const res = await fetch('/api/notes/upload-slides', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUploadStatus('success');
+        setUploadMessage(`Generated ${data.notes.length} concept notes!`);
+        fetchNotesList(); // Reload note list to show new files
+        setTimeout(() => setUploadStatus('idle'), 5000);
+      } else {
+        setUploadStatus('error');
+        setUploadMessage(data.error || 'Ingestion failed.');
+        setTimeout(() => setUploadStatus('idle'), 5000);
+      }
+    } catch (err) {
+      setUploadStatus('error');
+      setUploadMessage(err.message || 'Network error.');
+      setTimeout(() => setUploadStatus('idle'), 5000);
+    }
+  };
 
   // Fetch all notes list
   const fetchNotesList = async () => {
@@ -281,78 +367,190 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
   }, [flashcards, activeMocHub]);
 
   return (
-    <div style={{ display: 'flex', height: '100%', width: '100%', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100%', width: '100%', overflow: 'hidden', backgroundColor: '#020306' }}>
       
       {/* 1. Left Sidebar: Notes Directory List */}
       <div style={{
         width: '320px',
-        borderRight: '1px solid var(--border-color)',
+        borderRight: '1px solid rgba(0, 246, 255, 0.15)',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        backgroundColor: '#0c0d12'
+        backgroundColor: 'rgba(6, 12, 22, 0.85)'
       }}>
         {/* Search */}
         <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div style={{ position: 'relative', width: '100%' }}>
-            <Search size={16} style={{ position: 'absolute', left: '12px', top: '12px', color: 'var(--text-muted)' }} />
+            <Search size={14} style={{ position: 'absolute', left: '12px', top: '12px', color: 'rgba(0, 246, 255, 0.5)' }} />
             <input
               type="text"
-              placeholder="Search concepts or notes..."
+              placeholder="QUERY CORE DATA SECTOR..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 width: '100%',
-                backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
+                backgroundColor: 'rgba(2, 3, 6, 0.75)',
+                border: '1.2px solid rgba(0, 246, 255, 0.25)',
+                borderRadius: '4px',
                 padding: '10px 12px 10px 38px',
                 color: '#fff',
-                fontSize: '0.85rem',
+                fontSize: '0.78rem',
+                fontFamily: 'var(--font-tech)',
                 outline: 'none',
                 transition: 'border-color 0.2s'
               }}
-              onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
-              onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+              onFocus={(e) => e.target.style.borderColor = '#00f6ff'}
+              onBlur={(e) => e.target.style.borderColor = 'rgba(0, 246, 255, 0.25)'}
             />
           </div>
           
           {/* Subject Filter */}
-          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }} className="custom-scrollbar">
             {subjects.map(sub => (
               <button
                 key={sub}
                 onClick={() => setSelectedSubject(sub)}
                 style={{
                   padding: '5px 10px',
-                  borderRadius: '6px',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
+                  borderRadius: '4px',
+                  fontSize: '0.68rem',
+                  fontFamily: 'var(--font-hud)',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px',
                   cursor: 'pointer',
-                  border: '1px solid',
+                  border: '1.2px solid',
                   whiteSpace: 'nowrap',
-                  backgroundColor: selectedSubject === sub ? 'var(--accent-primary)' : 'rgba(255, 255, 255, 0.03)',
-                  borderColor: selectedSubject === sub ? 'var(--accent-primary)' : 'var(--border-color)',
-                  color: selectedSubject === sub ? '#fff' : 'var(--text-secondary)'
+                  backgroundColor: selectedSubject === sub ? 'rgba(0, 246, 255, 0.08)' : 'rgba(2, 3, 6, 0.35)',
+                  borderColor: selectedSubject === sub ? '#00f6ff' : 'rgba(0, 246, 255, 0.15)',
+                  color: selectedSubject === sub ? '#00f6ff' : 'rgba(255, 255, 255, 0.5)',
+                  boxShadow: selectedSubject === sub ? '0 0 8px rgba(0, 246, 255, 0.15)' : 'none',
+                  transition: 'all 0.2s'
                 }}
               >
                 {sub}
               </button>
             ))}
           </div>
+
+          {/* PDF Slide Ingestion HUD */}
+          <div 
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            onDragLeave={handleDrag}
+            onDrop={handleDrop}
+            style={{
+              padding: '12px',
+              border: dragActive ? '1.5px solid #ff6a00' : '1.2px dashed rgba(255, 106, 0, 0.25)',
+              backgroundColor: dragActive ? 'rgba(255, 106, 0, 0.08)' : 'rgba(2, 3, 6, 0.35)',
+              borderRadius: '4px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              boxShadow: dragActive ? '0 0 12px rgba(255, 106, 0, 0.15)' : 'none',
+              transition: 'all 0.2s ease',
+              marginTop: '4px'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.62rem', color: '#ff6a00', fontWeight: 800, letterSpacing: '0.8px', fontFamily: 'var(--font-hud)' }}>
+                A.R.C. INGESTION HUB
+              </span>
+              <span style={{ fontSize: '0.52rem', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-tech)' }}>
+                [PDF FEED]
+              </span>
+            </div>
+
+            {uploadStatus === 'idle' && (
+              <>
+                <label style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  gap: '4px', 
+                  cursor: 'pointer',
+                  padding: '8px 0'
+                }}>
+                  <BookOpen size={14} style={{ color: '#ff6a00', opacity: 0.8 }} />
+                  <span style={{ fontSize: '0.68rem', color: 'rgba(255, 255, 255, 0.65)', textAlign: 'center', fontFamily: 'var(--font-tech)' }}>
+                    DRAG & DROP note PDF
+                  </span>
+                  <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-tech)' }}>
+                    or click to browse
+                  </span>
+                  <input 
+                    type="file" 
+                    accept=".pdf" 
+                    onChange={handleFileChange} 
+                    style={{ display: 'none' }} 
+                  />
+                </label>
+
+                {selectedSubject === 'ALL' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.65rem', borderTop: '1px dashed rgba(255,255,255,0.08)', paddingTop: '6px', fontFamily: 'var(--font-tech)' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.4)' }}>Target:</span>
+                    <select
+                      value={uploadSubject}
+                      onChange={(e) => setUploadSubject(e.target.value)}
+                      style={{
+                        backgroundColor: 'rgba(2, 3, 6, 0.8)',
+                        border: '1px solid rgba(255, 106, 0, 0.25)',
+                        borderRadius: '2px',
+                        color: '#ff6a00',
+                        padding: '2px 4px',
+                        fontSize: '0.65rem',
+                        outline: 'none',
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-tech)'
+                      }}
+                    >
+                      {subjects.filter(s => s !== 'ALL').map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '0.6rem', color: '#10b981', borderTop: '1px dashed rgba(255,255,255,0.08)', paddingTop: '6px', textAlign: 'center', fontFamily: 'var(--font-tech)' }}>
+                    TARGET SUBJECT: <strong style={{ color: '#fff' }}>{selectedSubject}</strong>
+                  </div>
+                )}
+              </>
+            )}
+
+            {uploadStatus === 'uploading' && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '10px 0', fontFamily: 'var(--font-tech)' }}>
+                <RefreshCw size={12} className="spin-anim" style={{ color: '#ff6a00' }} />
+                <span style={{ fontSize: '0.68rem', color: '#ff6a00', fontWeight: 800 }}>{uploadMessage.toUpperCase()}</span>
+                <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)' }}>PARSING SLIDE DECK IN SECONDS...</span>
+              </div>
+            )}
+
+            {uploadStatus === 'success' && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 0', textAlign: 'center', fontFamily: 'var(--font-tech)' }}>
+                <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 800 }}>✓ INGESTION COMPLETE</span>
+                <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.8)' }}>{uploadMessage}</span>
+              </div>
+            )}
+
+            {uploadStatus === 'error' && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '10px 0', textAlign: 'center', fontFamily: 'var(--font-tech)' }}>
+                <span style={{ fontSize: '0.72rem', color: '#ef4444', fontWeight: 800 }}>⚠ CORE EXCEPTION</span>
+                <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.8)' }}>{uploadMessage}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Notes/Folders List */}
-        <div style={{ flexGrow: 1, overflowY: 'auto', padding: '0 8px 16px 8px' }}>
+        <div style={{ flexGrow: 1, overflowY: 'auto', padding: '0 8px 16px 8px' }} className="custom-scrollbar">
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-              <span>Loading notes list...</span>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-tech)' }}>
+              <span>LOADING VAULT STRUCTURE...</span>
             </div>
           ) : searchQuery.trim() ? (
             /* Search results view */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', padding: '4px 8px', letterSpacing: '0.5px' }}>
-                Search Results ({filteredNotes.length})
+              <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', textTransform: 'uppercase', padding: '4px 8px', letterSpacing: '0.5px' }}>
+                SEARCH COMPILATIONS ({filteredNotes.length})
               </div>
               {filteredNotes.map(note => {
                 const isSelected = activeNote && activeNote.absolutePath === note.absolutePath;
@@ -365,9 +563,9 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                       alignItems: 'center',
                       textAlign: 'left',
                       padding: '10px 12px',
-                      borderRadius: '8px',
+                      borderRadius: '4px',
                       border: 'none',
-                      backgroundColor: isSelected ? 'rgba(139, 92, 246, 0.12)' : 'transparent',
+                      backgroundColor: isSelected ? 'rgba(0, 246, 255, 0.1)' : 'transparent',
                       cursor: 'pointer',
                       width: '100%',
                       gap: '8px',
@@ -381,19 +579,20 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                       if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
-                    <div style={{ flexGrow: 1, minWidth: 0 }}>
+                    <div style={{ flexGrow: 1, minWidth: 0, fontFamily: 'var(--font-tech)' }}>
                       <p style={{
-                        color: isSelected ? '#fff' : 'var(--text-primary)',
-                        fontSize: '0.8rem',
-                        fontWeight: isSelected ? 600 : 500,
+                        color: isSelected ? '#00f6ff' : '#e5e7eb',
+                        fontSize: '0.78rem',
+                        fontWeight: isSelected ? 'bold' : 500,
                         textOverflow: 'ellipsis',
                         overflow: 'hidden',
-                        whiteSpace: 'nowrap'
+                        whiteSpace: 'nowrap',
+                        margin: 0
                       }}>
-                        {note.title}
+                        [{note.subject}] {note.title}
                       </p>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                        {note.subject}
+                      <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.3)' }}>
+                        SECTOR INDEX PATH
                       </span>
                     </div>
                   </button>
@@ -403,8 +602,8 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
           ) : (
             /* Folder MOC index selector view */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', padding: '4px 8px', letterSpacing: '0.5px' }}>
-                Subject MOC hubs
+              <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', textTransform: 'uppercase', padding: '4px 8px', letterSpacing: '0.8px' }}>
+                SUBJECT SECTORS
               </div>
               {activeSubjects.map((subj) => {
                 const isSelectedHub = activeMocHub === subj;
@@ -423,37 +622,46 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                       justifyContent: 'space-between',
                       width: '100%',
                       padding: '12px 14px',
-                      backgroundColor: isSelectedHub ? `${subjColor}15` : 'rgba(255, 255, 255, 0.01)',
-                      border: isSelectedHub ? `1px solid ${subjColor}` : '1px solid var(--border-color)',
-                      borderRadius: '8px',
+                      backgroundColor: isSelectedHub ? 'rgba(2, 3, 6, 0.85)' : 'rgba(2, 3, 6, 0.4)',
+                      border: '1.2px solid',
+                      borderColor: isSelectedHub ? '#00f6ff' : 'rgba(0, 246, 255, 0.12)',
+                      borderRadius: '4px',
                       cursor: 'pointer',
-                      color: isSelectedHub ? '#fff' : 'var(--text-secondary)',
+                      color: isSelectedHub ? '#00f6ff' : 'rgba(255, 255, 255, 0.7)',
                       outline: 'none',
                       transition: 'all 0.2s',
                       textAlign: 'left'
                     }}
                     onMouseOver={(e) => {
-                      if (!isSelectedHub) e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
+                      if (!isSelectedHub) {
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+                        e.currentTarget.style.borderColor = 'rgba(0, 246, 255, 0.25)';
+                      }
                     }}
                     onMouseOut={(e) => {
-                      if (!isSelectedHub) e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.01)';
+                      if (!isSelectedHub) {
+                        e.currentTarget.style.backgroundColor = 'rgba(2, 3, 6, 0.4)';
+                        e.currentTarget.style.borderColor = 'rgba(0, 246, 255, 0.12)';
+                      }
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flexGrow: 1 }}>
-                      <Folder size={15} style={{ color: subjColor, flexShrink: 0 }} />
+                      <Folder size={14} style={{ color: isSelectedHub ? '#00f6ff' : subjColor, flexShrink: 0 }} />
                       <span style={{
-                        fontSize: '0.82rem',
-                        fontWeight: 600,
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        fontFamily: 'var(--font-hud)',
+                        letterSpacing: '0.5px',
                         textOverflow: 'ellipsis',
                         overflow: 'hidden',
                         whiteSpace: 'nowrap',
-                        color: isSelectedHub ? '#fff' : '#e5e7eb',
+                        color: isSelectedHub ? '#00f6ff' : '#e5e7eb',
                         flexGrow: 1
                       }}>
-                        {getSubjectCleanName(subj)}
+                        [{subj.toUpperCase()}]
                       </span>
                     </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                    <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-tech)', color: isSelectedHub ? '#00f6ff' : 'rgba(255,255,255,0.45)', fontWeight: 'bold' }}>
                       {subjNotes.length}
                     </span>
                   </button>
@@ -465,7 +673,7 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
       </div>
 
       {/* 2. Right Pane: Note Viewer, Editor, or MOC Hub Page */}
-      <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#07080b' }}>
+      <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#020306' }}>
         {activeNote ? (
           <>
             {/* Note Toolbar */}
@@ -474,21 +682,21 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
               justifyContent: 'space-between',
               alignItems: 'center',
               padding: '16px 24px',
-              borderBottom: '1px solid var(--border-color)',
-              backgroundColor: '#0c0d12'
+              borderBottom: '1px solid rgba(0, 246, 255, 0.15)',
+              backgroundColor: 'rgba(6,12,22,0.85)'
             }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <Folder size={14} style={{ color: activeSubjectColor }} />
-                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: activeSubjectColor }}>
-                    {activeNote.subject} NOTES
+                  <Folder size={12} style={{ color: '#ff6a00' }} />
+                  <span style={{ fontSize: '0.62rem', fontWeight: 800, color: '#ff6a00', fontFamily: 'var(--font-hud)', letterSpacing: '0.8px' }}>
+                    SECTOR: {activeNote.subject.toUpperCase()}
                   </span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>/</span>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.85rem' }}>/</span>
+                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.68rem', fontFamily: 'var(--font-tech)' }}>
                     {activeNote.filename}
                   </span>
                 </div>
-                <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', color: '#fff', fontWeight: 700 }}>
+                <h2 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-hud)', color: '#fff', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.8px', margin: 0 }}>
                   {activeNote.title}
                 </h2>
               </div>
@@ -497,28 +705,30 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                 <button
                   onClick={() => setIsEditing(!isEditing)}
                   style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
-                    color: '#fff',
-                    borderRadius: '8px',
+                    backgroundColor: 'transparent',
+                    border: '1.2px solid rgba(255,255,255,0.15)',
+                    color: 'rgba(255,255,255,0.7)',
+                    borderRadius: '4px',
                     padding: '8px 14px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    fontSize: '0.85rem',
+                    fontSize: '0.72rem',
+                    fontFamily: 'var(--font-hud)',
+                    fontWeight: 'bold',
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                   }}
                 >
                   {isEditing ? (
                     <>
-                      <Eye size={14} />
-                      <span>Preview Mode</span>
+                      <Eye size={12} />
+                      <span>PREVIEW MODE</span>
                     </>
                   ) : (
                     <>
-                      <Edit2 size={14} />
-                      <span>Edit Source</span>
+                      <Edit2 size={12} />
+                      <span>EDIT SOURCE</span>
                     </>
                   )}
                 </button>
@@ -527,29 +737,31 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                     onClick={handleSave}
                     disabled={saving}
                     style={{
-                      background: 'var(--accent-primary)',
+                      backgroundColor: '#10b981',
                       border: 'none',
-                      color: '#fff',
-                      borderRadius: '8px',
+                      color: '#020306',
+                      borderRadius: '4px',
                       padding: '8px 16px',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
-                      fontSize: '0.85rem',
-                      fontWeight: 500,
+                      fontSize: '0.72rem',
+                      fontFamily: 'var(--font-hud)',
+                      fontWeight: 'bold',
                       cursor: saving ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 0 10px rgba(16, 185, 129, 0.25)',
                       transition: 'all 0.2s'
                     }}
                   >
-                    <Save size={14} />
-                    <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+                    <Save size={12} />
+                    <span>{saving ? 'COMMITTING...' : 'COMMIT SAVES'}</span>
                   </button>
                 )}
               </div>
             </div>
 
             {/* Note Content Area */}
-            <div style={{ flexGrow: 1, overflowY: 'auto', padding: '24px 32px' }}>
+            <div style={{ flexGrow: 1, overflowY: 'auto', padding: '24px 32px', backgroundColor: 'rgba(2,3,6,0.2)' }} className="custom-scrollbar">
               {isEditing ? (
                 <textarea
                   value={noteContent}
@@ -557,13 +769,13 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                   style={{
                     width: '100%',
                     height: '100%',
-                    backgroundColor: 'rgba(0,0,0,0.2)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '8px',
+                    backgroundColor: 'rgba(2, 3, 6, 0.65)',
+                    border: '1.2px solid rgba(0, 246, 255, 0.25)',
+                    borderRadius: '4px',
                     padding: '16px',
                     color: '#e5e7eb',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.9rem',
+                    fontFamily: 'var(--font-tech)',
+                    fontSize: '0.85rem',
                     lineHeight: '1.5',
                     outline: 'none',
                     resize: 'none'
@@ -572,7 +784,7 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
               ) : (
                 <div 
                   className="markdown-body animate-fade-in"
-                  style={{ maxWidth: '800px', margin: '0 auto' }}
+                  style={{ maxWidth: '800px', margin: '0 auto', color: 'rgba(255,255,255,0.9)' }}
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(noteContent) }}
                 />
               )}
@@ -580,47 +792,52 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
           </>
         ) : activeMocHub ? (
           /* MOC Subject Hub Page */
-          <div style={{ padding: '32px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ padding: '32px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }} className="custom-scrollbar">
             
             {/* Hub Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <span style={{
-                  fontSize: '0.7rem',
-                  fontWeight: 700,
+                  fontSize: '0.62rem',
+                  fontWeight: 800,
                   padding: '3px 8px',
-                  borderRadius: '4px',
-                  backgroundColor: getSubjectColor(activeMocHub) + '20',
-                  color: getSubjectColor(activeMocHub)
+                  borderRadius: '2px',
+                  fontFamily: 'var(--font-hud)',
+                  border: `1px solid ${getSubjectColor(activeMocHub)}`,
+                  backgroundColor: getSubjectColor(activeMocHub) + '15',
+                  color: getSubjectColor(activeMocHub),
+                  letterSpacing: '0.5px'
                 }}>
-                  SUBJECT HUB
+                  SECTOR CENTRAL STATION
                 </span>
-                <h2 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-display)', color: '#fff', fontWeight: 700, marginTop: '8px' }}>
-                  {getSubjectCleanName(activeMocHub)} Hub
+                <h2 style={{ fontSize: '1.6rem', fontFamily: 'var(--font-hud)', color: '#fff', fontWeight: 900, marginTop: '12px', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                  {getSubjectCleanName(activeMocHub)} Core MOC
                 </h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
-                  {subjectNotes.length} concepts mapped | {subjectFlashcards.length} spaced recall cards available
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-tech)', fontSize: '0.78rem', marginTop: '6px' }}>
+                  {subjectNotes.length} COMPILATION FIELDS MAPPED | {subjectFlashcards.length} SM-2 RECALL INDEX CHUNKS ACTIVE
                 </p>
               </div>
             </div>
 
             {/* Hub Tab Bar */}
-            <div style={{ display: 'flex', gap: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', borderBottom: '1px solid rgba(0,246,255,0.15)', paddingBottom: '12px' }}>
               <button
                 onClick={() => setMocTab('concepts')}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: mocTab === 'concepts' ? 'var(--accent-primary)' : 'transparent',
-                  color: mocTab === 'concepts' ? '#fff' : 'var(--text-secondary)',
-                  border: mocTab === 'concepts' ? 'none' : '1px solid var(--border-color)',
-                  borderRadius: '6px',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
+                  backgroundColor: mocTab === 'concepts' ? 'rgba(0, 246, 255, 0.08)' : 'transparent',
+                  color: mocTab === 'concepts' ? '#00f6ff' : 'rgba(255, 255, 255, 0.5)',
+                  border: mocTab === 'concepts' ? '1px solid #00f6ff' : '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                  fontFamily: 'var(--font-hud)',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px',
                   cursor: 'pointer',
                   outline: 'none'
                 }}
               >
-                📄 Concept Cards ({subjectNotes.length})
+                📄 MAPPED ATOMICS ({subjectNotes.length})
               </button>
               <button
                 onClick={() => {
@@ -630,17 +847,19 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                 }}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: mocTab === 'flashcards' ? 'var(--accent-success)' : 'transparent',
-                  color: mocTab === 'flashcards' ? '#fff' : 'var(--text-secondary)',
-                  border: mocTab === 'flashcards' ? 'none' : '1px solid var(--border-color)',
-                  borderRadius: '6px',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
+                  backgroundColor: mocTab === 'flashcards' ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
+                  color: mocTab === 'flashcards' ? '#10b981' : 'rgba(255, 255, 255, 0.5)',
+                  border: mocTab === 'flashcards' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                  fontFamily: 'var(--font-hud)',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px',
                   cursor: 'pointer',
                   outline: 'none'
                 }}
               >
-                ⚡ Review Spaced Cards ({subjectFlashcards.length})
+                ⚡ SPACED MEMORY CARD ARRAY ({subjectFlashcards.length})
               </button>
             </div>
 
@@ -652,39 +871,39 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                     key={note.absolutePath}
                     onClick={() => loadNoteContent(note)}
                     style={{
-                      backgroundColor: 'rgba(255,255,255,0.01)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '8px',
+                      backgroundColor: 'rgba(2, 3, 6, 0.45)',
+                      border: '1.2px solid rgba(0, 246, 255, 0.15)',
+                      borderRadius: '4px',
                       padding: '16px',
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       minHeight: '140px',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.25s ease'
                     }}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.borderColor = getSubjectColor(activeMocHub);
-                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.02)';
+                      e.currentTarget.style.borderColor = '#00f6ff';
+                      e.currentTarget.style.backgroundColor = 'rgba(0, 246, 255, 0.03)';
                       e.currentTarget.style.transform = 'translateY(-2px)';
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--border-color)';
-                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.01)';
+                      e.currentTarget.style.borderColor = 'rgba(0, 246, 255, 0.15)';
+                      e.currentTarget.style.backgroundColor = 'rgba(2, 3, 6, 0.45)';
                       e.currentTarget.style.transform = 'none';
                     }}
                   >
                     <div>
-                      <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#fff', marginBottom: '8px' }}>
-                        {note.title}
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#fff', margin: '0 0 8px 0', fontFamily: 'var(--font-hud)', letterSpacing: '0.5px' }}>
+                        {note.title.toUpperCase()}
                       </h4>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.4' }}>
+                      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-tech)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.45', margin: 0 }}>
                         Mapped atomic concept. Open file to view full notes, mathematical equations, and active recall cards.
                       </p>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '12px' }}>
-                      <span>Size: {Math.round(note.size / 102.4) / 10} KB</span>
-                      <span>{new Date(note.updatedAt).toLocaleDateString()}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.62rem', fontFamily: 'var(--font-tech)', color: 'rgba(255,255,255,0.35)', marginTop: '12px', borderTop: '1px dashed rgba(255,255,255,0.06)', paddingTop: '8px' }}>
+                      <span>SIZE: {Math.round(note.size / 102.4) / 10} KB</span>
+                      <span>{new Date(note.updatedAt).toLocaleDateString().toUpperCase()}</span>
                     </div>
                   </div>
                 ))}
@@ -693,8 +912,8 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
               /* Spaced Cards study session */
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', padding: '20px 0' }}>
                 {subjectFlashcards.length === 0 ? (
-                  <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px', fontStyle: 'italic' }}>
-                    No spaced repetition cards found for this subject MOC.
+                  <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-tech)', padding: '40px', fontStyle: 'italic' }}>
+                    NO RECALL CARD REGISTRY CREATED FOR THIS SECTOR.
                   </div>
                 ) : (
                   <>
@@ -705,9 +924,9 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                         width: '100%',
                         maxWidth: '500px',
                         minHeight: '280px',
-                        backgroundColor: isFlipped ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-                        border: isFlipped ? '2px dashed var(--accent-success)' : '1px solid var(--border-color)',
-                        borderRadius: '12px',
+                        backgroundColor: isFlipped ? 'rgba(16, 185, 129, 0.04)' : 'rgba(2, 3, 6, 0.65)',
+                        border: isFlipped ? '1.5px dashed #10b981' : '1.2px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '4px',
                         padding: '30px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -717,7 +936,7 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                         transition: 'all 0.3s',
                         textAlign: 'center',
                         position: 'relative',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+                        boxShadow: '0 4px 25px rgba(0,0,0,0.35)'
                       }}
                       onMouseOver={(e) => {
                         e.currentTarget.style.transform = 'scale(1.01)';
@@ -730,30 +949,31 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                         position: 'absolute',
                         top: '12px',
                         right: '16px',
-                        fontSize: '0.7rem',
-                        color: 'var(--text-muted)',
+                        fontSize: '0.62rem',
+                        color: 'rgba(255,255,255,0.3)',
+                        fontFamily: 'var(--font-hud)',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
+                        letterSpacing: '0.8px'
                       }}>
-                        {isFlipped ? 'Answer View' : 'Question View'}
+                        {isFlipped ? '[ANSWER VIEW]' : '[QUESTION VIEW]'}
                       </span>
                       
-                      <div style={{ fontSize: '1.15rem', color: '#fff', lineHeight: '1.6', fontWeight: 500, padding: '0 10px' }}>
+                      <div style={{ fontSize: '1rem', fontFamily: 'var(--font-tech)', color: '#fff', lineHeight: '1.6', fontWeight: 500, padding: '0 10px' }}>
                         {isFlipped ? subjectFlashcards[cardIndex]?.answer : subjectFlashcards[cardIndex]?.question}
                       </div>
 
-                      <div style={{ fontSize: '0.75rem', color: isFlipped ? 'var(--accent-success)' : 'var(--text-muted)', position: 'absolute', bottom: '16px' }}>
-                        {isFlipped ? '⚡ Click to flip back to question' : '❓ Click to flip and show answer'}
+                      <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-hud)', color: isFlipped ? '#10b981' : 'rgba(255,255,255,0.35)', position: 'absolute', bottom: '16px', letterSpacing: '0.5px' }}>
+                        {isFlipped ? '⚡ CLICK TO FLIP BACK TO QUESTION' : '❓ CLICK TO FLIP AND SHOW ANSWER'}
                       </div>
                     </div>
 
                     {/* Progress indicator */}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                        Card {cardIndex + 1} of {subjectFlashcards.length}
+                      <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-tech)', color: 'rgba(255,255,255,0.5)' }}>
+                        CARD {cardIndex + 1} OF {subjectFlashcards.length}
                       </span>
                       <div style={{ width: '200px', height: '4px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
-                        <div style={{ width: `${((cardIndex + 1) / subjectFlashcards.length) * 100}%`, height: '100%', backgroundColor: 'var(--accent-success)', transition: 'width 0.2s' }}></div>
+                        <div style={{ width: `${((cardIndex + 1) / subjectFlashcards.length) * 100}%`, height: '100%', backgroundColor: '#10b981', transition: 'width 0.2s' }}></div>
                       </div>
                     </div>
 
@@ -767,33 +987,36 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                         disabled={cardIndex === 0}
                         style={{
                           padding: '8px 16px',
-                          backgroundColor: 'rgba(255,255,255,0.03)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '6px',
-                          color: cardIndex === 0 ? 'var(--text-muted)' : '#fff',
+                          backgroundColor: 'rgba(255,255,255,0.02)',
+                          border: '1.2px solid rgba(255,255,255,0.1)',
+                          borderRadius: '4px',
+                          color: cardIndex === 0 ? 'rgba(255,255,255,0.2)' : '#fff',
                           cursor: cardIndex === 0 ? 'not-allowed' : 'pointer',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
+                          fontSize: '0.72rem',
+                          fontFamily: 'var(--font-hud)',
+                          fontWeight: 'bold',
                           outline: 'none'
                         }}
                       >
-                        Previous Card
+                        PREVIOUS CARD
                       </button>
                       <button
                         onClick={() => setIsFlipped(!isFlipped)}
                         style={{
                           padding: '8px 24px',
-                          backgroundColor: 'var(--accent-success)',
+                          backgroundColor: '#10b981',
                           border: 'none',
-                          borderRadius: '6px',
-                          color: '#fff',
+                          borderRadius: '4px',
+                          color: '#020306',
                           cursor: 'pointer',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
+                          fontSize: '0.72rem',
+                          fontFamily: 'var(--font-hud)',
+                          fontWeight: 'bold',
+                          letterSpacing: '0.5px',
                           outline: 'none'
                         }}
                       >
-                        Flip Card
+                        FLIP CARD
                       </button>
                       <button
                         onClick={() => {
@@ -803,17 +1026,18 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
                         disabled={cardIndex === subjectFlashcards.length - 1}
                         style={{
                           padding: '8px 16px',
-                          backgroundColor: 'rgba(255,255,255,0.03)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: '6px',
-                          color: cardIndex === subjectFlashcards.length - 1 ? 'var(--text-muted)' : '#fff',
+                          backgroundColor: 'rgba(255,255,255,0.02)',
+                          border: '1.2px solid rgba(255,255,255,0.1)',
+                          borderRadius: '4px',
+                          color: cardIndex === subjectFlashcards.length - 1 ? 'rgba(255,255,255,0.2)' : '#fff',
                           cursor: cardIndex === subjectFlashcards.length - 1 ? 'not-allowed' : 'pointer',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
+                          fontSize: '0.72rem',
+                          fontFamily: 'var(--font-hud)',
+                          fontWeight: 'bold',
                           outline: 'none'
                         }}
                       >
-                        Next Card
+                        NEXT CARD
                       </button>
                     </div>
                   </>
@@ -828,18 +1052,17 @@ export default function NotesExplorer({ initialSelectedFile, clearInitialSelecte
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            color: 'var(--text-muted)',
-            gap: '12px'
+            color: 'rgba(255,255,255,0.3)',
+            gap: '16px'
           }}>
-            <FileText size={48} strokeWidth={1} style={{ color: 'var(--text-muted)', opacity: 0.5 }} />
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-secondary)' }}>
-              No Subject Selected
+            <FileText size={48} strokeWidth={1} style={{ color: 'rgba(0, 246, 255, 0.25)', filter: 'drop-shadow(0 0 10px rgba(0, 246, 255, 0.1))' }} />
+            <h3 style={{ fontFamily: 'var(--font-hud)', fontSize: '0.95rem', color: '#fff', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.8px', margin: 0 }}>
+              NO SECTOR SELECTED
             </h3>
-            <p style={{ fontSize: '0.85rem' }}>Select a subject MOC hub from the sidebar to start reviewing.</p>
+            <p style={{ fontSize: '0.75rem', fontFamily: 'var(--font-tech)', margin: 0 }}>Select a subject MOC hub from the sidebar to start reviewing.</p>
           </div>
         )}
       </div>
-
     </div>
   );
 }

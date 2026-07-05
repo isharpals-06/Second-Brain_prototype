@@ -12,7 +12,11 @@ import {
   CheckCircle, 
   FolderPlus,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 
 export default function AIChatConsole({ onSelectNote }) {
@@ -34,10 +38,90 @@ export default function AIChatConsole({ onSelectNote }) {
   const [saveStatus, setSaveStatus] = useState('');
   const [savedFileLink, setSavedFileLink] = useState(null);
 
+  const [isListening, setIsListening] = useState(false);
+  const [speakOutput, setSpeakOutput] = useState(true);
+  const [recognition, setRecognition] = useState(null);
+
   const messagesEndRef = useRef(null);
 
   // Fetch saved chat history files on mount
   const [ollamaModels, setOllamaModels] = useState([]);
+
+  // Initialize Speech Recognition Core
+  useEffect(() => {
+    try {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const rec = new SpeechRecognition();
+        rec.continuous = false;
+        rec.interimResults = false;
+        rec.lang = 'en-US';
+        
+        rec.onstart = () => {
+          setIsListening(true);
+        };
+        
+        rec.onend = () => {
+          setIsListening(false);
+        };
+        
+        rec.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          setInputMessage(prev => prev ? prev + ' ' + transcript : transcript);
+        };
+        
+        setRecognition(rec);
+      }
+    } catch (_) {}
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognition) {
+      alert("Speech recognition is not supported in this browser environment.");
+      return;
+    }
+    if (isListening) {
+      recognition.stop();
+    } else {
+      recognition.start();
+    }
+  };
+
+  const speakAARCResponse = (text) => {
+    try {
+      window.speechSynthesis.cancel(); // Abort any ongoing syntheses
+      
+      // Clean markdown tags, LaTeX, and code snippets from oral readouts
+      let cleanText = text
+        .replace(/`{3}[\s\S]*?`{3}/g, '[code block]')
+        .replace(/`[\s\S]*?`/g, '') 
+        .replace(/\$\$[\s\S]*?\$\$/g, '[math equation]')
+        .replace(/\$[\s\S]*?\$/g, '')
+        .replace(/[#*_-]/g, '')
+        .trim();
+
+      if (!cleanText) return;
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      const voices = window.speechSynthesis.getVoices();
+      
+      // Search for British accent profile
+      const britishVoice = voices.find(v => 
+        v.lang.includes('en-GB') || 
+        v.name.toLowerCase().includes('british') || 
+        v.name.toLowerCase().includes('hazel') || 
+        v.name.toLowerCase().includes('uk')
+      );
+      
+      if (britishVoice) {
+        utterance.voice = britishVoice;
+      }
+      utterance.pitch = 0.95;
+      utterance.rate = 1.05;
+      
+      window.speechSynthesis.speak(utterance);
+    } catch (_) {}
+  };
 
   const fetchChatHistory = async () => {
     try {
@@ -143,7 +227,15 @@ export default function AIChatConsole({ onSelectNote }) {
       if (data.error) {
         setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${data.error}` }]);
       } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.result || '' }]);
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: data.result || '',
+          routedModel: data.routedModel,
+          category: data.category
+        }]);
+        if (speakOutput && data.result) {
+          speakAARCResponse(data.result);
+        }
       }
     } catch (error) {
       setMessages(prev => [...prev, { role: 'assistant', content: `Error sending request: ${error.message}` }]);
@@ -259,60 +351,76 @@ export default function AIChatConsole({ onSelectNote }) {
   };
 
   return (
-    <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden', backgroundColor: '#020306' }}>
       
       {/* 1. Left Sidebar: Chat History Archive */}
       <div className="glass-panel" style={{
-        width: '260px',
-        borderRight: '1px solid var(--border-color)',
+        width: '280px',
+        borderRight: '1px solid rgba(0, 246, 255, 0.15)',
         borderTop: 'none',
         borderBottom: 'none',
         borderLeft: 'none',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: 'rgba(10,11,16,0.5)',
-        flexShrink: 0
+        backgroundColor: 'rgba(6,12,22,0.65)',
+        flexShrink: 0,
+        borderRadius: 0
       }}>
-        <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ padding: '20px 16px', borderBottom: '1px solid rgba(0, 246, 255, 0.15)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <History size={16} style={{ color: 'var(--accent-primary)' }} />
-            <h3 style={{ fontSize: '0.9rem', fontFamily: 'var(--font-display)', fontWeight: 600 }}>Chat Session Archive</h3>
+            <History size={15} style={{ color: '#ff6a00' }} />
+            <h3 style={{ fontSize: '0.75rem', fontFamily: 'var(--font-hud)', fontWeight: 800, color: '#fff', letterSpacing: '1px', textTransform: 'uppercase' }}>
+              Archive Indexes
+            </h3>
           </div>
+          
           <button 
             onClick={startNewChat}
             style={{
               width: '100%',
-              backgroundColor: 'var(--accent-primary)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
+              backgroundColor: 'rgba(0, 246, 255, 0.05)',
+              color: '#00f6ff',
+              border: '1.2px solid #00f6ff',
+              borderRadius: '4px',
               padding: '10px',
-              fontSize: '0.85rem',
-              fontWeight: 600,
+              fontSize: '0.7rem',
+              fontWeight: 'bold',
+              fontFamily: 'var(--font-hud)',
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px',
-              transition: 'opacity 0.2s'
+              gap: '8px',
+              boxShadow: '0 0 10px rgba(0,246,255,0.1)',
+              transition: 'all 0.25s'
             }}
-            onMouseOver={e => e.currentTarget.style.opacity = 0.9}
-            onMouseOut={e => e.currentTarget.style.opacity = 1}
+            onMouseOver={e => {
+              e.currentTarget.style.backgroundColor = '#00f6ff';
+              e.currentTarget.style.color = '#020306';
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(0,246,255,0.35)';
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.backgroundColor = 'rgba(0, 246, 255, 0.05)';
+              e.currentTarget.style.color = '#00f6ff';
+              e.currentTarget.style.boxShadow = '0 0 10px rgba(0,246,255,0.1)';
+            }}
           >
-            <Plus size={14} />
-            <span>New Chat Session</span>
+            <Plus size={12} />
+            <span>New Chat Array</span>
           </button>
         </div>
 
         {/* Saved List */}
-        <div style={{ flexGrow: 1, overflowY: 'auto', padding: '10px' }}>
+        <div style={{ flexGrow: 1, overflowY: 'auto', padding: '12px' }} className="custom-scrollbar">
           {chatHistory.length === 0 ? (
-            <div style={{ padding: '20px 10px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-              No archived chat notes found in vault yet.
+            <div style={{ padding: '24px 10px', textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: '0.68rem', fontFamily: 'var(--font-tech)' }}>
+              NO DATA INGESTED IN ARCHIVES
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {chatHistory.map((chat) => (
                 <button
                   key={chat.absolutePath}
@@ -321,43 +429,59 @@ export default function AIChatConsole({ onSelectNote }) {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'flex-start',
-                    gap: '4px',
+                    gap: '6px',
                     width: '100%',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    backgroundColor: 'rgba(255,255,255,0.01)',
+                    padding: '12px 14px',
+                    borderRadius: '4px',
+                    border: '1px solid rgba(0, 246, 255, 0.15)',
+                    backgroundColor: 'rgba(6, 12, 22, 0.45)',
                     textAlign: 'left',
                     cursor: 'pointer',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    position: 'relative',
+                    overflow: 'hidden'
                   }}
                   onMouseOver={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border-color-active)';
-                    e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                    e.currentTarget.style.borderColor = '#ff6a00';
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 106, 0, 0.04)';
+                    e.currentTarget.style.boxShadow = '0 0 10px rgba(255, 106, 0, 0.1)';
                   }}
                   onMouseOut={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border-color)';
-                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.01)';
+                    e.currentTarget.style.borderColor = 'rgba(0, 246, 255, 0.15)';
+                    e.currentTarget.style.backgroundColor = 'rgba(6, 12, 22, 0.45)';
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
+                  {/* Neon Left Indicator */}
+                  <div style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: '2px',
+                    backgroundColor: chat.topic === 'GENERAL' ? '#00f6ff' : '#ff6a00'
+                  }} />
+
                   <span style={{ 
-                    fontSize: '0.8rem', 
+                    fontSize: '0.78rem', 
                     color: '#fff', 
-                    fontWeight: 500, 
+                    fontWeight: 600,
+                    fontFamily: 'var(--font-tech)',
                     display: '-webkit-box', 
                     WebkitLineClamp: 2, 
                     WebkitBoxOrient: 'vertical', 
-                    overflow: 'hidden' 
+                    overflow: 'hidden',
+                    lineHeight: '1.3'
                   }}>
                     {chat.title}
                   </span>
                   
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.62rem', color: 'rgba(255,255,255,0.45)', fontFamily: 'var(--font-tech)' }}>
                     <span style={{ 
-                      color: chat.topic === 'GENERAL' ? 'var(--text-muted)' : 'var(--accent-warning)', 
-                      fontWeight: chat.topic === 'GENERAL' ? 400 : 600 
+                      color: chat.topic === 'GENERAL' ? '#00f6ff' : '#ff6a00', 
+                      fontWeight: 700 
                     }}>
-                      {chat.topic}
+                      [{chat.topic}]
                     </span>
                     <span>
                       {new Date(chat.updatedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
@@ -375,17 +499,21 @@ export default function AIChatConsole({ onSelectNote }) {
         
         {/* Chat Panel Header (Config) */}
         <div style={{
-          padding: '12px 24px',
-          borderBottom: '1px solid var(--border-color)',
+          padding: '16px 24px',
+          borderBottom: '1px solid rgba(0, 246, 255, 0.15)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          backgroundColor: 'rgba(10,11,16,0.2)',
+          backgroundColor: 'rgba(6,12,22,0.85)',
           zIndex: 10
         }}>
           <div>
-            <h2 style={{ fontSize: '1.05rem', fontFamily: 'var(--font-display)', fontWeight: 600 }}>AI Chat Console</h2>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Chat session autosaves directly into your local vault</span>
+            <h2 style={{ fontSize: '0.9rem', fontFamily: 'var(--font-hud)', fontWeight: 900, color: '#fff', letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>
+              Cognitive Core Chat Console
+            </h2>
+            <span style={{ fontSize: '0.62rem', color: '#ff6a00', fontFamily: 'var(--font-tech)', letterSpacing: '0.8px' }}>
+              AUTOSAVING ACTIVE TO Obsidian note VAULT
+            </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -394,13 +522,15 @@ export default function AIChatConsole({ onSelectNote }) {
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
               style={{
-                backgroundColor: 'var(--bg-secondary)',
-                border: '1px solid var(--border-color)',
-                color: '#fff',
-                borderRadius: '6px',
-                padding: '6px 10px',
-                fontSize: '0.8rem',
-                outline: 'none'
+                backgroundColor: 'rgba(2, 3, 6, 0.8)',
+                border: '1.2px solid rgba(0, 246, 255, 0.25)',
+                color: '#00f6ff',
+                borderRadius: '4px',
+                padding: '6px 12px',
+                fontSize: '0.72rem',
+                fontFamily: 'var(--font-tech)',
+                outline: 'none',
+                cursor: 'pointer'
               }}
             >
               <option value="gemini">Gemini API</option>
@@ -414,13 +544,15 @@ export default function AIChatConsole({ onSelectNote }) {
               value={model}
               onChange={(e) => setModel(e.target.value)}
               style={{
-                backgroundColor: 'var(--bg-secondary)',
-                border: '1px solid var(--border-color)',
-                color: '#fff',
-                borderRadius: '6px',
-                padding: '6px 10px',
-                fontSize: '0.8rem',
-                outline: 'none'
+                backgroundColor: 'rgba(2, 3, 6, 0.8)',
+                border: '1.2px solid rgba(0, 246, 255, 0.25)',
+                color: '#00f6ff',
+                borderRadius: '4px',
+                padding: '6px 12px',
+                fontSize: '0.72rem',
+                fontFamily: 'var(--font-tech)',
+                outline: 'none',
+                cursor: 'pointer'
               }}
             >
               {getModelsForProvider(provider).map(m => (
@@ -432,17 +564,18 @@ export default function AIChatConsole({ onSelectNote }) {
             {provider !== 'ollama' && (
               <input
                 type="password"
-                placeholder="Custom API Key Override"
+                placeholder="CUSTOM KEY OVERRIDE"
                 value={apiKeyOverride}
                 onChange={(e) => setApiKeyOverride(e.target.value)}
                 style={{
-                  backgroundColor: 'rgba(0,0,0,0.2)',
-                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  border: '1.2px solid rgba(0, 246, 255, 0.25)',
                   color: '#fff',
-                  borderRadius: '6px',
+                  borderRadius: '4px',
                   padding: '6px 10px',
-                  fontSize: '0.8rem',
-                  width: '120px',
+                  fontSize: '0.72rem',
+                  fontFamily: 'var(--font-tech)',
+                  width: '130px',
                   outline: 'none'
                 }}
               />
@@ -454,36 +587,52 @@ export default function AIChatConsole({ onSelectNote }) {
                 <button
                   onClick={triggerSaveChat}
                   style={{
-                    backgroundColor: 'rgba(16,185,129,0.1)',
-                    color: 'var(--accent-success)',
-                    border: '1px solid rgba(16,185,129,0.3)',
-                    borderRadius: '6px',
+                    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                    color: '#10b981',
+                    border: '1.2px solid #10b981',
+                    borderRadius: '4px',
                     padding: '6px 12px',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
+                    fontSize: '0.72rem',
+                    fontFamily: 'var(--font-hud)',
+                    fontWeight: 'bold',
+                    letterSpacing: '1px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px'
+                    gap: '6px',
+                    boxShadow: '0 0 10px rgba(16,185,129,0.15)',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.backgroundColor = '#10b981';
+                    e.currentTarget.style.color = '#020306';
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.05)';
+                    e.currentTarget.style.color = '#10b981';
                   }}
                 >
                   <Save size={12} />
-                  <span>Save Session</span>
+                  <span>SAVE TRANSCRIPT</span>
                 </button>
 
                 <button
                   onClick={startNewChat}
                   style={{
                     backgroundColor: 'transparent',
-                    color: 'var(--text-muted)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '6px',
-                    padding: '6px 8px',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer'
+                    color: 'rgba(255,255,255,0.4)',
+                    border: '1.2px solid rgba(255,255,255,0.2)',
+                    borderRadius: '4px',
+                    padding: '6px 10px',
+                    fontSize: '0.72rem',
+                    fontFamily: 'var(--font-hud)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
                   }}
+                  onMouseOver={e => e.currentTarget.style.borderColor = '#ff5500'}
+                  onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'}
                 >
-                  Clear
+                  CLEAR
                 </button>
               </>
             )}
@@ -491,7 +640,7 @@ export default function AIChatConsole({ onSelectNote }) {
         </div>
 
         {/* Messages Stream */}
-        <div style={{ flexGrow: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ flexGrow: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }} className="custom-scrollbar">
           {messages.length === 0 ? (
             <div style={{ 
               display: 'flex', 
@@ -499,17 +648,19 @@ export default function AIChatConsole({ onSelectNote }) {
               alignItems: 'center', 
               justifyContent: 'center', 
               flexGrow: 1, 
-              color: 'var(--text-muted)',
+              color: 'rgba(255, 255, 255, 0.3)',
               textAlign: 'center',
-              gap: '12px',
-              maxWidth: '450px',
+              gap: '16px',
+              maxWidth: '480px',
               margin: '0 auto'
             }}>
-              <MessageSquare size={36} style={{ color: 'var(--accent-primary)', opacity: 0.5 }} />
+              <MessageSquare size={36} style={{ color: '#00f6ff', opacity: 0.6 }} />
               <div>
-                <h4 style={{ color: '#fff', fontSize: '1rem', fontWeight: 600, marginBottom: '6px' }}>Start a Future-Proof Chat</h4>
-                <p style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
-                  Ask questions, debug, or brainstorm. When finished, hit **Save Session** to generate an automatic textbook note with flashcards inside your Obsidian vault.
+                <h4 style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 800, fontFamily: 'var(--font-hud)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  A.R.C. COPROCESSOR INTERACTIVE ARRAY
+                </h4>
+                <p style={{ fontSize: '0.75rem', lineHeight: '1.5', fontFamily: 'var(--font-tech)', color: 'rgba(255,255,255,0.5)' }}>
+                  Submit thoughts, debug concepts, or plan architectures. Synthesizing saves active sessions as concept nodes directly into subjects with automated cards.
                 </p>
               </div>
             </div>
@@ -521,39 +672,75 @@ export default function AIChatConsole({ onSelectNote }) {
                   display: 'flex',
                   justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
                   width: '100%',
-                  animation: 'fadeIn 0.2s ease-out'
+                  animation: 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards'
                 }}
               >
                 <div 
-                  className={msg.role === 'user' ? '' : 'glass-panel'}
+                  className="glass-panel"
                   style={{
-                    maxWidth: '80%',
-                    padding: '14px 18px',
-                    borderRadius: '12px',
-                    border: msg.role === 'user' ? 'none' : '1px solid var(--border-color)',
-                    backgroundColor: msg.role === 'user' ? 'var(--accent-primary)' : 'rgba(255,255,255,0.02)',
+                    maxWidth: '85%',
+                    padding: '16px 20px',
+                    borderRadius: '4px',
+                    border: msg.role === 'user' ? '1px solid rgba(0, 246, 255, 0.3)' : '1px solid rgba(255, 106, 0, 0.25)',
+                    backgroundColor: msg.role === 'user' ? 'rgba(0, 246, 255, 0.02)' : 'rgba(6, 12, 22, 0.85)',
                     color: '#fff',
-                    boxShadow: 'var(--shadow)',
-                    lineHeight: '1.5',
-                    fontSize: '0.9rem',
-                    whiteSpace: 'pre-wrap'
+                    boxShadow: msg.role === 'user' ? '0 0 15px rgba(0, 246, 255, 0.03)' : '0 0 20px rgba(255, 106, 0, 0.05)',
+                    lineHeight: '1.6',
+                    fontSize: '0.88rem',
+                    position: 'relative'
                   }}
                 >
+                  {/* Glowing left accent border for JARVIS */}
+                  {msg.role !== 'user' && (
+                    <div style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: '3px',
+                      backgroundColor: '#ff6a00'
+                    }} />
+                  )}
+
                   {/* Role Header */}
-                  <span style={{ 
-                    display: 'block', 
-                    fontSize: '0.7rem', 
-                    fontWeight: 700, 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.5px', 
-                    color: msg.role === 'user' ? 'rgba(255,255,255,0.7)' : 'var(--accent-primary)',
-                    marginBottom: '6px'
+                  <div style={{ 
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '10px',
+                    gap: '24px',
+                    borderBottom: '1px dashed rgba(255,255,255,0.08)',
+                    paddingBottom: '6px'
                   }}>
-                    {msg.role === 'user' ? 'You' : 'Assistant'}
-                  </span>
+                    <span style={{ 
+                      fontSize: '0.62rem', 
+                      fontWeight: 800, 
+                      fontFamily: 'var(--font-hud)',
+                      textTransform: 'uppercase', 
+                      letterSpacing: '1px', 
+                      color: msg.role === 'user' ? '#00f6ff' : '#ff6a00'
+                    }}>
+                      {msg.role === 'user' ? '[USER INGEST_FEED]' : '[J.A.R.V.I.S. RESPONSE]'}
+                    </span>
+                    {msg.routedModel && (
+                      <span style={{
+                        fontSize: '0.55rem',
+                        fontWeight: 'bold',
+                        backgroundColor: 'rgba(255,106,0,0.1)',
+                        color: '#ff6a00',
+                        border: '1px solid rgba(255,106,0,0.2)',
+                        padding: '2px 6px',
+                        borderRadius: '2px',
+                        fontFamily: 'var(--font-tech)',
+                        letterSpacing: '0.5px'
+                      }}>
+                        ROUTED: {msg.routedModel} | {msg.category}
+                      </span>
+                    )}
+                  </div>
                   
                   {/* Content block */}
-                  <div style={{ color: msg.role === 'user' ? '#fff' : '#e5e7eb' }}>
+                  <div style={{ color: '#e5e7eb', whiteSpace: 'pre-wrap' }}>
                     {msg.content}
                   </div>
                 </div>
@@ -562,8 +749,26 @@ export default function AIChatConsole({ onSelectNote }) {
           )}
           {sending && (
             <div style={{ display: 'flex', justifyContent: 'flex-start', width: '100%' }}>
-              <div className="glass-panel" style={{ padding: '14px 18px', borderRadius: '12px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                <span>AI is formulating response...</span>
+              <div className="glass-panel" style={{
+                padding: '14px 20px',
+                borderRadius: '4px',
+                color: '#ff6a00',
+                fontSize: '0.72rem',
+                fontFamily: 'var(--font-tech)',
+                border: '1px dashed rgba(255, 106, 0, 0.3)',
+                backgroundColor: 'rgba(255, 106, 0, 0.02)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: '#ff6a00',
+                  animation: 'pulse-glow 1.2s infinite alternate'
+                }} />
+                <span>COPROCESSOR FORMULATING KNOWLEDGE GRAPH RESPONSE...</span>
               </div>
             </div>
           )}
@@ -571,12 +776,36 @@ export default function AIChatConsole({ onSelectNote }) {
         </div>
 
         {/* Chat Input form */}
-        <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', backgroundColor: 'rgba(10,11,16,0.3)' }}>
-          <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ padding: '20px 24px', borderTop: '1px solid rgba(0, 246, 255, 0.15)', backgroundColor: 'rgba(6,12,22,0.85)' }}>
+          <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {/* Mic input trigger */}
+            <button
+              type="button"
+              onClick={toggleListening}
+              style={{
+                backgroundColor: isListening ? 'rgba(255, 85, 0, 0.1)' : 'rgba(0, 246, 255, 0.02)',
+                color: isListening ? '#ff5500' : '#00f6ff',
+                border: isListening ? '1.5px solid #ff5500' : '1.2px solid rgba(0, 246, 255, 0.25)',
+                borderRadius: '4px',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.25s ease',
+                boxShadow: isListening ? '0 0 15px rgba(255, 85, 0, 0.3)' : 'none',
+                outline: 'none'
+              }}
+              title={isListening ? "Listening verbally... Click to pause" : "Activate Verbal Input"}
+            >
+              {isListening ? <Mic size={16} /> : <Mic size={16} />}
+            </button>
+
             <textarea
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder={`Query ${model} (Press Enter to send, Shift+Enter for new line)...`}
+              placeholder={`Query ${model} (Enter to send, Shift+Enter for new line)...`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -585,36 +814,72 @@ export default function AIChatConsole({ onSelectNote }) {
               }}
               style={{
                 flexGrow: 1,
-                backgroundColor: 'rgba(0,0,0,0.2)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                padding: '12px',
+                backgroundColor: 'rgba(2, 3, 6, 0.65)',
+                border: '1.2px solid rgba(0, 246, 255, 0.25)',
+                borderRadius: '4px',
+                padding: '12px 14px',
                 color: '#fff',
-                fontSize: '0.85rem',
+                fontSize: '0.82rem',
+                fontFamily: 'var(--font-tech)',
                 outline: 'none',
                 resize: 'none',
-                height: '42px',
-                lineHeight: '1.4'
+                height: '44px',
+                lineHeight: '1.4',
+                transition: 'border-color 0.2s, box-shadow 0.2s'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#00f6ff';
+                e.target.style.boxShadow = '0 0 12px rgba(0, 246, 255, 0.15)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'rgba(0, 246, 255, 0.25)';
+                e.target.style.boxShadow = 'none';
               }}
             />
+
+            {/* TTS Mute/Speak switch */}
+            <button
+              type="button"
+              onClick={() => setSpeakOutput(!speakOutput)}
+              style={{
+                backgroundColor: speakOutput ? 'rgba(0, 246, 255, 0.02)' : 'transparent',
+                color: speakOutput ? '#00f6ff' : 'rgba(255,255,255,0.25)',
+                border: speakOutput ? '1.2px solid rgba(0, 246, 255, 0.25)' : '1.2px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '4px',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                outline: 'none'
+              }}
+              title={speakOutput ? "A.R.C. Speaks Out Loud (Mute Verbal Mode)" : "A.R.C. Muted (Enable Voice Output)"}
+            >
+              {speakOutput ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            </button>
+
             <button
               type="submit"
               disabled={!inputMessage.trim() || sending}
               style={{
-                backgroundColor: inputMessage.trim() ? 'var(--accent-primary)' : 'transparent',
-                color: inputMessage.trim() ? '#fff' : 'var(--text-muted)',
-                border: inputMessage.trim() ? 'none' : '1px solid var(--border-color)',
-                borderRadius: '8px',
-                width: '42px',
-                height: '42px',
+                backgroundColor: inputMessage.trim() ? '#ff6a00' : 'transparent',
+                color: inputMessage.trim() ? '#020306' : 'rgba(255,255,255,0.25)',
+                border: inputMessage.trim() ? 'none' : '1.2px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '4px',
+                width: '44px',
+                height: '44px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: inputMessage.trim() ? 'pointer' : 'not-allowed',
-                transition: 'all 0.2s'
+                boxShadow: inputMessage.trim() ? '0 0 10px rgba(255, 106, 0, 0.3)' : 'none',
+                transition: 'all 0.2s',
+                outline: 'none'
               }}
             >
-              <Send size={16} />
+              <Send size={15} />
             </button>
           </form>
         </div>
@@ -624,46 +889,52 @@ export default function AIChatConsole({ onSelectNote }) {
           <div style={{
             position: 'absolute',
             inset: 0,
-            backgroundColor: 'rgba(10, 11, 16, 0.8)',
+            backgroundColor: 'rgba(2, 3, 6, 0.85)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 100,
-            backdropFilter: 'blur(4px)'
+            backdropFilter: 'blur(6px)'
           }}>
             <div className="glass-panel animate-fade-in" style={{
               width: '90%',
-              maxWidth: '450px',
-              padding: '24px',
+              maxWidth: '460px',
+              padding: '28px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '16px',
-              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)'
+              gap: '18px',
+              border: '1.2px solid rgba(255, 106, 0, 0.35)',
+              backgroundColor: 'rgba(6, 12, 22, 0.95)',
+              boxShadow: '0 0 30px rgba(255, 106, 0, 0.15)',
+              borderRadius: '4px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Sparkles size={18} style={{ color: 'var(--accent-warning)' }} />
-                <h3 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-display)', fontWeight: 600 }}>Save Chat to Obsidian</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px dashed rgba(255,255,255,0.1)', paddingBottom: '12px' }}>
+                <Sparkles size={16} style={{ color: '#ff6a00' }} />
+                <h3 style={{ fontSize: '0.85rem', fontFamily: 'var(--font-hud)', fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  Synthesize Vault Note
+                </h3>
               </div>
 
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                This will automatically summarize key concepts, format equations in LaTeX, and append flashcards.
+              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-tech)', lineHeight: '1.5', margin: 0 }}>
+                This routine summarizes the key concepts from this thread, generates standard LaTeX code for formulas, and writes active recall card indices to your Obsidian vault.
               </p>
 
               {/* Title input */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Note File Title</label>
+                <label style={{ fontSize: '0.62rem', fontWeight: 800, color: '#00f6ff', fontFamily: 'var(--font-hud)', letterSpacing: '0.8px' }}>TARGET FILE TITLE</label>
                 <input
                   type="text"
-                  placeholder="e.g. Virtual Memory paging"
+                  placeholder="e.g. Semaphores synchronization"
                   value={saveTitle}
                   onChange={(e) => setSaveTitle(e.target.value)}
                   style={{
-                    backgroundColor: 'var(--bg-secondary)',
-                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'rgba(2, 3, 6, 0.65)',
+                    border: '1.2px solid rgba(0, 246, 255, 0.25)',
                     color: '#fff',
-                    borderRadius: '6px',
-                    padding: '10px',
-                    fontSize: '0.85rem',
+                    borderRadius: '4px',
+                    padding: '10px 12px',
+                    fontSize: '0.8rem',
+                    fontFamily: 'var(--font-tech)',
                     outline: 'none'
                   }}
                 />
@@ -678,32 +949,33 @@ export default function AIChatConsole({ onSelectNote }) {
                   onChange={(e) => setIsStaging(e.target.checked)}
                   style={{ cursor: 'pointer' }}
                 />
-                <label htmlFor="staging-check" style={{ fontSize: '0.8rem', color: '#fff', cursor: 'pointer', fontWeight: 500 }}>
-                  Store in Academic Inbox Incubator
+                <label htmlFor="staging-check" style={{ fontSize: '0.72rem', color: '#fff', cursor: 'pointer', fontWeight: 700, fontFamily: 'var(--font-hud)', letterSpacing: '0.5px' }}>
+                  STORE IN ACADEMIC INCUBATOR INBOX
                 </label>
               </div>
 
               {/* Staging topic details */}
               {isStaging && (
                 <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Inbox Topic Folder Name</label>
+                  <label style={{ fontSize: '0.62rem', fontWeight: 800, color: '#ff6a00', fontFamily: 'var(--font-hud)', letterSpacing: '0.8px' }}>INBOX SEGMENT NAME</label>
                   <input
                     type="text"
-                    placeholder="e.g. Cryptography"
+                    placeholder="e.g. Operating_Systems"
                     value={saveTopic}
                     onChange={(e) => setSaveTopic(e.target.value)}
                     style={{
-                      backgroundColor: 'var(--bg-secondary)',
-                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'rgba(2, 3, 6, 0.65)',
+                      border: '1.2px solid rgba(255, 106, 0, 0.25)',
                       color: '#fff',
-                      borderRadius: '6px',
-                      padding: '10px',
-                      fontSize: '0.85rem',
+                      borderRadius: '4px',
+                      padding: '10px 12px',
+                      fontSize: '0.8rem',
+                      fontFamily: 'var(--font-tech)',
                       outline: 'none'
                     }}
                   />
-                  <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                    Flashcards in staging will remain disabled until this topic graduates.
+                  <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-tech)' }}>
+                    Filing inbox items will stay unreviewed until processed by the Librarian.
                   </span>
                 </div>
               )}
@@ -711,17 +983,19 @@ export default function AIChatConsole({ onSelectNote }) {
               {/* Status messages */}
               {saveStatus && (
                 <div style={{ 
-                  fontSize: '0.8rem', 
-                  color: saveStatus.includes('success') ? 'var(--accent-success)' : 'var(--text-secondary)',
+                  fontSize: '0.72rem', 
+                  color: saveStatus.includes('success') ? '#10b981' : '#ff6a00',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
                   backgroundColor: 'rgba(255,255,255,0.02)',
-                  padding: '10px',
-                  borderRadius: '6px'
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  padding: '10px 12px',
+                  borderRadius: '2px',
+                  fontFamily: 'var(--font-tech)'
                 }}>
-                  {saveStatus.includes('success') && <CheckCircle size={14} style={{ color: 'var(--accent-success)' }} />}
-                  <span>{saveStatus}</span>
+                  {saveStatus.includes('success') && <CheckCircle size={12} style={{ color: '#10b981' }} />}
+                  <span>{saveStatus.toUpperCase()}</span>
                 </div>
               )}
 
@@ -732,17 +1006,20 @@ export default function AIChatConsole({ onSelectNote }) {
                   disabled={saveStatus.includes('synthesis')}
                   style={{
                     flexGrow: 2,
-                    backgroundColor: 'var(--accent-primary)',
-                    color: '#fff',
+                    backgroundColor: '#ff6a00',
+                    color: '#020306',
                     border: 'none',
-                    borderRadius: '6px',
+                    borderRadius: '4px',
                     padding: '10px',
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    cursor: saveStatus.includes('synthesis') ? 'not-allowed' : 'pointer'
+                    fontWeight: 'bold',
+                    fontFamily: 'var(--font-hud)',
+                    fontSize: '0.75rem',
+                    letterSpacing: '1px',
+                    cursor: saveStatus.includes('synthesis') ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 0 10px rgba(255,106,0,0.25)'
                   }}
                 >
-                  Synthesize & Save
+                  EXECUTE SYNTHESIS
                 </button>
                 <button
                   onClick={() => setShowSaveModal(false)}
@@ -750,15 +1027,16 @@ export default function AIChatConsole({ onSelectNote }) {
                   style={{
                     flexGrow: 1,
                     backgroundColor: 'transparent',
-                    color: 'var(--text-muted)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '6px',
+                    color: 'rgba(255,255,255,0.5)',
+                    border: '1.2px solid rgba(255,255,255,0.2)',
+                    borderRadius: '4px',
                     padding: '10px',
-                    fontSize: '0.85rem',
+                    fontFamily: 'var(--font-hud)',
+                    fontSize: '0.75rem',
                     cursor: 'pointer'
                   }}
                 >
-                  Cancel
+                  ABORT
                 </button>
               </div>
 
@@ -770,21 +1048,25 @@ export default function AIChatConsole({ onSelectNote }) {
                     setShowSaveModal(false);
                   }}
                   style={{
-                    backgroundColor: 'rgba(6,182,212,0.1)',
-                    color: 'var(--accent-info)',
-                    border: '1px solid rgba(6,182,212,0.3)',
-                    borderRadius: '6px',
+                    backgroundColor: 'rgba(0, 246, 255, 0.05)',
+                    color: '#00f6ff',
+                    border: '1px solid #00f6ff',
+                    borderRadius: '4px',
                     padding: '10px',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                    fontFamily: 'var(--font-hud)',
+                    fontWeight: 'bold',
+                    letterSpacing: '1px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '4px'
+                    gap: '6px',
+                    boxShadow: '0 0 10px rgba(0,246,255,0.2)',
+                    marginTop: '4px'
                   }}
                 >
-                  <span>Open Note in Vault</span>
+                  <span>DE-SHROUD ATOM NOTE</span>
                   <ArrowRight size={12} />
                 </button>
               )}

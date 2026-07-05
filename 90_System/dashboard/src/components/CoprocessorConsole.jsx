@@ -363,20 +363,23 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', backgroundColor: '#020306' }}>
       {/* Top Header */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '12px 24px',
-        borderBottom: '1px solid var(--border-color)',
+        padding: '16px 24px',
+        borderBottom: '1px solid rgba(0, 246, 255, 0.15)',
+        backgroundColor: 'rgba(6,12,22,0.85)',
         zIndex: 10
       }}>
         <div>
-          <h2 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-display)', fontWeight: 600 }}>Multi-AI Thought Coprocessor</h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            Refine notes, extract flashcards, and split lectures using Gemini, Ollama, or OpenAI
+          <h2 style={{ fontSize: '0.95rem', fontFamily: 'var(--font-hud)', fontWeight: 900, color: '#fff', letterSpacing: '1px', textTransform: 'uppercase', margin: 0 }}>
+            Multi-AI Thought Coprocessor Core
+          </h2>
+          <p style={{ fontSize: '0.62rem', color: '#ff6a00', fontFamily: 'var(--font-tech)', letterSpacing: '0.8px', margin: '4px 0 0 0' }}>
+            ACTIVE COGNITIVE ARCHITECTURE • SYNTHESIS MODULE
           </p>
         </div>
       </div>
@@ -389,58 +392,66 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
           width: '50%',
           display: 'flex',
           flexDirection: 'column',
-          borderRight: '1px solid var(--border-color)',
+          borderRight: '1px solid rgba(0, 246, 255, 0.15)',
           height: '100%',
-          backgroundColor: '#0c0d12',
+          backgroundColor: 'rgba(6, 12, 22, 0.55)',
           padding: '20px',
           overflowY: 'auto',
-          gap: '16px'
-        }}>
+          gap: '20px'
+        }} className="custom-scrollbar">
+          
           {/* AI Settings Block */}
-          <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h3 style={{ fontSize: '0.9rem', fontFamily: 'var(--font-display)', color: '#fff', fontWeight: 600 }}>1. Configure AI Provider</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div className="glass-panel" style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px', border: '1.2px solid rgba(0, 246, 255, 0.2)' }}>
+            <h3 style={{ fontSize: '0.68rem', fontFamily: 'var(--font-hud)', color: '#00f6ff', fontWeight: 800, letterSpacing: '0.8px', borderBottom: '1px dashed rgba(0, 246, 255, 0.15)', paddingBottom: '8px', margin: 0 }}>
+              [COPROCESSOR ARBITRATION]
+            </h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Provider</label>
+                <label style={{ display: 'block', fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', marginBottom: '6px' }}>PROVIDER</label>
                 <select
                   value={provider}
                   onChange={(e) => setProvider(e.target.value)}
                   style={{
                     width: '100%',
-                    backgroundColor: 'var(--bg-secondary)',
-                    border: '1px solid var(--border-color)',
-                    color: '#fff',
-                    borderRadius: '6px',
+                    backgroundColor: 'rgba(2, 3, 6, 0.8)',
+                    border: '1.2px solid rgba(0, 246, 255, 0.25)',
+                    color: '#00f6ff',
+                    borderRadius: '4px',
                     padding: '8px 10px',
-                    fontSize: '0.85rem',
-                    outline: 'none'
+                    fontSize: '0.75rem',
+                    fontFamily: 'var(--font-tech)',
+                    outline: 'none',
+                    cursor: 'pointer'
                   }}
                 >
-                  <option value="gemini" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>Gemini API</option>
-                  <option value="ollama" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>Ollama (Local LLM)</option>
-                  <option value="openai" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>OpenAI API</option>
-                  <option value="anthropic" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>Anthropic API</option>
+                  <option value="gemini">Gemini API</option>
+                  <option value="ollama">Ollama (Local LLM)</option>
+                  <option value="openai">OpenAI API</option>
+                  <option value="anthropic">Anthropic API</option>
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Model</label>
+                <label style={{ display: 'block', fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', marginBottom: '6px' }}>MODEL ARRAY</label>
                 {provider === 'ollama' && ollamaModels.length > 0 ? (
                   <select
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
                     style={{
                       width: '100%',
-                      backgroundColor: 'var(--bg-secondary)',
-                      border: '1px solid var(--border-color)',
-                      color: '#fff',
-                      borderRadius: '6px',
+                      backgroundColor: 'rgba(2, 3, 6, 0.8)',
+                      border: '1.2px solid rgba(0, 246, 255, 0.25)',
+                      color: '#00f6ff',
+                      borderRadius: '4px',
                       padding: '8px 10px',
-                      fontSize: '0.85rem',
-                      outline: 'none'
+                      fontSize: '0.75rem',
+                      fontFamily: 'var(--font-tech)',
+                      outline: 'none',
+                      cursor: 'pointer'
                     }}
                   >
                     {ollamaModels.map(m => (
-                      <option key={m.id} value={m.id} style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>
+                      <option key={m.id} value={m.id}>
                         {m.name}
                       </option>
                     ))}
@@ -452,12 +463,13 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
                     onChange={(e) => setModel(e.target.value)}
                     style={{
                       width: '100%',
-                      backgroundColor: 'var(--bg-primary)',
-                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'rgba(2, 3, 6, 0.8)',
+                      border: '1.2px solid rgba(0, 246, 255, 0.25)',
                       color: '#fff',
-                      borderRadius: '6px',
+                      borderRadius: '4px',
                       padding: '8px 10px',
-                      fontSize: '0.85rem',
+                      fontSize: '0.75rem',
+                      fontFamily: 'var(--font-tech)',
                       outline: 'none'
                     }}
                   />
@@ -467,22 +479,23 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
 
             {provider !== 'ollama' && (
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                  API Key (leave blank to use server environment variables)
+                <label style={{ display: 'block', fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', marginBottom: '6px' }}>
+                  CUSTOM ACCESS TOKENS (OVERRIDE)
                 </label>
                 <input
                   type="password"
-                  placeholder="Paste custom API key..."
+                  placeholder="USE DEFAULTS..."
                   value={apiKeyOverride}
                   onChange={(e) => setApiKeyOverride(e.target.value)}
                   style={{
                     width: '100%',
-                    backgroundColor: 'var(--bg-primary)',
-                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'rgba(2, 3, 6, 0.8)',
+                    border: '1.2px solid rgba(0, 246, 255, 0.25)',
                     color: '#fff',
-                    borderRadius: '6px',
+                    borderRadius: '4px',
                     padding: '8px 10px',
-                    fontSize: '0.85rem',
+                    fontSize: '0.75rem',
+                    fontFamily: 'var(--font-tech)',
                     outline: 'none'
                   }}
                 />
@@ -490,10 +503,10 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
             )}
           </div>
 
-          {/* File Upload Zone */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Import Note Materials
+          {/* File Ingestion */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '0.62rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', letterSpacing: '0.8px' }}>
+              QUANTUM INGESTION ARRAY
             </label>
             <div 
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -501,17 +514,18 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
               onDrop={handleFileDrop}
               onClick={() => fileInputRef.current?.click()}
               style={{
-                border: isDragging ? '2px dashed var(--accent-primary)' : '2px dashed var(--border-color)',
-                borderRadius: '8px',
-                padding: '18px 16px',
+                border: isDragging ? '1.2px solid #ff6a00' : '1.2px dashed rgba(255, 106, 0, 0.25)',
+                borderRadius: '4px',
+                padding: '20px 16px',
                 textAlign: 'center',
-                backgroundColor: isDragging ? 'rgba(139, 92, 246, 0.05)' : 'rgba(0,0,0,0.1)',
+                backgroundColor: isDragging ? 'rgba(255, 106, 0, 0.05)' : 'rgba(2, 3, 6, 0.35)',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '8px',
+                boxShadow: isDragging ? '0 0 15px rgba(255, 106, 0, 0.15)' : 'none'
               }}
             >
               <input 
@@ -525,30 +539,30 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
                   }
                 }}
               />
-              <UploadCloud size={28} style={{ color: isDragging ? 'var(--accent-primary)' : 'var(--text-secondary)' }} />
+              <UploadCloud size={24} style={{ color: isDragging ? '#ff6a00' : 'rgba(255, 106, 0, 0.65)' }} />
               {extractingText ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <RefreshCw size={14} className="spin-anim" />
-                  <span style={{ fontSize: '0.8rem', color: '#fff' }}>Extracting text from PDF...</span>
+                  <RefreshCw size={12} className="spin-anim" style={{ color: '#ff6a00' }} />
+                  <span style={{ fontSize: '0.72rem', color: '#ff6a00', fontFamily: 'var(--font-tech)' }}>EXTRACTING TEXT FIELDS FROM SLIDES...</span>
                 </div>
               ) : uploadedFileName ? (
-                <div>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--accent-success)', fontWeight: 650 }}>✓ Loaded: </span>
-                  <span style={{ fontSize: '0.8rem', color: '#fff' }}>{uploadedFileName}</span>
+                <div style={{ fontFamily: 'var(--font-tech)' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 800 }}>✓ SEEDED: </span>
+                  <span style={{ fontSize: '0.72rem', color: '#fff' }}>{uploadedFileName}</span>
                 </div>
               ) : (
-                <div>
-                  <p style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 500, margin: 0 }}>Drag & Drop Note PDFs / Text Files</p>
-                  <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>or click to browse (.pdf, .txt, .md)</p>
+                <div style={{ fontFamily: 'var(--font-tech)' }}>
+                  <p style={{ fontSize: '0.75rem', color: '#fff', fontWeight: 600, margin: 0 }}>DRAG & DROP note MATERIALS</p>
+                  <p style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', margin: '4px 0 0 0' }}>or browse (.pdf, .txt, .md)</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Load raw file */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Or Load Existing Note from Vault
+          {/* Load existing note */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label style={{ fontSize: '0.62rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', letterSpacing: '0.8px' }}>
+              PULL VAULT DOCUMENT SECTORS
             </label>
             <select
               value={selectedNotePath}
@@ -558,22 +572,20 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
               }}
               style={{
                 width: '100%',
-                backgroundColor: 'var(--bg-secondary)',
-                border: '1px solid var(--border-color)',
-                color: '#fff',
-                borderRadius: '8px',
+                backgroundColor: 'rgba(2, 3, 6, 0.8)',
+                border: '1.2px solid rgba(0, 246, 255, 0.25)',
+                color: '#00f6ff',
+                borderRadius: '4px',
                 padding: '10px',
-                fontSize: '0.85rem',
-                outline: 'none'
+                fontSize: '0.75rem',
+                fontFamily: 'var(--font-tech)',
+                outline: 'none',
+                cursor: 'pointer'
               }}
             >
-              <option value="" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>-- Choose a Note to Load Content --</option>
+              <option value="" style={{ color: 'rgba(255,255,255,0.3)' }}>-- TARGET VAULT INDEX --</option>
               {notes.map(n => (
-                <option 
-                  key={n.absolutePath} 
-                  value={n.absolutePath}
-                  style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}
-                >
+                <option key={n.absolutePath} value={n.absolutePath}>
                   [{n.subject}] {n.title}
                 </option>
               ))}
@@ -581,9 +593,9 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
           </div>
 
           {/* Input text area */}
-          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '6px', minHeight: '200px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Raw Text Input (Lecture, rough notes, transcription, PDF copy)
+          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '200px' }}>
+            <label style={{ fontSize: '0.62rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', letterSpacing: '0.8px' }}>
+              RAW SOURCE FIELD (TEXT / INGEST DATA)
             </label>
             <textarea
               placeholder="Paste raw lecture draft or notes here..."
@@ -592,24 +604,27 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
               style={{
                 width: '100%',
                 flexGrow: 1,
-                backgroundColor: 'rgba(0,0,0,0.2)',
-                border: '1px solid var(--border-color)',
+                backgroundColor: 'rgba(2, 3, 6, 0.65)',
+                border: '1.2px solid rgba(0, 246, 255, 0.25)',
                 color: '#fff',
-                borderRadius: '8px',
+                borderRadius: '4px',
                 padding: '14px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.85rem',
+                fontFamily: 'var(--font-tech)',
+                fontSize: '0.82rem',
                 lineHeight: '1.4',
                 outline: 'none',
-                resize: 'none'
+                resize: 'none',
+                transition: 'border-color 0.2s'
               }}
+              onFocus={(e) => e.target.style.borderColor = '#00f6ff'}
+              onBlur={(e) => e.target.style.borderColor = 'rgba(0, 246, 255, 0.25)'}
             />
           </div>
 
           {/* Prompt Templates */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Choose Prompt Template
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <label style={{ fontSize: '0.62rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', letterSpacing: '0.8px' }}>
+              DIRECTIVE REACTION SCHEMA
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               {Object.keys(templates).map(key => (
@@ -620,18 +635,23 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
                     setCustomPrompt('');
                   }}
                   style={{
-                    padding: '10px',
-                    borderRadius: '8px',
+                    padding: '10px 12px',
+                    borderRadius: '4px',
                     border: '1px solid',
-                    fontSize: '0.8rem',
+                    fontSize: '0.72rem',
+                    fontFamily: 'var(--font-hud)',
+                    fontWeight: 'bold',
+                    letterSpacing: '0.5px',
                     textAlign: 'left',
                     cursor: 'pointer',
-                    backgroundColor: promptTemplate === key && !customPrompt ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255,255,255,0.02)',
-                    borderColor: promptTemplate === key && !customPrompt ? 'var(--accent-primary)' : 'var(--border-color)',
-                    color: promptTemplate === key && !customPrompt ? '#fff' : 'var(--text-secondary)'
+                    backgroundColor: promptTemplate === key && !customPrompt ? 'rgba(0, 246, 255, 0.05)' : 'rgba(255,255,255,0.01)',
+                    borderColor: promptTemplate === key && !customPrompt ? '#00f6ff' : 'rgba(0,246,255,0.15)',
+                    color: promptTemplate === key && !customPrompt ? '#00f6ff' : 'rgba(255,255,255,0.5)',
+                    boxShadow: promptTemplate === key && !customPrompt ? '0 0 10px rgba(0,246,255,0.1)' : 'none',
+                    transition: 'all 0.2s'
                   }}
                 >
-                  {templates[key].name}
+                  {templates[key].name.toUpperCase()}
                 </button>
               ))}
             </div>
@@ -643,46 +663,54 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
               style={{
                 width: '100%',
                 height: '60px',
-                backgroundColor: 'rgba(255,255,255,0.02)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '6px',
-                padding: '8px 10px',
+                backgroundColor: 'rgba(2, 3, 6, 0.65)',
+                border: '1.2px solid rgba(0, 246, 255, 0.25)',
+                borderRadius: '4px',
+                padding: '10px 12px',
                 color: '#fff',
                 fontSize: '0.8rem',
+                fontFamily: 'var(--font-tech)',
                 outline: 'none',
-                resize: 'none'
+                resize: 'none',
+                transition: 'border-color 0.2s'
               }}
+              onFocus={(e) => e.target.style.borderColor = '#00f6ff'}
+              onBlur={(e) => e.target.style.borderColor = 'rgba(0, 246, 255, 0.25)'}
             />
 
             <button
               onClick={handleRefining}
               disabled={refining || !rawContent}
               style={{
-                background: 'var(--accent-primary)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '8px',
+                background: refining || !rawContent ? 'transparent' : '#00f6ff',
+                color: refining || !rawContent ? 'rgba(255,255,255,0.25)' : '#020306',
+                border: refining || !rawContent ? '1.2px solid rgba(255,255,255,0.15)' : 'none',
+                borderRadius: '4px',
                 padding: '12px',
-                fontWeight: 600,
-                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                fontFamily: 'var(--font-hud)',
+                fontSize: '0.78rem',
+                letterSpacing: '1.5px',
+                textTransform: 'uppercase',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
                 cursor: refining || !rawContent ? 'not-allowed' : 'pointer',
-                opacity: refining || !rawContent ? 0.6 : 1,
-                transition: 'opacity 0.2s'
+                boxShadow: refining || !rawContent ? 'none' : '0 0 15px rgba(0,246,255,0.35)',
+                transition: 'all 0.2s',
+                outline: 'none'
               }}
             >
               {refining ? (
                 <>
-                  <RefreshCw className="spin-anim" size={16} />
-                  <span>Refining with {provider.toUpperCase()}...</span>
+                  <RefreshCw className="spin-anim" size={14} />
+                  <span>EXECUTING REFINEMENT WITH {provider.toUpperCase()}...</span>
                 </>
               ) : (
                 <>
-                  <Wand2 size={16} />
-                  <span>Run Thought Refinement</span>
+                  <Wand2 size={14} />
+                  <span>INITIALIZE REFINEMENT LAYER</span>
                 </>
               )}
             </button>
@@ -695,15 +723,16 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          backgroundColor: '#07080b',
+          backgroundColor: 'rgba(2,3,6,0.3)',
           padding: '20px',
-          gap: '16px',
+          gap: '20px',
           overflowY: 'auto'
-        }}>
+        }} className="custom-scrollbar">
+          
           {/* Output text area */}
-          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '6px', minHeight: '300px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              AI Structured Output (Editable Markdown)
+          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '300px' }}>
+            <label style={{ fontSize: '0.62rem', fontWeight: 800, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', letterSpacing: '0.8px' }}>
+              REFINED note OUTPUT LAYER (EDITABLE MARKDOWN)
             </label>
             <textarea
               placeholder="Refined note output will generate here..."
@@ -712,27 +741,30 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
               style={{
                 width: '100%',
                 flexGrow: 1,
-                backgroundColor: 'rgba(0,0,0,0.3)',
-                border: '1px solid var(--border-color)',
+                backgroundColor: 'rgba(2, 3, 6, 0.65)',
+                border: '1.2px solid rgba(255, 106, 0, 0.25)',
                 color: '#e5e7eb',
-                borderRadius: '8px',
+                borderRadius: '4px',
                 padding: '16px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.85rem',
+                fontFamily: 'var(--font-tech)',
+                fontSize: '0.82rem',
                 lineHeight: '1.45',
                 outline: 'none',
-                resize: 'none'
+                resize: 'none',
+                transition: 'border-color 0.2s'
               }}
+              onFocus={(e) => e.target.style.borderColor = '#ff6a00'}
+              onBlur={(e) => e.target.style.borderColor = 'rgba(255, 106, 0, 0.25)'}
             />
           </div>
 
           {/* Conversational Refinement Chats */}
           {aiOutput && (
-            <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <MessageSquare size={16} style={{ color: 'var(--accent-primary)' }} />
-                <h3 style={{ fontSize: '0.9rem', fontFamily: 'var(--font-display)', color: '#fff', fontWeight: 600, margin: 0 }}>
-                  Conversational Refinement Loops
+            <div className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', border: '1.2px solid rgba(255, 106, 0, 0.25)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px dashed rgba(255,255,255,0.1)', paddingBottom: '6px' }}>
+                <MessageSquare size={14} style={{ color: '#ff6a00' }} />
+                <h3 style={{ fontSize: '0.68rem', fontFamily: 'var(--font-hud)', color: '#fff', fontWeight: 800, margin: 0, letterSpacing: '0.5px' }}>
+                  REFACTOR DIALOG FIELD
                 </h3>
               </div>
               
@@ -740,23 +772,24 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
                 <div style={{
                   maxHeight: '110px',
                   overflowY: 'auto',
-                  backgroundColor: 'rgba(0,0,0,0.15)',
-                  borderRadius: '6px',
-                  padding: '8px 12px',
+                  backgroundColor: 'rgba(2,3,6,0.65)',
+                  borderRadius: '2px',
+                  padding: '10px 12px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '6px',
-                  fontSize: '0.8rem',
-                  border: '1px solid var(--border-color)'
-                }}>
+                  fontSize: '0.78rem',
+                  fontFamily: 'var(--font-tech)',
+                  border: '1px solid rgba(255, 106, 0, 0.15)'
+                }} className="custom-scrollbar">
                   {chatHistory.map((msg, index) => (
                     <div key={index} style={{
                       display: 'flex',
-                      gap: '6px',
-                      color: msg.role === 'user' ? 'var(--text-secondary)' : '#fff'
+                      gap: '8px',
+                      color: msg.role === 'user' ? 'rgba(255,255,255,0.45)' : '#ff6a00'
                     }}>
-                      <span style={{ fontWeight: 600, minWidth: '40px' }}>
-                        {msg.role === 'user' ? 'User:' : 'AI:'}
+                      <span style={{ fontWeight: 'bold', minWidth: '45px' }}>
+                        {msg.role === 'user' ? '[USER]:' : '[AI]:'}
                       </span>
                       <span>{msg.content}</span>
                     </div>
@@ -764,21 +797,22 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
                 </div>
               )}
 
-              <form onSubmit={handleChatInstruction} style={{ display: 'flex', gap: '8px' }}>
+              <form onSubmit={handleChatInstruction} style={{ display: 'flex', gap: '10px' }}>
                 <input
                   type="text"
-                  placeholder="Instruct AI to edit output (e.g. 'convert list to table', 'add summary')..."
+                  placeholder="Direct compiler instruction (e.g. 'translate to table')..."
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   disabled={refining}
                   style={{
                     flexGrow: 1,
-                    backgroundColor: 'var(--bg-primary)',
-                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'rgba(2,3,6,0.65)',
+                    border: '1.2px solid rgba(255, 106, 0, 0.25)',
                     color: '#fff',
-                    borderRadius: '6px',
+                    borderRadius: '4px',
                     padding: '8px 12px',
-                    fontSize: '0.85rem',
+                    fontSize: '0.8rem',
+                    fontFamily: 'var(--font-tech)',
                     outline: 'none'
                   }}
                 />
@@ -786,20 +820,21 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
                   type="submit"
                   disabled={refining || !chatInput.trim()}
                   style={{
-                    backgroundColor: 'var(--accent-primary)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    padding: '8px 12px',
+                    backgroundColor: chatInput.trim() ? '#ff6a00' : 'transparent',
+                    color: chatInput.trim() ? '#020306' : 'rgba(255,255,255,0.25)',
+                    border: chatInput.trim() ? 'none' : '1.2px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '4px',
+                    padding: '8px 14px',
                     cursor: refining || !chatInput.trim() ? 'not-allowed' : 'pointer',
-                    opacity: refining || !chatInput.trim() ? 0.6 : 1,
+                    boxShadow: chatInput.trim() ? '0 0 10px rgba(255, 106, 0, 0.3)' : 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
                 >
-                  {refining ? <RefreshCw className="spin-anim" size={14} /> : <Send size={14} />}
+                  {refining ? <RefreshCw className="spin-anim" size={12} /> : <Send size={12} />}
                 </button>
               </form>
             </div>
@@ -807,84 +842,91 @@ export default function CoprocessorConsole({ onSelectNote, preFillContent, clear
 
           {/* Saving parameters */}
           {aiOutput && (
-            <div className="glass-panel animate-fade-in" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <h3 style={{ fontSize: '0.9rem', fontFamily: 'var(--font-display)', color: '#fff', fontWeight: 600 }}>Save Refined Note to Vault</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px' }}>
+            <div className="glass-panel animate-fade-in" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', border: '1.2px solid rgba(16, 185, 129, 0.25)' }}>
+              <h3 style={{ fontSize: '0.68rem', fontFamily: 'var(--font-hud)', color: '#10b981', fontWeight: 800, margin: 0, letterSpacing: '0.5px' }}>
+                COMMIT KNOWLEDGE SECTOR
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Subject Directory</label>
+                  <label style={{ display: 'block', fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', marginBottom: '4px' }}>SUBJECT SEGMENT</label>
                   <select
                     value={saveSubject}
                     onChange={(e) => setSaveSubject(e.target.value)}
                     style={{
                       width: '100%',
-                      backgroundColor: 'var(--bg-secondary)',
-                      border: '1px solid var(--border-color)',
-                      color: '#fff',
-                      borderRadius: '6px',
+                      backgroundColor: 'rgba(2, 3, 6, 0.8)',
+                      border: '1.2px solid rgba(16, 185, 129, 0.25)',
+                      color: '#10b981',
+                      borderRadius: '4px',
                       padding: '8px 10px',
-                      fontSize: '0.85rem',
-                      outline: 'none'
+                      fontSize: '0.75rem',
+                      fontFamily: 'var(--font-tech)',
+                      outline: 'none',
+                      cursor: 'pointer'
                     }}
                   >
-                    <option value="GENERAL" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>General</option>
-                    <option value="OS" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>Operating Systems</option>
-                    <option value="DSA" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>Data Structures</option>
-                    <option value="DBMS" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>DBMS</option>
-                    <option value="DISCRETE_MATHEMATICS" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>Discrete Math</option>
-                    <option value="COMPUTER_SYSTEM_ARCHITECTURE" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>Computer Architecture</option>
-                    <option value="CYBER_CN" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>Cyber Security & CN</option>
-                    <option value="ML" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>Machine Learning</option>
-                    <option value="OPPS" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>OOPs (C++)</option>
-                    <option value="STATISTICS" style={{ backgroundColor: '#12131a', color: '#f3f4f6' }}>Statistics</option>
+                    <option value="GENERAL">General</option>
+                    <option value="OS">Operating Systems</option>
+                    <option value="DSA">Data Structures</option>
+                    <option value="DBMS">DBMS</option>
+                    <option value="DISCRETE_MATHEMATICS">Discrete Math</option>
+                    <option value="COMPUTER_SYSTEM_ARCHITECTURE">Computer Architecture</option>
+                    <option value="CYBER_CN">Cyber Security & CN</option>
+                    <option value="ML">Machine Learning</option>
+                    <option value="OPPS">OOPs (C++)</option>
+                    <option value="STATISTICS">Statistics</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Filename</label>
+                  <label style={{ display: 'block', fontSize: '0.62rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-hud)', marginBottom: '4px' }}>IDENTIFIER FILENAME</label>
                   <input
                     type="text"
-                    placeholder="e.g. Page Replacement Algorithms.md"
+                    placeholder="e.g. Page Replacement.md"
                     value={saveFilename}
                     onChange={(e) => setSaveFilename(e.target.value)}
                     style={{
                       width: '100%',
-                      backgroundColor: 'var(--bg-primary)',
-                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'rgba(2, 3, 6, 0.8)',
+                      border: '1.2px solid rgba(16, 185, 129, 0.25)',
                       color: '#fff',
-                      borderRadius: '6px',
+                      borderRadius: '4px',
                       padding: '8px 10px',
-                      fontSize: '0.85rem',
+                      fontSize: '0.75rem',
+                      fontFamily: 'var(--font-tech)',
                       outline: 'none'
                     }}
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
-                  {saveStatus}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', borderTop: '1px dashed rgba(255,255,255,0.08)', paddingTop: '10px' }}>
+                <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-tech)' }}>
+                  {saveStatus.toUpperCase()}
                 </span>
                 
                 <button
                   onClick={handleSaveToVault}
                   style={{
-                    background: 'var(--accent-success)',
-                    color: '#fff',
+                    background: '#10b981',
+                    color: '#020306',
                     border: 'none',
-                    borderRadius: '6px',
+                    borderRadius: '4px',
                     padding: '8px 16px',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                    fontFamily: 'var(--font-hud)',
+                    fontWeight: 'bold',
+                    letterSpacing: '1px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
                     cursor: 'pointer',
-                    transition: 'opacity 0.2s'
+                    boxShadow: '0 0 10px rgba(16, 185, 129, 0.3)',
+                    transition: 'all 0.2s',
+                    outline: 'none'
                   }}
-                  onMouseOver={(e) => e.target.style.opacity = 0.9}
-                  onMouseOut={(e) => e.target.style.opacity = 1}
                 >
-                  <Save size={14} />
-                  <span>Commit to Vault</span>
+                  <Save size={12} />
+                  <span>COMMIT TO VAULT</span>
                 </button>
               </div>
             </div>
