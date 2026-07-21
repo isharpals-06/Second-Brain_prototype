@@ -1,0 +1,462 @@
+# AEGISOS v0.2.0
+# ADR-002 — Sentinel Core
+
+Status: Accepted
+
+Version: v0.2.0
+
+---
+
+# MISSION
+
+AEGISOS has completed its foundational architecture.
+
+The kernel is now stable.
+
+The next objective is to give the operating system perception.
+
+Sentinel Core is responsible for continuously observing the user's digital environment and converting observations into standardized events.
+
+It should behave like the sensory system of an operating system.
+
+It never performs reasoning.
+
+It never makes decisions.
+
+It only observes.
+
+Think of Sentinel as the eyes and ears of AEGISOS.
+
+---
+
+# DESIGN PHILOSOPHY
+
+Sentinel should be:
+
+Lightweight
+
+Always running
+
+Highly modular
+
+Event-driven
+
+Fault tolerant
+
+Easy to extend
+
+Every observer should be independent.
+
+No observer should depend on another observer.
+
+Observers should communicate ONLY through the Event Bus.
+
+---
+
+# OBJECTIVES
+
+Implement the Sentinel Runtime.
+
+Create a standardized Observer interface.
+
+Support independent observer registration.
+
+Support enabling/disabling observers.
+
+Support observer health monitoring.
+
+Support automatic restart of failed observers.
+
+Provide centralized logging.
+
+Generate normalized events.
+
+Do NOT introduce planning.
+
+Do NOT introduce AI reasoning.
+
+Do NOT execute user tasks.
+
+---
+
+# REQUIRED ARCHITECTURE
+
+AEGISOS
+
+Core
+
+Event Bus
+
+Sentinel Runtime
+
+├── Observer Manager
+
+├── Observer Registry
+
+├── Health Monitor
+
+├── Event Dispatcher
+
+└── Observer APIs
+
+Observers
+
+File Observer
+
+Download Observer
+
+Vault Observer
+
+Workspace Observer
+
+Git Observer
+
+Clipboard Observer
+
+System Observer
+
+Every observer should implement a shared interface.
+
+---
+
+# OBSERVER INTERFACE
+
+Each observer should expose methods similar to:
+
+initialize()
+
+start()
+
+pause()
+
+resume()
+
+stop()
+
+status()
+
+health()
+
+dispose()
+
+Observers should be hot-swappable.
+
+Future observers should require minimal code to register.
+
+---
+
+# OBSERVER MANAGER
+
+Create a manager responsible for:
+
+Loading observers
+
+Registering observers
+
+Lifecycle management
+
+Restarting failed observers
+
+Monitoring health
+
+Metrics collection
+
+No observer should manually manage another observer.
+
+---
+
+# OBSERVER REGISTRY
+
+Implement dynamic registration.
+
+Avoid hardcoded imports.
+
+Future observers should register themselves.
+
+Support metadata.
+
+Examples:
+
+observer id
+
+display name
+
+version
+
+dependencies
+
+permissions
+
+status
+
+---
+
+# EVENT STANDARDIZATION
+
+All generated events should follow a common schema.
+
+Each event should contain information such as:
+
+Unique ID
+
+Timestamp
+
+Source
+
+Observer
+
+Category
+
+Priority
+
+Payload
+
+Version
+
+Correlation ID
+
+Future systems should never need to guess event structure.
+
+---
+
+# INITIAL OBSERVERS
+
+Implement the framework and basic functionality for:
+
+File Observer
+
+Detect file create
+
+Detect file delete
+
+Detect file rename
+
+Detect file modification
+
+Vault Observer
+
+Observe Obsidian vault
+
+Generate note events
+
+Workspace Observer
+
+Observe project workspace
+
+Detect project changes
+
+Git Observer
+
+Repository opened
+
+Branch changed
+
+Commit detected
+
+Repository status
+
+Clipboard Observer
+
+Clipboard updated
+
+Clipboard cleared
+
+System Observer
+
+CPU usage
+
+RAM usage
+
+GPU usage
+
+Disk usage
+
+Battery status
+
+Network connectivity
+
+The implementation should remain lightweight.
+
+Avoid aggressive polling.
+
+Prefer native event APIs where possible.
+
+---
+
+# OBSERVER DASHBOARD API
+
+Create backend APIs exposing:
+
+Registered observers
+
+Running observers
+
+Health status
+
+Recent events
+
+Error logs
+
+Metrics
+
+Frontend integration will occur in later versions.
+
+---
+
+# LOGGING
+
+Implement structured logging.
+
+Every observer should report:
+
+startup
+
+shutdown
+
+errors
+
+warnings
+
+performance
+
+restart attempts
+
+Logs should support future debugging.
+
+---
+
+# PERFORMANCE REQUIREMENTS
+
+Startup should remain fast.
+
+Observers should consume minimal CPU.
+
+Observers should avoid duplicate events.
+
+Observers should debounce noisy events.
+
+Support dozens of future observers.
+
+---
+
+# FAULT TOLERANCE
+
+One observer crash must never stop Sentinel.
+
+Observer failures should be isolated.
+
+Automatic restart should be supported.
+
+Graceful shutdown should exist.
+
+---
+
+# DOCUMENTATION
+
+Generate:
+
+Sentinel Architecture
+
+Observer Development Guide
+
+Observer API Documentation
+
+Event Specification
+
+Observer Lifecycle
+
+Extension Guide
+
+---
+
+# ACCEPTANCE CRITERIA
+
+The following should be true:
+
+✔ Sentinel Runtime exists
+
+✔ Observer Manager exists
+
+✔ Observer Registry exists
+
+✔ Common Observer interface exists
+
+✔ File Observer working
+
+✔ Vault Observer working
+
+✔ Workspace Observer working
+
+✔ Git Observer framework working
+
+✔ Clipboard Observer working
+
+✔ System Observer working
+
+✔ Events flowing through Event Bus
+
+✔ Structured logging implemented
+
+✔ Documentation complete
+
+---
+
+# REGRESSION CHECKLIST
+
+Verify:
+
+Foundation architecture unchanged
+
+Event Bus still operational
+
+Context Engine unaffected
+
+Agent Manager unaffected
+
+Service Registry unaffected
+
+Skill Registry unaffected
+
+Existing dashboard still builds
+
+Existing APIs remain functional
+
+No performance regressions
+
+---
+
+# FUTURE EXTENSION POINTS
+
+Do NOT implement now.
+
+Reserve interfaces for:
+
+Browser Observer
+
+Calendar Observer
+
+Email Observer
+
+Notification Observer
+
+Docker Observer
+
+Terminal Observer
+
+VS Code Observer
+
+Slack Observer
+
+Discord Observer
+
+MCP Observer
+
+These will be implemented in future ADRs.
+
+---
+
+# FINAL OBJECTIVE
+
+At the end of ADR-002, AEGISOS should have a production-quality perception layer capable of observing the operating environment and publishing standardized events without performing reasoning or autonomous execution.
+
+Sentinel should become the foundation for all future intelligence.

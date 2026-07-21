@@ -16,6 +16,9 @@ import chokidar from 'chokidar';
 import { config } from './config/index.js';
 import { aegisLogger } from './core/logger.js';
 import { initializeAegisCore } from './core/initCore.js';
+import { initializeSentinelCore } from './sentinel/initSentinel.js';
+import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
+import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
 import { serverContextEngine } from './core/contextEngine.js';
 import { serverServiceRegistry } from './core/serviceRegistry.js';
@@ -310,6 +313,59 @@ app.post('/api/aegis/context', (req, res) => {
     return res.json({ success: true, context: serverContextEngine.getAll() });
   }
   res.status(400).json({ error: 'Key is required' });
+});
+
+// Boot Sentinel Core Perception Engine
+initializeSentinelCore().catch(err => console.error('[Sentinel Core] Boot failed:', err));
+
+// ----------------------------------------------------
+// AEGISOS Sentinel Core Perception REST APIs
+// ----------------------------------------------------
+
+app.get('/api/sentinel/status', (req, res) => {
+  res.json({
+    status: 'active',
+    version: 'v0.2.0-Sentinel',
+    metrics: sentinelObserverManager.getMetrics(),
+    observers: sentinelObserverRegistry.list()
+  });
+});
+
+app.get('/api/sentinel/observers', (req, res) => {
+  res.json({ observers: sentinelObserverRegistry.list() });
+});
+
+app.get('/api/sentinel/metrics', (req, res) => {
+  res.json({ metrics: sentinelObserverManager.getMetrics() });
+});
+
+app.get('/api/sentinel/events', (req, res) => {
+  const limit = parseInt(req.query.limit || '20', 10);
+  const events = serverEventBus.getHistory(100).filter(e => e.event.startsWith('sentinel:'));
+  res.json({ events: events.slice(-limit) });
+});
+
+app.post('/api/sentinel/observers/:id/toggle', async (req, res) => {
+  const { id } = req.params;
+  const observer = sentinelObserverRegistry.get(id);
+  if (!observer) return res.status(404).json({ error: 'Observer not found' });
+
+  if (observer.state === 'running') {
+    await sentinelObserverManager.pauseObserver(id);
+  } else {
+    await sentinelObserverManager.resumeObserver(id);
+  }
+  res.json({ success: true, observer: observer.status() });
+});
+
+app.post('/api/sentinel/observers/:id/restart', async (req, res) => {
+  const { id } = req.params;
+  const success = await sentinelObserverManager.restartObserver(id);
+  if (success) {
+    res.json({ success: true, message: `Restarted observer ${id}` });
+  } else {
+    res.status(500).json({ error: `Failed to restart observer ${id}` });
+  }
 });
 
 // Helper to recursively get markdown files
