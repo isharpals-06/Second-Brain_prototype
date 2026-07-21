@@ -1,0 +1,618 @@
+# AEGISOS v0.3.8
+# ADR-004 — Knowledge Graph & Semantic Index
+
+Status: Accepted
+
+Version: v0.3.8
+
+---
+
+# MISSION
+
+AEGISOS now possesses a continuously updated World Model.
+
+The next milestone is to transform isolated information into connected knowledge.
+
+Implement the Knowledge Graph & Semantic Index subsystem.
+
+This subsystem is responsible for discovering, storing, indexing, and exposing semantic relationships between every entity inside AEGISOS.
+
+It is NOT an AI reasoning engine.
+
+It is NOT a planner.
+
+It is NOT an autonomous system.
+
+It is the structured knowledge foundation upon which every future planner, agent, and automation workflow will operate.
+
+---
+
+# DESIGN PHILOSOPHY
+
+Everything is an entity.
+
+Everything is connected.
+
+Knowledge should be queryable.
+
+Relationships should be first-class citizens.
+
+Semantic retrieval should complement—not replace—structured graph traversal.
+
+The graph must remain deterministic, auditable, and extensible.
+
+---
+
+# OBJECTIVES
+
+Implement:
+
+✔ Knowledge Graph Runtime
+
+✔ Entity Registry
+
+✔ Relationship Registry
+
+✔ Semantic Index
+
+✔ Vector Store Abstraction
+
+✔ Graph Query Engine
+
+✔ Graph Update Engine
+
+✔ Entity Resolver
+
+✔ Knowledge APIs
+
+✔ Incremental Indexing
+
+---
+
+# REQUIRED ARCHITECTURE
+
+Kernel
+
+↓
+
+Event Bus
+
+↓
+
+Sentinel
+
+↓
+
+World Model
+
+↓
+
+Knowledge Graph Runtime
+
+├── Entity Registry
+├── Relationship Registry
+├── Graph Builder
+├── Semantic Index
+├── Embedding Service
+├── Query Engine
+├── Graph Update Engine
+├── Entity Resolver
+└── Knowledge API
+
+↓
+
+Executive Planner
+
+↓
+
+Agent Runtime
+
+---
+
+# ENTITY MODEL
+
+Represent every important object as an Entity.
+
+Examples:
+
+Project
+
+Repository
+
+Workspace
+
+Directory
+
+File
+
+PDF
+
+Markdown Note
+
+Conversation
+
+AI Session
+
+Flashcard Deck
+
+Flashcard
+
+Task
+
+Goal
+
+Commit
+
+Branch
+
+Terminal Session
+
+Skill
+
+Tool
+
+Agent
+
+Workspace Session
+
+Document
+
+Folder
+
+Calendar Event
+
+Web Resource
+
+Future entities must be registerable without modifying the core runtime.
+
+---
+
+# RELATIONSHIP MODEL
+
+Represent every connection explicitly.
+
+Examples:
+
+BELONGS_TO
+
+GENERATED_FROM
+
+RELATED_TO
+
+REFERENCES
+
+DEPENDS_ON
+
+CREATED_BY
+
+MODIFIED_BY
+
+INDEXED_AS
+
+PART_OF
+
+USES
+
+OPENED_IN
+
+LOCATED_IN
+
+CONNECTED_TO
+
+MENTIONS
+
+IMPLEMENTS
+
+TRIGGERED_BY
+
+Relationships should support metadata:
+
+Creation Time
+
+Confidence
+
+Source
+
+Weight
+
+Version
+
+Relationship History
+
+---
+
+# GRAPH ENGINE
+
+Implement a property graph architecture.
+
+Support:
+
+Node creation
+
+Node updates
+
+Node deletion
+
+Edge creation
+
+Edge updates
+
+Edge traversal
+
+Path search
+
+Neighborhood queries
+
+Connected component discovery
+
+Future graph analytics.
+
+---
+
+# SEMANTIC INDEX
+
+Create a semantic search layer.
+
+Support:
+
+Embeddings
+
+Chunk metadata
+
+Document embeddings
+
+Conversation embeddings
+
+Note embeddings
+
+Project embeddings
+
+Hybrid retrieval
+
+Vector similarity
+
+Metadata filtering
+
+Incremental indexing
+
+Do not tightly couple to one embedding model.
+
+Create a provider abstraction.
+
+---
+
+# VECTOR STORE ABSTRACTION
+
+Design an interchangeable backend.
+
+Support future providers:
+
+SQLite + vectors
+
+FAISS
+
+Qdrant
+
+Chroma
+
+Milvus
+
+pgvector
+
+Keep the interface provider-agnostic.
+
+---
+
+# ENTITY RESOLUTION
+
+Automatically detect duplicates.
+
+Examples:
+
+Same PDF in different folders
+
+Same repository reopened
+
+Renamed note
+
+Moved workspace
+
+Merged conversations
+
+Maintain canonical identities.
+
+Avoid graph fragmentation.
+
+---
+
+# GRAPH UPDATE ENGINE
+
+Listen to World Model events.
+
+Examples:
+
+File created
+
+↓
+
+Create Entity
+
+File renamed
+
+↓
+
+Update Entity
+
+Repository opened
+
+↓
+
+Update Project
+
+Conversation started
+
+↓
+
+Create Conversation Entity
+
+PDF indexed
+
+↓
+
+Create Document Entity
+
+Relationships must update automatically.
+
+---
+
+# KNOWLEDGE API
+
+Expose APIs for:
+
+Entity lookup
+
+Relationship lookup
+
+Semantic search
+
+Graph traversal
+
+Nearest neighbors
+
+Recent entities
+
+Entity history
+
+Project graph
+
+Conversation graph
+
+Document graph
+
+Workspace graph
+
+Future agents must consume these APIs.
+
+---
+
+# KNOWLEDGE QUERIES
+
+Support examples such as:
+
+Find every PDF related to Project Alpha.
+
+Find notes referencing a repository.
+
+Find conversations about Transformers.
+
+Find flashcards generated from a paper.
+
+Show projects related to Reinforcement Learning.
+
+Retrieve the last study session.
+
+Discover documents mentioning CUDA.
+
+Return every resource connected to this workspace.
+
+---
+
+# HYBRID RETRIEVAL
+
+Implement:
+
+Structured Graph Search
+
++
+
+Semantic Vector Search
+
++
+
+Metadata Filtering
+
+The retrieval pipeline should intelligently combine all three.
+
+---
+
+# STORAGE
+
+Persist:
+
+Entities
+
+Relationships
+
+Embeddings
+
+Metadata
+
+Graph snapshots
+
+Version history
+
+Support incremental persistence.
+
+Avoid rebuilding the graph unnecessarily.
+
+---
+
+# PERFORMANCE
+
+Target:
+
+Fast graph traversal
+
+Low-memory indexing
+
+Lazy embedding generation
+
+Incremental graph updates
+
+Asynchronous indexing
+
+Scalable to millions of entities.
+
+---
+
+# OBSERVABILITY
+
+Track:
+
+Entity Count
+
+Relationship Count
+
+Embedding Count
+
+Index Size
+
+Query Latency
+
+Traversal Latency
+
+Embedding Queue
+
+Duplicate Resolution Events
+
+Graph Update Rate
+
+Cache Hit Rate
+
+---
+
+# DOCUMENTATION
+
+Generate:
+
+Knowledge Graph Architecture
+
+Entity Schema
+
+Relationship Schema
+
+Embedding Architecture
+
+Semantic Index Guide
+
+Query Engine Documentation
+
+Provider Interface Specification
+
+Developer Extension Guide
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✔ Knowledge Graph Runtime operational
+
+✔ Entity Registry operational
+
+✔ Relationship Registry operational
+
+✔ Semantic Index operational
+
+✔ Provider abstraction complete
+
+✔ Graph queries operational
+
+✔ Hybrid retrieval operational
+
+✔ Entity resolution functioning
+
+✔ Incremental indexing functioning
+
+✔ Knowledge APIs exposed
+
+✔ Documentation complete
+
+---
+
+# REGRESSION CHECKLIST
+
+Verify:
+
+Kernel unchanged
+
+Sentinel unchanged
+
+World Model unchanged
+
+Event Bus stable
+
+State Manager operational
+
+Observers operational
+
+Existing RAG functional
+
+Chat functional
+
+SQLite functional
+
+No duplicated indexing
+
+No graph inconsistencies
+
+---
+
+# FUTURE EXTENSION POINTS
+
+Reserve interfaces for:
+
+Executive Planner
+
+Goal Graph
+
+Decision Graph
+
+Experience Memory
+
+Learning Engine
+
+Recommendation Engine
+
+Multi-Agent Runtime
+
+Automation Engine
+
+Memory Consolidation
+
+Knowledge Visualization
+
+Graph Analytics
+
+External Knowledge Sources
+
+MCP Resource Graph
+
+---
+
+# FINAL OBJECTIVE
+
+At the completion of ADR-004, AEGISOS should possess a production-grade Knowledge Graph and Semantic Index capable of representing every important entity, relationship, and semantic concept within the operating system.
+
+The Knowledge Graph becomes the canonical knowledge substrate for Executive Planning, Multi-Agent Runtime, Memory OS, Automation Engine, and the AEGIS Cockpit.
+
+Every future intelligent subsystem should retrieve knowledge through this layer rather than maintaining independent indexes or isolated semantic stores.

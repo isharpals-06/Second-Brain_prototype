@@ -19,6 +19,8 @@ import { initializeAegisCore } from './core/initCore.js';
 import { initializeSentinelCore } from './sentinel/initSentinel.js';
 import { initializeWorldModelEngine } from './worldModel/initWorldModel.js';
 import { contextAPI } from './worldModel/ContextAPI.js';
+import { initializeKnowledgeSubsystem } from './knowledge/initKnowledge.js';
+import { knowledgeAPI } from './knowledge/KnowledgeAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -407,6 +409,51 @@ app.get('/api/world/snapshots', (req, res) => {
 
 app.get('/api/world/metrics', (req, res) => {
   res.json({ metrics: contextAPI.getMetrics() });
+});
+
+// Boot Knowledge Graph Subsystem
+initializeKnowledgeSubsystem(db);
+
+// ----------------------------------------------------
+// AEGISOS Knowledge Graph & Semantic Index REST APIs
+// ----------------------------------------------------
+
+app.get('/api/knowledge/entities', (req, res) => {
+  res.json({ entities: knowledgeAPI.getEntities(req.query.type) });
+});
+
+app.get('/api/knowledge/relationships', (req, res) => {
+  res.json({ relationships: knowledgeAPI.getRelationships() });
+});
+
+app.get('/api/knowledge/entity/:id', (req, res) => {
+  const entity = knowledgeAPI.getEntity(req.params.id);
+  if (!entity) return res.status(404).json({ error: 'Entity not found' });
+  res.json({ entity });
+});
+
+app.post('/api/knowledge/query', async (req, res) => {
+  try {
+    const results = await knowledgeAPI.query(req.body);
+    res.json({ results });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get('/api/knowledge/search', async (req, res) => {
+  try {
+    const queryText = req.query.q || '';
+    const limit = parseInt(req.query.limit || '5', 10);
+    const results = await knowledgeAPI.search(queryText, limit);
+    res.json({ query: queryText, results });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get('/api/knowledge/metrics', (req, res) => {
+  res.json({ metrics: knowledgeAPI.getMetrics() });
 });
 
 // Helper to recursively get markdown files
