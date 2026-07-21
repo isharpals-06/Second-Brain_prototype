@@ -17,6 +17,8 @@ import { config } from './config/index.js';
 import { aegisLogger } from './core/logger.js';
 import { initializeAegisCore } from './core/initCore.js';
 import { initializeSentinelCore } from './sentinel/initSentinel.js';
+import { initializeWorldModelEngine } from './worldModel/initWorldModel.js';
+import { contextAPI } from './worldModel/ContextAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -366,6 +368,45 @@ app.post('/api/sentinel/observers/:id/restart', async (req, res) => {
   } else {
     res.status(500).json({ error: `Failed to restart observer ${id}` });
   }
+});
+
+// Boot World Model Engine
+initializeWorldModelEngine(db);
+
+// ----------------------------------------------------
+// AEGISOS World Model Engine REST APIs
+// ----------------------------------------------------
+
+app.get('/api/world/state', (req, res) => {
+  res.json({ state: contextAPI.getState() });
+});
+
+app.get('/api/world/session', (req, res) => {
+  res.json(contextAPI.getSession());
+});
+
+app.get('/api/world/projects', (req, res) => {
+  res.json(contextAPI.getProjects());
+});
+
+app.get('/api/world/workspace', (req, res) => {
+  res.json(contextAPI.getWorkspace());
+});
+
+app.get('/api/world/timeline', (req, res) => {
+  res.json({ timeline: contextAPI.getTimeline(req.query) });
+});
+
+app.get('/api/world/graph', (req, res) => {
+  res.json(contextAPI.getGraph());
+});
+
+app.get('/api/world/snapshots', (req, res) => {
+  res.json({ snapshots: contextAPI.getSnapshots() });
+});
+
+app.get('/api/world/metrics', (req, res) => {
+  res.json({ metrics: contextAPI.getMetrics() });
 });
 
 // Helper to recursively get markdown files

@@ -1,0 +1,616 @@
+# AEGISOS v0.3.0
+# ADR-003 — World Model Engine
+
+Status: Accepted
+
+Version: v0.3.0
+
+---
+
+# MISSION
+
+AEGISOS can now perceive its environment through Sentinel.
+
+The next step is to understand that environment.
+
+Implement the World Model Engine.
+
+The World Model is the living representation of the user's digital world.
+
+It continuously receives events from Sentinel, correlates them, maintains state, and provides a unified understanding of the user's current activity.
+
+The World Model DOES NOT reason.
+
+The World Model DOES NOT plan.
+
+The World Model DOES NOT execute actions.
+
+Its only responsibility is maintaining an accurate, real-time representation of reality.
+
+---
+
+# DESIGN PHILOSOPHY
+
+The World Model is the single source of truth.
+
+Every subsystem must consume state from the World Model rather than building its own internal context.
+
+All state should originate from observed events.
+
+No duplicated context.
+
+No isolated caches.
+
+No agent-specific world state.
+
+Everything must remain deterministic and reproducible.
+
+---
+
+# PRIMARY OBJECTIVES
+
+Implement:
+
+✔ World Model Runtime
+
+✔ State Manager
+
+✔ Session Manager
+
+✔ Relationship Engine
+
+✔ Timeline Engine
+
+✔ Project Tracker
+
+✔ Workspace Tracker
+
+✔ Context API
+
+✔ State Snapshot System
+
+✔ Event Correlation Engine
+
+---
+
+# REQUIRED ARCHITECTURE
+
+Kernel
+
+↓
+
+Event Bus
+
+↓
+
+Sentinel
+
+↓
+
+World Model Runtime
+
+├── State Manager
+
+├── Session Engine
+
+├── Timeline Engine
+
+├── Relationship Engine
+
+├── Workspace Manager
+
+├── Project Manager
+
+├── Snapshot Manager
+
+└── Context API
+
+↓
+
+Future Planner
+
+↓
+
+Future Agent Runtime
+
+---
+
+# WORLD STATE
+
+Maintain structured state for:
+
+Active Workspace
+
+Current Project
+
+Current Repository
+
+Current Branch
+
+Current Session
+
+Open Files
+
+Open Notes
+
+Recent Files
+
+Recent Events
+
+Recent Conversations
+
+Downloaded Documents
+
+Indexed Documents
+
+Running Services
+
+Running Agents
+
+System Health
+
+Connected Models
+
+Current AI Provider
+
+Current Vault
+
+Clipboard
+
+Environment
+
+Future modules should consume this state rather than creating their own.
+
+---
+
+# SESSION ENGINE
+
+Automatically detect user sessions.
+
+Examples:
+
+Coding Session
+
+Study Session
+
+Research Session
+
+Writing Session
+
+Reading Session
+
+Browsing Session
+
+Idle Session
+
+Each session should contain:
+
+Start Time
+
+End Time
+
+Duration
+
+Primary Project
+
+Resources Used
+
+Notes Created
+
+Repositories Used
+
+Documents Accessed
+
+AI Interactions
+
+Session Summary Metadata
+
+Do NOT generate AI summaries yet.
+
+---
+
+# PROJECT MANAGER
+
+Track every active project.
+
+Maintain:
+
+Project Name
+
+Workspace
+
+Repository
+
+Status
+
+Recent Files
+
+Recent Activity
+
+Current Branch
+
+Related Notes
+
+Related PDFs
+
+Related Conversations
+
+Last Activity
+
+Priority Placeholder
+
+Support multiple projects.
+
+Automatically detect project switches.
+
+---
+
+# WORKSPACE MANAGER
+
+Track:
+
+Current Workspace
+
+Workspace History
+
+Open Directories
+
+Recent Directories
+
+Workspace Sessions
+
+Workspace Metadata
+
+---
+
+# RELATIONSHIP ENGINE
+
+Build relationships automatically.
+
+Examples:
+
+PDF
+
+↓
+
+Project
+
+↓
+
+Notes
+
+↓
+
+Conversation
+
+↓
+
+Repository
+
+↓
+
+Tasks
+
+Represent these relationships internally as a graph.
+
+Do NOT build a visualization yet.
+
+Expose graph APIs for future use.
+
+---
+
+# TIMELINE ENGINE
+
+Maintain an append-only activity timeline.
+
+Example:
+
+09:10
+
+Opened VS Code
+
+↓
+
+09:11
+
+Opened Project
+
+↓
+
+09:13
+
+Downloaded Paper
+
+↓
+
+09:15
+
+Indexed Paper
+
+↓
+
+09:17
+
+Created Notes
+
+↓
+
+09:20
+
+Asked AI
+
+↓
+
+09:35
+
+Committed Code
+
+Every event should remain traceable.
+
+Support filtering.
+
+Support replay.
+
+Support export.
+
+---
+
+# STATE MANAGER
+
+Maintain immutable snapshots.
+
+Support:
+
+Current State
+
+Previous State
+
+State Diff
+
+Historical Snapshot
+
+Rollback API (future)
+
+Expose read-only APIs where appropriate.
+
+---
+
+# EVENT CORRELATION
+
+Do not treat every event independently.
+
+Example:
+
+Repository Opened
+
+↓
+
+Notebook Edited
+
+↓
+
+Research Paper Downloaded
+
+↓
+
+Obsidian Updated
+
+↓
+
+AI Conversation
+
+Should become:
+
+Research Session
+
+Machine Learning Project
+
+Current Focus
+
+Associated Resources
+
+The World Model should infer relationships from event patterns.
+
+Do NOT use LLM reasoning.
+
+Use deterministic logic.
+
+---
+
+# CONTEXT API
+
+Expose APIs for:
+
+Current Session
+
+Current Project
+
+Current Workspace
+
+Current Timeline
+
+Recent Events
+
+Relationship Graph
+
+Current State
+
+Historical State
+
+Future agents must consume ONLY these APIs.
+
+---
+
+# STORAGE
+
+Persist important state.
+
+Support:
+
+SQLite
+
+JSON snapshots
+
+Future database migration
+
+Avoid unnecessary writes.
+
+Use batching where appropriate.
+
+---
+
+# PERFORMANCE
+
+Target:
+
+Low memory usage
+
+Fast lookups
+
+Efficient event processing
+
+Minimal locking
+
+Asynchronous processing
+
+No UI blocking
+
+Support thousands of events.
+
+---
+
+# OBSERVABILITY
+
+Implement metrics:
+
+Processed Events
+
+Correlated Events
+
+Dropped Events
+
+Session Count
+
+Project Count
+
+Relationship Count
+
+State Updates
+
+Average Processing Time
+
+Memory Usage
+
+---
+
+# DOCUMENTATION
+
+Generate:
+
+World Model Architecture
+
+State Schema
+
+Relationship Graph Documentation
+
+Session Engine Guide
+
+Timeline Specification
+
+Context API Documentation
+
+Extension Guide
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✔ World Model Runtime implemented
+
+✔ Session Engine operational
+
+✔ Timeline Engine operational
+
+✔ Relationship Engine operational
+
+✔ Project Manager operational
+
+✔ Workspace Manager operational
+
+✔ State Manager operational
+
+✔ Context APIs exposed
+
+✔ Event correlation functioning
+
+✔ State persistence working
+
+✔ Documentation complete
+
+---
+
+# REGRESSION CHECKLIST
+
+Verify:
+
+Sentinel remains unchanged
+
+Event Bus remains stable
+
+Foundation architecture untouched
+
+Observers still operational
+
+Existing dashboard functional
+
+Chat functional
+
+RAG functional
+
+Database functional
+
+No performance regressions
+
+No duplicated state
+
+---
+
+# FUTURE EXTENSION POINTS
+
+Reserve interfaces for:
+
+Executive Planner
+
+Goal Tracking
+
+Task Graph
+
+Agent Memory
+
+Experience Memory
+
+Decision Engine
+
+Recommendation Engine
+
+Automation Runtime
+
+Voice Context
+
+Screen Context
+
+Calendar Context
+
+Browser Context
+
+MCP Context
+
+---
+
+# FINAL OBJECTIVE
+
+At the completion of ADR-003, AEGISOS should possess a continuously updated, deterministic World Model representing the user's digital environment.
+
+Every future subsystem—including the Executive Planner, Multi-Agent Runtime, Automation Engine, and AEGIS Cockpit—must rely on this World Model as their single source of truth.
+
+The World Model should behave as the operating system's understanding of reality, while remaining independent from AI reasoning and autonomous decision-making.
