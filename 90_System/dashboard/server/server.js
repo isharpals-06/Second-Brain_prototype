@@ -33,6 +33,8 @@ import { initializeWorkflowPlatform } from './workflow/initWorkflow.js';
 import { workflowAPI } from './workflow/WorkflowAPI.js';
 import { initializeMemoryPlatform } from './memory/initMemory.js';
 import { memoryAPI } from './memory/MemoryAPI.js';
+import { initializeGovernancePlatform } from './governance/initGovernance.js';
+import { governanceAPI } from './governance/GovernanceAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -751,6 +753,54 @@ app.post('/api/memory/consolidate', (req, res) => {
 app.delete('/api/memory/:id', (req, res) => {
   const success = memoryAPI.forget(req.params.id, req.body?.reason);
   res.json({ success, id: req.params.id });
+});
+
+// Boot Governance & Trust Platform
+initializeGovernancePlatform(db);
+
+// ----------------------------------------------------
+// AEGISOS Governance & Trust Platform REST APIs
+// ----------------------------------------------------
+
+app.get('/api/governance/policies', (req, res) => {
+  res.json({ policies: governanceAPI.listPolicies() });
+});
+
+app.get('/api/governance/trust', (req, res) => {
+  res.json({ trustScores: governanceAPI.listTrustScores() });
+});
+
+app.get('/api/governance/audit', (req, res) => {
+  res.json({ auditLogs: governanceAPI.listAuditLogs() });
+});
+
+app.get('/api/governance/alerts', (req, res) => {
+  res.json({ alerts: governanceAPI.listAlerts() });
+});
+
+app.get('/api/governance/identities', (req, res) => {
+  res.json({ identities: governanceAPI.listIdentities() });
+});
+
+app.get('/api/governance/secrets', (req, res) => {
+  res.json({ secrets: governanceAPI.listSecrets() });
+});
+
+app.get('/api/governance/compliance', (req, res) => {
+  res.json({ compliance: governanceAPI.getCompliance() });
+});
+
+app.get('/api/governance/metrics', (req, res) => {
+  res.json({ metrics: governanceAPI.getMetrics() });
+});
+
+app.post('/api/governance/evaluate', (req, res) => {
+  try {
+    const evaluation = governanceAPI.evaluate(req.body);
+    res.json({ evaluation });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Helper to recursively get markdown files
