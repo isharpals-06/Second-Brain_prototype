@@ -35,6 +35,8 @@ import { initializeMemoryPlatform } from './memory/initMemory.js';
 import { memoryAPI } from './memory/MemoryAPI.js';
 import { initializeGovernancePlatform } from './governance/initGovernance.js';
 import { governanceAPI } from './governance/GovernanceAPI.js';
+import { initializeAutomationPlatform } from './automation/initAutomation.js';
+import { automationAPI } from './automation/AutomationAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -801,6 +803,52 @@ app.post('/api/governance/evaluate', (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Boot Automation Platform
+initializeAutomationPlatform(db);
+
+// ----------------------------------------------------
+// AEGISOS Automation Platform REST APIs
+// ----------------------------------------------------
+
+app.get('/api/automation/list', (req, res) => {
+  res.json({ automations: automationAPI.listAutomations() });
+});
+
+app.get('/api/automation/analytics', (req, res) => {
+  res.json({ analytics: automationAPI.getAnalytics() });
+});
+
+app.get('/api/automation/level', (req, res) => {
+  res.json({ autonomyLevel: automationAPI.getAutonomyLevel() });
+});
+
+app.post('/api/automation/level', (req, res) => {
+  const level = automationAPI.setAutonomyLevel(req.body.level);
+  res.json({ autonomyLevel: level });
+});
+
+app.post('/api/automation/trigger/:id', async (req, res) => {
+  try {
+    const result = await automationAPI.triggerAutomation(req.params.id);
+    res.json({ result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/automation/approvals', (req, res) => {
+  res.json({ approvals: automationAPI.listApprovals() });
+});
+
+app.get('/api/automation/rollbacks', (req, res) => {
+  res.json({ rollbacks: automationAPI.listRollbacks() });
+});
+
+app.post('/api/automation/rollback/:id', (req, res) => {
+  const result = automationAPI.triggerRollback(req.params.id);
+  res.json({ result });
 });
 
 // Helper to recursively get markdown files

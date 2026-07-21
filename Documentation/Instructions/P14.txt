@@ -1,0 +1,836 @@
+# AEGISOS v0.8.5
+# ADR-012 — AEGIS Cockpit (Experience Platform)
+
+Status: Accepted
+
+Version: v0.8.5
+
+---
+
+# MISSION
+
+AEGISOS now possesses a complete backend operating system.
+
+The next objective is building the human interface.
+
+Implement the AEGIS Cockpit.
+
+The Cockpit is NOT a dashboard.
+
+The Cockpit is Mission Control.
+
+It visualizes every subsystem.
+
+It provides observability.
+
+It provides explainability.
+
+It provides trust.
+
+It allows the user to understand and control the AI Operating System.
+
+Every subsystem should expose information through the Cockpit.
+
+---
+
+# DESIGN PHILOSOPHY
+
+Minimal.
+
+Elegant.
+
+Information dense.
+
+Zero clutter.
+
+Fast.
+
+Fluid.
+
+Professional.
+
+Everything is live.
+
+Everything is connected.
+
+No fake telemetry.
+
+No placeholder widgets.
+
+Every panel reflects real system state.
+
+---
+
+# DESIGN LANGUAGE
+
+Theme:
+
+Modern Scientific Operating System
+
+Influences:
+
+Iron Man JARVIS
+
+NASA Mission Control
+
+Palantir Foundry
+
+Warp Terminal
+
+Linear
+
+Raycast
+
+VS Code
+
+Apple Human Interface Guidelines
+
+No cyberpunk clichés.
+
+No neon overload.
+
+No childish animations.
+
+No unnecessary 3D objects.
+
+Motion should communicate state.
+
+---
+
+# PRIMARY OBJECTIVES
+
+Implement:
+
+✔ Cockpit Runtime
+
+✔ Layout Engine
+
+✔ Dock System
+
+✔ Workspace Manager
+
+✔ Widget Framework
+
+✔ Live Telemetry
+
+✔ Command Palette
+
+✔ Notification Center
+
+✔ Activity Feed
+
+✔ Cockpit APIs
+
+---
+
+# REQUIRED ARCHITECTURE
+
+Cockpit
+
+├── Window Manager
+
+├── Workspace Manager
+
+├── Layout Engine
+
+├── Dock
+
+├── Widget Runtime
+
+├── Notification Center
+
+├── Command Palette
+
+├── Search
+
+├── Theme Engine
+
+└── Cockpit APIs
+
+↓
+
+Kernel
+
+↓
+
+Every backend subsystem
+
+---
+
+# MAIN LAYOUT
+
+Three-column adaptive layout.
+
+LEFT
+
+Navigation
+
+Subsystems
+
+Projects
+
+Workspaces
+
+Agents
+
+Memory
+
+Knowledge
+
+Automation
+
+CENTER
+
+Mission Control
+
+Dynamic workspace
+
+Visualizations
+
+Conversations
+
+Graphs
+
+Editors
+
+Execution
+
+RIGHT
+
+Inspector
+
+Context
+
+Logs
+
+Metrics
+
+Properties
+
+Timeline
+
+Actions
+
+Bottom
+
+System Console
+
+Event Stream
+
+Notifications
+
+Runtime Logs
+
+---
+
+# COMMAND PALETTE
+
+Global shortcut.
+
+Search:
+
+Agents
+
+Projects
+
+Memories
+
+Workflows
+
+Tools
+
+Commands
+
+Files
+
+Notes
+
+Settings
+
+Navigation
+
+Natural language support.
+
+Examples:
+
+Open ML Project
+
+Show running agents
+
+Explain workflow
+
+Search CUDA notes
+
+Start research workspace
+
+---
+
+# LIVE TELEMETRY
+
+Display:
+
+CPU
+
+GPU
+
+RAM
+
+Disk
+
+Models
+
+Embeddings
+
+Vector Store
+
+Tool Runtime
+
+Agent Runtime
+
+Workflow Runtime
+
+Planner
+
+Memory
+
+Event Rate
+
+Execution Queue
+
+Latency
+
+Everything updates in real time.
+
+---
+
+# MISSION CONTROL
+
+Provide visual status of:
+
+Sentinel
+
+World Model
+
+Knowledge Graph
+
+Planner
+
+Simulation
+
+Agents
+
+Tools
+
+Memory
+
+Governance
+
+Automation
+
+Each subsystem displays:
+
+Health
+
+Status
+
+Load
+
+Events
+
+Errors
+
+Recent Activity
+
+---
+
+# AGENT PANEL
+
+Display:
+
+Running Agents
+
+Idle Agents
+
+Agent Health
+
+Capabilities
+
+Tasks
+
+Queue
+
+Messages
+
+Runtime
+
+Resource Usage
+
+Permissions
+
+---
+
+# MEMORY EXPLORER
+
+Browse:
+
+Projects
+
+Sessions
+
+Conversations
+
+Knowledge
+
+Research
+
+Study History
+
+Workflow History
+
+Experience
+
+Semantic Graph
+
+Timeline
+
+Search
+
+Filters
+
+Relationships
+
+---
+
+# KNOWLEDGE GRAPH
+
+Interactive visualization.
+
+Support:
+
+Zoom
+
+Pan
+
+Expand
+
+Collapse
+
+Filter
+
+Search
+
+Highlight relationships
+
+Click entities
+
+Inspect metadata
+
+Open related resources
+
+---
+
+# WORLD MODEL VIEW
+
+Display:
+
+Current Session
+
+Current Project
+
+Current Goal
+
+Current Workspace
+
+Current Intent
+
+Open Files
+
+Current Timeline
+
+Context Graph
+
+Active Resources
+
+Live updates.
+
+---
+
+# WORKFLOW VIEW
+
+Visualize:
+
+Running workflows
+
+Execution graph
+
+Current step
+
+Checkpoints
+
+Retries
+
+Approvals
+
+Outputs
+
+History
+
+Parallel execution
+
+---
+
+# TOOL PANEL
+
+Display:
+
+Registered tools
+
+Health
+
+Capabilities
+
+Permissions
+
+Execution history
+
+Performance
+
+Sandbox state
+
+Usage
+
+---
+
+# POLICY CENTER
+
+Manage:
+
+Policies
+
+Approvals
+
+Trust Scores
+
+Secrets
+
+Permissions
+
+Audit Logs
+
+Security Alerts
+
+Compliance
+
+Everything editable.
+
+---
+
+# ACTIVITY TIMELINE
+
+Unified timeline.
+
+Include:
+
+System Events
+
+Workflow Events
+
+Agent Events
+
+Planner Events
+
+Tool Events
+
+Memory Events
+
+Security Events
+
+Notifications
+
+Support replay.
+
+---
+
+# SEARCH ENGINE
+
+Global search.
+
+Search everything.
+
+Projects
+
+Notes
+
+PDFs
+
+Entities
+
+Agents
+
+Workflows
+
+Commands
+
+Memories
+
+Tools
+
+Policies
+
+Semantic search.
+
+Hybrid retrieval.
+
+---
+
+# WIDGET FRAMEWORK
+
+Every subsystem provides widgets.
+
+Examples:
+
+Agent Health
+
+Current Session
+
+Planner Queue
+
+GPU Usage
+
+Knowledge Graph
+
+Workflow Status
+
+Policy Alerts
+
+Memory Growth
+
+Future widgets should require no layout changes.
+
+---
+
+# CUSTOMIZATION
+
+Support:
+
+Layouts
+
+Themes
+
+Shortcuts
+
+Panels
+
+Saved Workspaces
+
+Profiles
+
+Multiple monitors
+
+Accessibility
+
+---
+
+# NOTIFICATION CENTER
+
+Support:
+
+Planner Recommendations
+
+Workflow Completion
+
+Agent Failures
+
+Policy Requests
+
+Security Alerts
+
+Memory Insights
+
+Tool Failures
+
+System Updates
+
+---
+
+# PERFORMANCE
+
+Target:
+
+60 FPS
+
+Lazy loading
+
+Virtualized lists
+
+Incremental rendering
+
+Streaming updates
+
+Minimal memory overhead
+
+Fast startup
+
+---
+
+# OBSERVABILITY
+
+Display:
+
+Latency
+
+Subsystem health
+
+Metrics
+
+Errors
+
+Logs
+
+Event throughput
+
+Resource usage
+
+Execution history
+
+Queue lengths
+
+Everything inspectable.
+
+---
+
+# DOCUMENTATION
+
+Generate:
+
+Cockpit Architecture
+
+Design System
+
+Widget SDK
+
+Layout System
+
+Theme Guide
+
+Developer Guide
+
+Extension Guide
+
+Accessibility Guide
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✔ Cockpit Runtime operational
+
+✔ Window Manager operational
+
+✔ Widget Framework operational
+
+✔ Mission Control operational
+
+✔ Command Palette operational
+
+✔ Live Telemetry operational
+
+✔ Memory Explorer operational
+
+✔ Workflow View operational
+
+✔ Knowledge Graph Viewer operational
+
+✔ Policy Center operational
+
+✔ Activity Timeline operational
+
+✔ Global Search operational
+
+✔ Documentation complete
+
+---
+
+# REGRESSION CHECKLIST
+
+Verify:
+
+Kernel stable
+
+Sentinel stable
+
+World Model stable
+
+Knowledge Graph stable
+
+Planner stable
+
+Simulation stable
+
+Agent Runtime stable
+
+Tool Runtime stable
+
+Workflow Runtime stable
+
+Memory stable
+
+Governance stable
+
+No UI freezes
+
+No fake telemetry
+
+---
+
+# DO NOT IMPLEMENT
+
+Do NOT implement:
+
+Background autonomous execution
+
+Voice assistant
+
+Marketplace
+
+Cloud sync
+
+Mobile client
+
+Distributed clusters
+
+These belong to future ADRs.
+
+---
+
+# FUTURE EXTENSION POINTS
+
+Reserve interfaces for:
+
+Automation Platform
+
+Voice Interface
+
+Vision Interface
+
+AR Workspace
+
+Plugin Marketplace
+
+Multi-user Collaboration
+
+Cloud Dashboard
+
+Remote Monitoring
+
+Developer SDK
+
+---
+
+# FINAL OBJECTIVE
+
+At the completion of ADR-012, AEGISOS should possess a production-grade Mission Control interface that exposes every subsystem of the operating system through a unified, explainable, and highly interactive experience.
+
+The Cockpit should feel like the control center of an intelligent operating system rather than a conventional web dashboard.
+
+It should become the primary interface through which users observe, understand, configure, and supervise AEGISOS.
