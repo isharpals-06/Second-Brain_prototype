@@ -1,0 +1,706 @@
+# AEGISOS v0.4.0
+# ADR-005 — Executive Planner
+
+Status: Accepted
+
+Version: v0.4.0
+
+---
+
+# MISSION
+
+AEGISOS now possesses:
+
+✔ Perception (Sentinel)
+
+✔ World Model
+
+✔ Knowledge Graph
+
+The next objective is introducing intelligence.
+
+Implement the Executive Planner.
+
+The Executive Planner is the strategic reasoning layer of AEGISOS.
+
+Its responsibility is NOT to execute actions.
+
+Its responsibility is to analyze the current world state, evaluate priorities, infer user intent, formulate goals, decompose objectives, and generate structured execution plans.
+
+Execution is delegated to future Agent Runtime.
+
+The Executive Planner thinks.
+
+It never acts.
+
+---
+
+# DESIGN PHILOSOPHY
+
+Separate thinking from execution.
+
+Planning should always be explainable.
+
+Every recommendation should be traceable.
+
+Every plan should be reproducible.
+
+No hidden decisions.
+
+No implicit reasoning.
+
+Everything should originate from:
+
+Sentinel
+
+↓
+
+World Model
+
+↓
+
+Knowledge Graph
+
+↓
+
+Executive Planner
+
+---
+
+# PRIMARY OBJECTIVES
+
+Implement:
+
+✔ Executive Runtime
+
+✔ Goal Engine
+
+✔ Intent Engine
+
+✔ Priority Engine
+
+✔ Planning Engine
+
+✔ Recommendation Engine
+
+✔ Decision Engine
+
+✔ Constraint Engine
+
+✔ Plan Validator
+
+✔ Planner APIs
+
+---
+
+# REQUIRED ARCHITECTURE
+
+Kernel
+
+↓
+
+Sentinel
+
+↓
+
+World Model
+
+↓
+
+Knowledge Graph
+
+↓
+
+Executive Runtime
+
+├── Intent Engine
+├── Goal Engine
+├── Priority Engine
+├── Decision Engine
+├── Planning Engine
+├── Constraint Engine
+├── Recommendation Engine
+├── Plan Validator
+└── Planner API
+
+↓
+
+Future Agent Runtime
+
+---
+
+# EXECUTIVE RUNTIME
+
+Create a continuously running planning runtime.
+
+The runtime should react to:
+
+World state updates
+
+Knowledge updates
+
+Session changes
+
+Project switches
+
+Priority changes
+
+User requests
+
+Do not execute tools.
+
+Do not call external systems.
+
+Produce plans only.
+
+---
+
+# INTENT ENGINE
+
+Infer user intent using deterministic rules and configurable AI reasoning where appropriate.
+
+Examples:
+
+User opened VS Code
+
+↓
+
+Repository
+
+↓
+
+Research Paper
+
+↓
+
+Notebook
+
+↓
+
+Intent:
+
+Working on ML Project
+
+Examples:
+
+Obsidian
+
+↓
+
+Lecture Notes
+
+↓
+
+Flashcards
+
+↓
+
+Intent:
+
+Studying
+
+Maintain confidence scores.
+
+Support multiple simultaneous intents.
+
+Track historical intent changes.
+
+---
+
+# GOAL ENGINE
+
+Maintain structured goals.
+
+Examples:
+
+Complete Assignment
+
+Finish Hackathon
+
+Read Research Paper
+
+Fix Build Error
+
+Prepare Presentation
+
+Goals should include:
+
+Goal ID
+
+Description
+
+Priority
+
+Status
+
+Dependencies
+
+Estimated Effort
+
+Estimated Duration
+
+Related Projects
+
+Related Resources
+
+Related Sessions
+
+Goal History
+
+Future goals should be editable.
+
+---
+
+# PRIORITY ENGINE
+
+Continuously evaluate priorities.
+
+Inputs:
+
+Deadlines
+
+Recent activity
+
+Project importance
+
+User preferences
+
+Context
+
+Session type
+
+Manual overrides
+
+Priority outputs:
+
+Critical
+
+High
+
+Medium
+
+Low
+
+Deferred
+
+Support rescoring.
+
+Support explanation.
+
+---
+
+# PLANNING ENGINE
+
+Generate execution plans.
+
+Plans should be hierarchical.
+
+Goal
+
+↓
+
+Objectives
+
+↓
+
+Tasks
+
+↓
+
+Steps
+
+↓
+
+Required Resources
+
+↓
+
+Required Skills
+
+↓
+
+Required Agents
+
+↓
+
+Expected Outputs
+
+Plans must remain deterministic.
+
+Support partial plans.
+
+Support replanning.
+
+---
+
+# DECISION ENGINE
+
+Evaluate multiple alternatives.
+
+Example:
+
+Study
+
+↓
+
+or
+
+Continue Coding
+
+↓
+
+or
+
+Review Flashcards
+
+Evaluate:
+
+Priority
+
+Context
+
+Dependencies
+
+Deadlines
+
+Recent workload
+
+Produce ranked recommendations.
+
+Always explain reasoning.
+
+---
+
+# CONSTRAINT ENGINE
+
+Respect constraints.
+
+Examples:
+
+Offline Mode
+
+Low Battery
+
+GPU Busy
+
+Network Unavailable
+
+Missing Tool
+
+Permission Restrictions
+
+Time Constraints
+
+Resource Limits
+
+Plans should adapt.
+
+---
+
+# RECOMMENDATION ENGINE
+
+Generate proactive recommendations.
+
+Examples:
+
+You have not committed code in 6 hours.
+
+Research paper matches current project.
+
+Exam in 3 days.
+
+Repository has failing tests.
+
+Study session exceeded 2 hours.
+
+No execution.
+
+Recommendations only.
+
+---
+
+# PLAN VALIDATOR
+
+Validate plans before publication.
+
+Check:
+
+Dependencies
+
+Missing resources
+
+Conflicting tasks
+
+Circular goals
+
+Unavailable tools
+
+Invalid assumptions
+
+Unsafe actions
+
+Reject invalid plans.
+
+---
+
+# PLANNER API
+
+Expose:
+
+Current Goals
+
+Current Intent
+
+Current Priorities
+
+Current Plan
+
+Alternative Plans
+
+Recommendations
+
+Decision History
+
+Planning Metrics
+
+Goal Graph
+
+Future agents consume these APIs.
+
+---
+
+# PLAN FORMAT
+
+Every generated plan should contain:
+
+Plan ID
+
+Timestamp
+
+Goal
+
+Priority
+
+Intent
+
+Context Snapshot
+
+Task Tree
+
+Dependencies
+
+Estimated Time
+
+Required Skills
+
+Suggested Agents
+
+Required Tools
+
+Confidence
+
+Reasoning Trace
+
+Validation Status
+
+Version
+
+---
+
+# MEMORY INTEGRATION
+
+Store:
+
+Past Plans
+
+Completed Goals
+
+Failed Plans
+
+Abandoned Plans
+
+Planning Statistics
+
+Historical Success
+
+Future releases will use this for learning.
+
+---
+
+# PERFORMANCE
+
+Target:
+
+Planning latency under 500ms for deterministic planning.
+
+Asynchronous AI reasoning.
+
+Incremental replanning.
+
+Minimal duplicate computation.
+
+Low memory footprint.
+
+---
+
+# OBSERVABILITY
+
+Track:
+
+Plans Generated
+
+Goals Created
+
+Intent Changes
+
+Priority Updates
+
+Recommendation Count
+
+Decision Latency
+
+Planning Errors
+
+Constraint Violations
+
+Planner Runtime
+
+---
+
+# DOCUMENTATION
+
+Generate:
+
+Executive Architecture
+
+Planning Pipeline
+
+Goal Schema
+
+Intent Schema
+
+Decision Documentation
+
+Recommendation Documentation
+
+Planner APIs
+
+Extension Guide
+
+Developer Guide
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✔ Executive Runtime operational
+
+✔ Intent Engine operational
+
+✔ Goal Engine operational
+
+✔ Priority Engine operational
+
+✔ Planning Engine operational
+
+✔ Decision Engine operational
+
+✔ Constraint Engine operational
+
+✔ Recommendation Engine operational
+
+✔ Planner APIs exposed
+
+✔ Documentation complete
+
+---
+
+# REGRESSION CHECKLIST
+
+Verify:
+
+Kernel unchanged
+
+Sentinel operational
+
+World Model operational
+
+Knowledge Graph operational
+
+Event Bus stable
+
+Chat functional
+
+RAG functional
+
+Existing UI functional
+
+No duplicated state
+
+No autonomous execution
+
+---
+
+# DO NOT IMPLEMENT
+
+Do NOT:
+
+Execute tools
+
+Run terminal commands
+
+Modify files
+
+Edit notes
+
+Commit Git changes
+
+Open applications
+
+Send emails
+
+Trigger automation
+
+Interact with the operating system
+
+Those responsibilities belong exclusively to the future Agent Runtime.
+
+---
+
+# FUTURE EXTENSION POINTS
+
+Reserve interfaces for:
+
+Multi-Agent Runtime
+
+Experience Learning
+
+Memory OS
+
+Automation Engine
+
+Voice Interface
+
+Cockpit
+
+Workflow Engine
+
+Goal Optimization
+
+Long-Term Planning
+
+Collaborative Agents
+
+External Planner Plugins
+
+---
+
+# FINAL OBJECTIVE
+
+At the completion of ADR-005, AEGISOS should possess a production-grade Executive Planner capable of understanding intent, managing goals, prioritizing work, and producing explainable execution plans based on the World Model and Knowledge Graph.
+
+The Executive Planner becomes the strategic brain of AEGISOS while remaining completely separated from execution.
+
+It answers only one question:
+
+"What is the best next course of action?"

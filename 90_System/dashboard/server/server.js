@@ -21,6 +21,8 @@ import { initializeWorldModelEngine } from './worldModel/initWorldModel.js';
 import { contextAPI } from './worldModel/ContextAPI.js';
 import { initializeKnowledgeSubsystem } from './knowledge/initKnowledge.js';
 import { knowledgeAPI } from './knowledge/KnowledgeAPI.js';
+import { initializeExecutivePlanner } from './planner/initPlanner.js';
+import { plannerAPI } from './planner/PlannerAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -454,6 +456,64 @@ app.get('/api/knowledge/search', async (req, res) => {
 
 app.get('/api/knowledge/metrics', (req, res) => {
   res.json({ metrics: knowledgeAPI.getMetrics() });
+});
+
+// Boot Executive Planner Subsystem
+initializeExecutivePlanner(db);
+
+// ----------------------------------------------------
+// AEGISOS Executive Planner REST APIs
+// ----------------------------------------------------
+
+app.get('/api/planner/intent', (req, res) => {
+  res.json({ intent: plannerAPI.getIntent() });
+});
+
+app.get('/api/planner/goals', (req, res) => {
+  res.json({ goals: plannerAPI.getGoals(req.query.status) });
+});
+
+app.post('/api/planner/goals', (req, res) => {
+  try {
+    const goal = plannerAPI.createGoal(req.body);
+    res.json({ goal });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get('/api/planner/priorities', (req, res) => {
+  res.json({ priorities: plannerAPI.getPriorities() });
+});
+
+app.get('/api/planner/plans', (req, res) => {
+  res.json({ plans: plannerAPI.getPlans() });
+});
+
+app.post('/api/planner/plan/generate', (req, res) => {
+  try {
+    const plan = plannerAPI.generatePlan(req.body.goalId);
+    if (!plan) return res.status(404).json({ error: 'Goal not found' });
+    res.json({ plan });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get('/api/planner/recommendations', (req, res) => {
+  res.json({ recommendations: plannerAPI.getRecommendations() });
+});
+
+app.get('/api/planner/decisions', (req, res) => {
+  res.json({ decisions: plannerAPI.getDecisions() });
+});
+
+app.get('/api/planner/constraints', (req, res) => {
+  res.json({ constraints: plannerAPI.getConstraints() });
+});
+
+app.get('/api/planner/metrics', (req, res) => {
+  res.json({ metrics: plannerAPI.getMetrics() });
 });
 
 // Helper to recursively get markdown files
