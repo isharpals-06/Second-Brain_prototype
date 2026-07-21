@@ -76,7 +76,10 @@ const SUBJECT_FOLDER_MAP = {
 const app = express();
 const PORT = process.env.PORT || 3010;
 
+const DIST_DIR = path.join(__dirname, '../dist');
+
 app.use(cors());
+app.use(express.static(DIST_DIR));
 
 // Initialize AEGISOS Core Architecture
 const aegisCore = initializeAegisCore();
@@ -2539,8 +2542,26 @@ Up: [[${subject} MOC]]
   });
 }
 
+// SPA Fallback Handler: Serve dist/index.html for non-API GET requests
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  const indexPath = path.join(DIST_DIR, 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      log.error(`Failed to serve index.html: ${err.message}`);
+      res.status(404).send('AEGISOS Frontend build not found. Please run "npm run build".');
+    }
+  });
+});
+
 app.listen(PORT, () => {
-  console.log(`Second Brain Backend running at http://localhost:${PORT}`);
+  console.log('----------------------------------------------------');
+  console.log(`🚀 AEGISOS v1.0.0 Server active at http://localhost:${PORT}`);
+  console.log(`📂 Static Frontend directory: ${DIST_DIR}`);
+  console.log(`⚙️ Environment: ${process.env.NODE_ENV || 'production'}`);
+  console.log('----------------------------------------------------');
   buildEmbeddingsCache().catch(err => console.error('[JARVIS RAG] Background indexer failed:', err));
   runBackup().catch(err => console.error('[JARVIS Backup] Startup backup failed:', err));
   startLibrarianWatcher();
