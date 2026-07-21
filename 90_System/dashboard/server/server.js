@@ -25,6 +25,8 @@ import { initializeExecutivePlanner } from './planner/initPlanner.js';
 import { plannerAPI } from './planner/PlannerAPI.js';
 import { initializeSimulationEngine } from './simulation/initSimulation.js';
 import { simulationAPI } from './simulation/SimulationAPI.js';
+import { initializeAgentRuntime } from './agentRuntime/initAgentRuntime.js';
+import { agentRuntimeAPI } from './agentRuntime/AgentRuntimeAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -547,6 +549,64 @@ app.get('/api/simulation/report/:id', (req, res) => {
 
 app.get('/api/simulation/metrics', (req, res) => {
   res.json({ metrics: simulationAPI.getMetrics() });
+});
+
+// Boot Agent Runtime Subsystem
+initializeAgentRuntime(db);
+
+// ----------------------------------------------------
+// AEGISOS Agent Runtime REST APIs
+// ----------------------------------------------------
+
+app.get('/api/agents', (req, res) => {
+  res.json({ agents: agentRuntimeAPI.listAgents() });
+});
+
+app.get('/api/agents/queue', (req, res) => {
+  res.json({ queue: agentRuntimeAPI.getQueueStatus() });
+});
+
+app.get('/api/agents/capabilities', (req, res) => {
+  res.json({ capabilities: agentRuntimeAPI.getCapabilities() });
+});
+
+app.get('/api/agents/messages', (req, res) => {
+  res.json({ messages: agentRuntimeAPI.getMessages(req.query.receiverId) });
+});
+
+app.get('/api/agents/metrics', (req, res) => {
+  res.json({ metrics: agentRuntimeAPI.getMetrics() });
+});
+
+app.get('/api/agents/:id', (req, res) => {
+  const agent = agentRuntimeAPI.getAgent(req.params.id);
+  if (!agent) return res.status(404).json({ error: 'Agent not found' });
+  res.json({ agent });
+});
+
+app.post('/api/agents/:id/start', (req, res) => {
+  const success = agentRuntimeAPI.startAgent(req.params.id);
+  res.json({ success, id: req.params.id });
+});
+
+app.post('/api/agents/:id/pause', (req, res) => {
+  const success = agentRuntimeAPI.pauseAgent(req.params.id);
+  res.json({ success, id: req.params.id });
+});
+
+app.post('/api/agents/:id/resume', (req, res) => {
+  const success = agentRuntimeAPI.resumeAgent(req.params.id);
+  res.json({ success, id: req.params.id });
+});
+
+app.post('/api/agents/:id/stop', (req, res) => {
+  const success = agentRuntimeAPI.stopAgent(req.params.id);
+  res.json({ success, id: req.params.id });
+});
+
+app.post('/api/agents/:id/restart', (req, res) => {
+  const success = agentRuntimeAPI.restartAgent(req.params.id);
+  res.json({ success, id: req.params.id });
 });
 
 // Helper to recursively get markdown files
