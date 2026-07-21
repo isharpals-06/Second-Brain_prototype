@@ -37,6 +37,7 @@ import { initializeGovernancePlatform } from './governance/initGovernance.js';
 import { governanceAPI } from './governance/GovernanceAPI.js';
 import { initializeAutomationPlatform } from './automation/initAutomation.js';
 import { automationAPI } from './automation/AutomationAPI.js';
+import { productionAPI } from './production/ProductionAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -849,6 +850,22 @@ app.get('/api/automation/rollbacks', (req, res) => {
 app.post('/api/automation/rollback/:id', (req, res) => {
   const result = automationAPI.triggerRollback(req.params.id);
   res.json({ result });
+});
+
+// ----------------------------------------------------
+// AEGISOS v1.0.0 Production System Health & Diagnostics
+// ----------------------------------------------------
+
+app.get('/api/system/health', (req, res) => {
+  res.json(productionAPI.getHealth());
+});
+
+app.get('/api/system/diagnostics', (req, res) => {
+  res.json(productionAPI.getHealth());
+});
+
+app.get('/api/system/version', (req, res) => {
+  res.json(productionAPI.getVersion());
 });
 
 // Helper to recursively get markdown files
