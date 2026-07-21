@@ -23,6 +23,8 @@ import { initializeKnowledgeSubsystem } from './knowledge/initKnowledge.js';
 import { knowledgeAPI } from './knowledge/KnowledgeAPI.js';
 import { initializeExecutivePlanner } from './planner/initPlanner.js';
 import { plannerAPI } from './planner/PlannerAPI.js';
+import { initializeSimulationEngine } from './simulation/initSimulation.js';
+import { simulationAPI } from './simulation/SimulationAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -514,6 +516,37 @@ app.get('/api/planner/constraints', (req, res) => {
 
 app.get('/api/planner/metrics', (req, res) => {
   res.json({ metrics: plannerAPI.getMetrics() });
+});
+
+// Boot Decision Simulation Engine
+initializeSimulationEngine(db);
+
+// ----------------------------------------------------
+// AEGISOS Decision Simulation Engine REST APIs
+// ----------------------------------------------------
+
+app.post('/api/simulation/run', (req, res) => {
+  try {
+    const report = simulationAPI.simulatePlan(req.body.plan);
+    if (!report) return res.status(400).json({ error: 'Invalid plan provided' });
+    res.json({ report });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/simulation/reports', (req, res) => {
+  res.json({ reports: simulationAPI.listReports() });
+});
+
+app.get('/api/simulation/report/:id', (req, res) => {
+  const report = simulationAPI.getReport(req.params.id);
+  if (!report) return res.status(404).json({ error: 'Simulation report not found' });
+  res.json({ report });
+});
+
+app.get('/api/simulation/metrics', (req, res) => {
+  res.json({ metrics: simulationAPI.getMetrics() });
 });
 
 // Helper to recursively get markdown files
