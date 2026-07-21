@@ -1,5 +1,9 @@
 import { serverEventBus } from './eventBus.js';
 import { SystemEvents } from './types.js';
+import { aegisLogger } from './logger.js';
+import { AegisError, ErrorCodes } from './errors.js';
+
+const log = aegisLogger.child('SkillRegistry');
 
 class SkillRegistry {
   constructor() {
@@ -7,53 +11,80 @@ class SkillRegistry {
   }
 
   /**
-   * Register a reusable capability / skill.
+   * Register a capability / skill with versioning and permission metadata.
    * @param {Object} skillDef 
    */
   registerSkill(skillDef) {
     if (!skillDef || !skillDef.id || !skillDef.name) {
-      throw new Error('[SkillRegistry] Skill definition must include "id" and "name".');
+      throw new AegisError(ErrorCodes.SKILL_ERROR, 'Skill definition must include "id" and "name".');
     }
 
     const record = {
       id: skillDef.id,
       name: skillDef.name,
+      version: skillDef.version || '1.0.0',
       description: skillDef.description || '',
       category: skillDef.category || 'General',
       handler: skillDef.handler || null,
+      requiredPermissions: skillDef.requiredPermissions || [],
       inputs: skillDef.inputs || [],
       outputs: skillDef.outputs || []
     };
 
     this.skills.set(skillDef.id, record);
-    console.log(`[SkillRegistry] Skill "${skillDef.name}" (${skillDef.id}) registered.`);
+    log.info(`Skill "${skillDef.name}" v${record.version} (${skillDef.id}) registered.`);
     return record;
   }
 
-  /**
-   * Retrieve a skill definition by ID.
-   * @param {string} id 
-   * @returns {Object|null}
-   */
   getSkill(id) {
     return this.skills.get(id) || null;
   }
 
   /**
-   * Execute a registered skill handler if provided, or log framework invocation.
+   * Validate if granted permissions satisfy skill's required permissions.
+   * @param {string} id 
+   * @param {Array<string>} grantedPermissions 
+   * @returns {boolean}
+   */
+  validatePermissions(id, grantedPermissions = []) {
+    const skill = this.getSkill(id);
+    if (!skill) return false;
+    if (!skill.requiredPermissions || skill.requiredPermissions.length === 0) return true;
+
+    return skill.requiredPermissions.every(req => grantedPermissions.includes(req));
+  }
+
+  /**
+   * Search skills by category.
+   * @param {string} category 
+   * @returns {Array<Object>}
+   */
+  findByCategory(category) {
+    return Array.from(this.skills.values()).filter(s =>
+      s.category.toLowerCase() === category.toLowerCase()
+    );
+  }
+
+  /**
+   * Execute a registered skill.
    * @param {string} id 
    * @param {Object} params 
    * @param {Object} context 
+   * @param {Array<string>} userPermissions 
    * @returns {Promise<any>}
    */
-  async executeSkill(id, params = {}, context = {}) {
+  async executeSkill(id, params = {}, context = {}, userPermissions = ['*']) {
     const skill = this.getSkill(id);
     if (!skill) {
-      throw new Error(`[SkillRegistry] Skill "${id}" is not registered.`);
+      throw new AegisError(ErrorCodes.SKILL_ERROR, `Skill "${id}" is not registered.`);
+    }
+
+    if (!userPermissions.includes('*') && !this.validatePermissions(id, userPermissions)) {
+      throw new AegisError(ErrorCodes.PERMISSION_DENIED, `Permission denied to execute skill "${id}". Required: [${skill.requiredPermissions.join(', ')}]`);
     }
 
     const timestamp = new Date().toISOString();
-    console.log(`[SkillRegistry] Executing skill "${skill.name}" (${id})...`);
+    log.info(`Executing skill "${skill.name}" (${id})...`);
 
     let result = null;
     if (typeof skill.handler === 'function') {
@@ -65,6 +96,7 @@ class SkillRegistry {
     serverEventBus.publish(SystemEvents.SKILL_EXECUTED, {
       skillId: id,
       skillName: skill.name,
+      version: skill.version,
       timestamp,
       params
     });
@@ -72,16 +104,14 @@ class SkillRegistry {
     return result;
   }
 
-  /**
-   * List all registered skills.
-   * @returns {Array<Object>}
-   */
   listSkills() {
     return Array.from(this.skills.values()).map(s => ({
       id: s.id,
       name: s.name,
+      version: s.version,
       description: s.description,
       category: s.category,
+      requiredPermissions: s.requiredPermissions,
       hasHandler: typeof s.handler === 'function'
     }));
   }

@@ -1,10 +1,15 @@
 import { SystemEvents } from './types.js';
+import { aegisLogger } from './logger.js';
+import { AegisError, ErrorCodes } from './errors.js';
+
+const log = aegisLogger.child('EventBus');
 
 class EventBus {
-  constructor() {
+  constructor(options = {}) {
     this.listeners = new Map();
     this.eventHistory = [];
-    this.maxHistorySize = 100;
+    this.maxHistorySize = options.maxHistorySize || 100;
+    this.maxListenersPerEvent = options.maxListeners || 25;
   }
 
   /**
@@ -15,13 +20,19 @@ class EventBus {
    */
   subscribe(event, callback) {
     if (!event || typeof callback !== 'function') {
-      throw new Error('[EventBus] Event name and callback function are required.');
+      throw new AegisError(ErrorCodes.EVENT_ERROR, 'Event name and callback function are required.');
     }
+
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
-    this.listeners.get(event).add(callback);
 
+    const currentListeners = this.listeners.get(event);
+    if (currentListeners.size >= this.maxListenersPerEvent) {
+      log.warn(`Max listener threshold (${this.maxListenersPerEvent}) reached for event "${event}". Possible memory leak.`);
+    }
+
+    currentListeners.add(callback);
     return () => this.unsubscribe(event, callback);
   }
 
@@ -48,22 +59,33 @@ class EventBus {
     const timestamp = new Date().toISOString();
     const eventRecord = { event, payload, timestamp };
 
-    // Record history
+    // Record history with size cap
     this.eventHistory.push(eventRecord);
     if (this.eventHistory.length > this.maxHistorySize) {
       this.eventHistory.shift();
     }
 
     const callbacks = this.listeners.get(event);
-    if (callbacks) {
+    if (callbacks && callbacks.size > 0) {
       callbacks.forEach((cb) => {
         try {
           cb(payload, eventRecord);
         } catch (err) {
-          console.error(`[EventBus] Exception in subscriber for event "${event}":`, err);
+          log.error(`Exception in subscriber for event "${event}": ${err.message}`, { error: err.stack });
         }
       });
     }
+  }
+
+  /**
+   * Discover available events catalog with subscriber metrics.
+   * @returns {Array<Object>}
+   */
+  getEventCatalog() {
+    return Object.values(SystemEvents).map(eventName => ({
+      name: eventName,
+      activeSubscribers: this.listeners.has(eventName) ? this.listeners.get(eventName).size : 0
+    }));
   }
 
   /**

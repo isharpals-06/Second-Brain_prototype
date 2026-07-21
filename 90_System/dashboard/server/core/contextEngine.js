@@ -1,9 +1,12 @@
 import { serverEventBus } from './eventBus.js';
 import { SystemEvents } from './types.js';
+import { aegisLogger } from './logger.js';
+
+const log = aegisLogger.child('ContextEngine');
 
 class ContextEngine {
   constructor() {
-    this.context = new Map([
+    this.initialState = new Map([
       ['activeProject', 'AEGISOS'],
       ['activeWorkspace', 'SecondBrain'],
       ['activeNote', null],
@@ -15,6 +18,7 @@ class ContextEngine {
       ['systemHealth', { status: 'healthy', uptimeStart: new Date().toISOString() }]
     ]);
 
+    this.context = new Map(this.initialState);
     this.listeners = new Map();
   }
 
@@ -28,7 +32,7 @@ class ContextEngine {
   }
 
   /**
-   * Update value for a context key and publish change event.
+   * Update single context key and emit event.
    * @param {string} key 
    * @param {any} value 
    */
@@ -38,23 +42,58 @@ class ContextEngine {
 
     this.context.set(key, value);
 
-    // Notify key listeners
     const keyListeners = this.listeners.get(key);
     if (keyListeners) {
       keyListeners.forEach(cb => {
         try {
           cb(value, oldValue);
         } catch (err) {
-          console.error(`[ContextEngine] Listener error for key "${key}":`, err);
+          log.error(`Listener error for key "${key}": ${err.message}`);
         }
       });
     }
 
-    // Trigger matching EventBus events
     if (key === 'currentModel') {
       serverEventBus.publish(SystemEvents.MODEL_CHANGED, { model: value, provider: this.get('activeProvider') });
     } else if (key === 'activeProject') {
       serverEventBus.publish(SystemEvents.PROJECT_OPENED, { project: value });
+    }
+  }
+
+  /**
+   * Atomic batch update of multiple context keys.
+   * @param {Object} updates 
+   */
+  setMany(updates = {}) {
+    if (typeof updates !== 'object' || updates === null) return;
+    Object.entries(updates).forEach(([k, v]) => this.set(k, v));
+  }
+
+  /**
+   * Reset key back to initial default value.
+   * @param {string} key 
+   */
+  reset(key) {
+    if (this.initialState.has(key)) {
+      this.set(key, this.initialState.get(key));
+    }
+  }
+
+  /**
+   * Export immutable snapshot of current context state.
+   * @returns {Object}
+   */
+  snapshot() {
+    return this.getAll();
+  }
+
+  /**
+   * Restore state from a snapshot.
+   * @param {Object} snapshotObject 
+   */
+  restore(snapshotObject) {
+    if (snapshotObject && typeof snapshotObject === 'object') {
+      this.setMany(snapshotObject);
     }
   }
 
@@ -71,7 +110,7 @@ class ContextEngine {
   }
 
   /**
-   * Subscribe to state updates for a specific context key.
+   * Subscribe to state updates for a specific key.
    * @param {string} key 
    * @param {Function} callback 
    * @returns {Function} Unsubscribe callback

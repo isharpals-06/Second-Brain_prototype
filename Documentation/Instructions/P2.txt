@@ -1,0 +1,282 @@
+# AEGISOS v0.1.5
+## Foundation Validation & Architecture Hardening
+
+# CONTEXT
+
+The previous phase introduced the foundational architecture for AEGISOS.
+
+The project now contains:
+
+- Event Bus
+- Context Engine
+- Agent Manager
+- Service Registry
+- Skill Registry
+- Modular folder structure
+- Shared interfaces
+
+This phase is NOT about adding new user-facing features.
+
+It is a quality assurance and architecture validation phase.
+
+Think like a senior software architect preparing the project for years of development.
+
+---
+
+# OBJECTIVE
+
+Review every architectural decision made in v0.1.0.
+
+Improve maintainability.
+
+Remove unnecessary complexity.
+
+Eliminate technical debt.
+
+Ensure every module follows clean software engineering principles.
+
+The foundation should be stable enough that future phases require minimal refactoring.
+
+---
+
+# TASKS
+
+## 1. Architecture Audit
+
+Review the entire codebase.
+
+Identify:
+
+- duplicate abstractions
+- unnecessary complexity
+- circular dependencies
+- tightly coupled modules
+- poor naming
+- dead code
+- unnecessary wrappers
+
+Simplify wherever possible.
+
+---
+
+## 2. Dependency Analysis
+
+Generate an internal dependency map.
+
+Verify:
+
+Core never depends on UI.
+
+Services never depend on components.
+
+Agents never depend on React.
+
+Business logic stays outside the frontend.
+
+No cyclic imports.
+
+---
+
+## 3. Event Bus Validation
+
+Ensure:
+
+events are typed
+
+events are documented
+
+events are discoverable
+
+subscriptions are cleaned correctly
+
+no memory leaks
+
+future agents can subscribe safely
+
+---
+
+## 4. Context Engine Review
+
+Verify that context updates are:
+
+predictable
+
+atomic
+
+thread-safe where applicable
+
+easy to extend
+
+Avoid scattered state.
+
+The Context Engine should become the single source of truth.
+
+---
+
+## 5. Agent Manager Validation
+
+Even though no agents exist yet:
+
+verify lifecycle APIs
+
+verify registration
+
+verify health tracking
+
+verify future scalability
+
+Design for dozens of agents.
+
+---
+
+## 6. Service Registry Review
+
+Ensure:
+
+lazy loading support
+
+dependency injection support
+
+clear initialization order
+
+safe shutdown
+
+service discovery
+
+---
+
+## 7. Skill Registry Review
+
+Verify:
+
+metadata system
+
+registration
+
+categories
+
+future versioning
+
+future permissions
+
+Do not implement skills yet.
+
+---
+
+## 8. Error Handling
+
+Standardize:
+
+logging
+
+exceptions
+
+service failures
+
+startup failures
+
+shutdown
+
+timeouts
+
+---
+
+## 9. Configuration Layer
+
+Review configuration management.
+
+Separate:
+
+development
+
+testing
+
+production
+
+Avoid hardcoded values.
+
+---
+
+## 10. Documentation
+
+Generate:
+
+Architecture Guide
+
+Developer Guide
+
+Module Responsibilities
+
+Extension Guide
+
+Contribution Guide
+
+Future Agent API documentation
+
+---
+
+# CODE QUALITY
+
+Follow SOLID.
+
+Follow DRY.
+
+Follow KISS.
+
+Prefer composition.
+
+Avoid global state.
+
+Keep interfaces minimal.
+
+---
+
+# PERFORMANCE
+
+Ensure:
+
+minimal startup time
+
+minimal memory usage
+
+minimal unnecessary listeners
+
+efficient event dispatch
+
+---
+
+# TESTING
+
+Verify:
+
+project builds successfully
+
+existing dashboard works
+
+chat works
+
+flashcards work
+
+database works
+
+RAG works
+
+watchers work
+
+no regressions
+
+---
+
+# OUTPUT
+
+Refactor where needed.
+
+Improve documentation.
+
+Remove architectural weaknesses.
+
+Produce production-quality code.
+
+The result should feel like the foundation of a real operating system rather than a typical web application.
+
+This phase is complete only when the architecture is stable, scalable, clean, and ready for Sentinel Core.

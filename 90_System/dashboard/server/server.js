@@ -5,7 +5,6 @@ import fsSync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { exec } from 'child_process';
-import dotenv from 'dotenv';
 import multer from 'multer';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
@@ -13,7 +12,9 @@ const pdf = require('pdf-parse');
 import { DatabaseSync } from 'node:sqlite';
 import chokidar from 'chokidar';
 
-// AEGISOS Core Architecture Imports
+// AEGISOS Config & Core Architecture Imports
+import { config } from './config/index.js';
+import { aegisLogger } from './core/logger.js';
 import { initializeAegisCore } from './core/initCore.js';
 import { serverEventBus } from './core/eventBus.js';
 import { serverContextEngine } from './core/contextEngine.js';
@@ -22,8 +23,7 @@ import { serverAgentManager } from './core/agentManager.js';
 import { serverSkillRegistry } from './core/skillRegistry.js';
 import { SystemEvents } from './core/types.js';
 
-// Configure dotenv
-dotenv.config();
+const log = aegisLogger.child('Server');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
