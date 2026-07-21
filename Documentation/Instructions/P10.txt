@@ -1,0 +1,754 @@
+# AEGISOS v0.6.0
+# ADR-009 — Workflow Orchestration Platform (WOP)
+
+Status: Accepted
+
+Version: v0.6.0
+
+---
+
+# MISSION
+
+AEGISOS now possesses:
+
+✔ Kernel
+
+✔ Sentinel
+
+✔ World Model
+
+✔ Knowledge Graph
+
+✔ Executive Planner
+
+✔ Decision Simulation Engine
+
+✔ Agent Runtime
+
+✔ Tool Runtime
+
+The next objective is introducing orchestration.
+
+Implement the Workflow Orchestration Platform.
+
+The WOP is responsible for coordinating agents, tools, approvals, conditions, retries, branching, checkpoints, and execution state.
+
+It does NOT perform planning.
+
+It does NOT implement tools.
+
+It does NOT host agents.
+
+It orchestrates them.
+
+---
+
+# DESIGN PHILOSOPHY
+
+Separate orchestration from execution.
+
+Workflows are declarative.
+
+Execution should be deterministic.
+
+Support resumability.
+
+Support observability.
+
+Support extensibility.
+
+Every workflow should be reproducible.
+
+---
+
+# PRIMARY OBJECTIVES
+
+Implement:
+
+✔ Workflow Runtime
+
+✔ Workflow Registry
+
+✔ Workflow Engine
+
+✔ Workflow Scheduler
+
+✔ Step Executor
+
+✔ State Machine
+
+✔ Checkpoint Manager
+
+✔ Retry Manager
+
+✔ Approval Manager
+
+✔ Workflow APIs
+
+---
+
+# REQUIRED ARCHITECTURE
+
+Kernel
+
+↓
+
+Sentinel
+
+↓
+
+World Model
+
+↓
+
+Knowledge Graph
+
+↓
+
+Executive Planner
+
+↓
+
+Decision Simulation Engine
+
+↓
+
+Agent Runtime
+
+↓
+
+Tool Runtime
+
+↓
+
+Workflow Orchestration Platform
+
+├── Workflow Registry
+
+├── Workflow Runtime
+
+├── Workflow Scheduler
+
+├── Step Executor
+
+├── State Machine
+
+├── Retry Manager
+
+├── Approval Manager
+
+├── Checkpoint Manager
+
+├── Event Bridge
+
+└── Workflow APIs
+
+---
+
+# WORKFLOW MODEL
+
+Every workflow contains:
+
+Workflow ID
+
+Name
+
+Version
+
+Description
+
+Inputs
+
+Outputs
+
+Variables
+
+Parameters
+
+Metadata
+
+Owner
+
+Permissions
+
+Execution Policy
+
+Retry Policy
+
+Timeout
+
+Tags
+
+---
+
+# STEP MODEL
+
+Support step types:
+
+Agent Step
+
+Tool Step
+
+Decision Step
+
+Condition Step
+
+Loop Step
+
+Parallel Step
+
+Approval Step
+
+Delay Step
+
+Notification Step
+
+Sub-workflow Step
+
+Checkpoint Step
+
+Custom Step
+
+Every step should expose:
+
+Inputs
+
+Outputs
+
+Dependencies
+
+Timeout
+
+Retry Policy
+
+Conditions
+
+Execution Status
+
+Logs
+
+Metrics
+
+---
+
+# STATE MACHINE
+
+Support:
+
+Pending
+
+Ready
+
+Running
+
+Waiting
+
+Paused
+
+Approved
+
+Rejected
+
+Retrying
+
+Completed
+
+Failed
+
+Cancelled
+
+Timed Out
+
+State transitions must be explicit.
+
+---
+
+# EXECUTION MODEL
+
+Planner
+
+↓
+
+Workflow Selected
+
+↓
+
+Validation
+
+↓
+
+Simulation Check
+
+↓
+
+Workflow Runtime
+
+↓
+
+Step Scheduling
+
+↓
+
+Agent Invocation
+
+↓
+
+Tool Execution
+
+↓
+
+Checkpoint
+
+↓
+
+Next Step
+
+↓
+
+Completion
+
+---
+
+# PARALLEL EXECUTION
+
+Support:
+
+Sequential Steps
+
+Parallel Branches
+
+Conditional Branches
+
+Dynamic Branches
+
+Join Nodes
+
+Synchronization
+
+Fan-out
+
+Fan-in
+
+Future distributed execution.
+
+---
+
+# CHECKPOINT MANAGER
+
+Persist:
+
+Workflow State
+
+Variables
+
+Completed Steps
+
+Pending Steps
+
+Results
+
+Errors
+
+Execution Metadata
+
+Support resume after interruption.
+
+---
+
+# RETRY MANAGER
+
+Support:
+
+Retry Count
+
+Backoff Strategy
+
+Retry Conditions
+
+Fallback Path
+
+Compensation Logic
+
+Failure Escalation
+
+Prevent infinite retries.
+
+---
+
+# APPROVAL MANAGER
+
+Support approval gates.
+
+Examples:
+
+Delete Files
+
+Push Git
+
+Deploy Project
+
+Email Customer
+
+Database Migration
+
+System Configuration
+
+Approval policies:
+
+Automatic
+
+Manual
+
+Role-based
+
+Time-limited
+
+Session-limited
+
+---
+
+# EVENT BRIDGE
+
+Listen to:
+
+Sentinel Events
+
+World Model Updates
+
+Knowledge Graph Updates
+
+Planner Decisions
+
+Agent Events
+
+Tool Events
+
+Workflow Events
+
+Everything remains event-driven.
+
+---
+
+# WORKFLOW REGISTRY
+
+Maintain:
+
+Workflow Metadata
+
+Versions
+
+Owners
+
+Permissions
+
+Tags
+
+Categories
+
+Dependencies
+
+Usage Statistics
+
+Health
+
+Execution Count
+
+Success Rate
+
+---
+
+# WORKFLOW API
+
+Expose:
+
+Registered Workflows
+
+Running Workflows
+
+Workflow History
+
+Workflow State
+
+Execution Logs
+
+Checkpoints
+
+Metrics
+
+Approval Requests
+
+Retry Status
+
+Execution Graph
+
+---
+
+# WORKFLOW DEFINITIONS
+
+Support reusable workflows.
+
+Examples:
+
+Research Paper Pipeline
+
+↓
+
+Search
+
+↓
+
+Download
+
+↓
+
+Extract
+
+↓
+
+Embed
+
+↓
+
+Summarize
+
+↓
+
+Flashcards
+
+↓
+
+Knowledge Graph
+
+Example:
+
+Git Feature Workflow
+
+↓
+
+Create Branch
+
+↓
+
+Code
+
+↓
+
+Test
+
+↓
+
+Commit
+
+↓
+
+Push
+
+↓
+
+Open PR
+
+Workflows should be composable.
+
+---
+
+# OBSERVABILITY
+
+Track:
+
+Workflow Count
+
+Execution Count
+
+Average Duration
+
+Failures
+
+Retries
+
+Approval Requests
+
+Checkpoint Count
+
+Parallel Executions
+
+Queue Length
+
+Success Rate
+
+Step Latency
+
+---
+
+# SECURITY
+
+Validate:
+
+Workflow Permissions
+
+Agent Permissions
+
+Tool Permissions
+
+Approval Policies
+
+Variable Isolation
+
+Secret Handling
+
+Execution Audit
+
+No workflow may bypass Tool Runtime or Permission Gateway.
+
+---
+
+# PERFORMANCE
+
+Target:
+
+Low orchestration overhead
+
+Parallel execution
+
+Fast checkpoint recovery
+
+Streaming step execution
+
+Minimal duplicate scheduling
+
+Scalable to thousands of workflows.
+
+---
+
+# DOCUMENTATION
+
+Generate:
+
+Workflow Architecture
+
+Workflow DSL
+
+Execution Model
+
+State Machine
+
+Approval System
+
+Checkpoint System
+
+Retry Model
+
+Workflow SDK
+
+Developer Guide
+
+Extension Guide
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✔ Workflow Runtime operational
+
+✔ Workflow Registry operational
+
+✔ State Machine operational
+
+✔ Scheduler operational
+
+✔ Step Executor operational
+
+✔ Checkpoints operational
+
+✔ Retry Manager operational
+
+✔ Approval Manager operational
+
+✔ Workflow APIs exposed
+
+✔ Documentation complete
+
+---
+
+# REGRESSION CHECKLIST
+
+Verify:
+
+Kernel stable
+
+Sentinel stable
+
+World Model stable
+
+Knowledge Graph stable
+
+Executive Planner stable
+
+Simulation Engine stable
+
+Agent Runtime stable
+
+Tool Runtime stable
+
+No direct agent orchestration
+
+No permission bypass
+
+No workflow state corruption
+
+---
+
+# DO NOT IMPLEMENT
+
+Do NOT implement:
+
+Long-term learning
+
+Experience scoring
+
+Memory consolidation
+
+Voice interaction
+
+Visual cockpit redesign
+
+Background autonomous scheduling
+
+Marketplace
+
+Those belong to future ADRs.
+
+---
+
+# FUTURE EXTENSION POINTS
+
+Reserve interfaces for:
+
+Memory Platform
+
+Automation Platform
+
+Experience Platform
+
+Plugin Marketplace
+
+Distributed Workflows
+
+Remote Executors
+
+Human Collaboration
+
+Workflow Templates
+
+Workflow Marketplace
+
+Policy Engine
+
+---
+
+# FINAL OBJECTIVE
+
+At the completion of ADR-009, AEGISOS should possess a production-grade Workflow Orchestration Platform capable of coordinating complex, multi-step workflows across agents, tools, approvals, and checkpoints.
+
+The platform should behave like an enterprise orchestration engine, where workflows are declarative, resumable, observable, secure, and reproducible.
+
+Every complex task in AEGISOS should ultimately be represented as a workflow executed by this platform rather than as hardcoded procedural logic.

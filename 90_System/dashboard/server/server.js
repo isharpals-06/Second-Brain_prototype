@@ -29,6 +29,8 @@ import { initializeAgentRuntime } from './agentRuntime/initAgentRuntime.js';
 import { agentRuntimeAPI } from './agentRuntime/AgentRuntimeAPI.js';
 import { initializeToolRuntime } from './toolRuntime/initToolRuntime.js';
 import { toolRuntimeAPI } from './toolRuntime/ToolRuntimeAPI.js';
+import { initializeWorkflowPlatform } from './workflow/initWorkflow.js';
+import { workflowAPI } from './workflow/WorkflowAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -643,6 +645,55 @@ app.post('/api/tools/execute', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Boot Workflow Orchestration Platform
+initializeWorkflowPlatform(db);
+
+// ----------------------------------------------------
+// AEGISOS Workflow Orchestration Platform REST APIs
+// ----------------------------------------------------
+
+app.get('/api/workflows', (req, res) => {
+  res.json({ workflows: workflowAPI.listWorkflows() });
+});
+
+app.get('/api/workflows/instances', (req, res) => {
+  res.json({ instances: workflowAPI.listInstances() });
+});
+
+app.get('/api/workflows/approvals', (req, res) => {
+  res.json({ approvals: workflowAPI.listApprovals() });
+});
+
+app.get('/api/workflows/metrics', (req, res) => {
+  res.json({ metrics: workflowAPI.getMetrics() });
+});
+
+app.get('/api/workflows/instance/:id', (req, res) => {
+  const instance = workflowAPI.getInstance(req.params.id);
+  if (!instance) return res.status(404).json({ error: 'Workflow instance not found' });
+  res.json({ instance });
+});
+
+app.post('/api/workflows/run', (req, res) => {
+  try {
+    const instance = workflowAPI.runWorkflow(req.body.id, req.body.inputs || {});
+    if (!instance) return res.status(404).json({ error: 'Workflow template not found' });
+    res.json({ instance });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/workflows/approve', (req, res) => {
+  const success = workflowAPI.approve(req.body.approvalId);
+  res.json({ success, approvalId: req.body.approvalId });
+});
+
+app.post('/api/workflows/reject', (req, res) => {
+  const success = workflowAPI.reject(req.body.approvalId, req.body.reason || '');
+  res.json({ success, approvalId: req.body.approvalId });
 });
 
 // Helper to recursively get markdown files
