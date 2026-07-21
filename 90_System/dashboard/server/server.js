@@ -13,6 +13,15 @@ const pdf = require('pdf-parse');
 import { DatabaseSync } from 'node:sqlite';
 import chokidar from 'chokidar';
 
+// AEGISOS Core Architecture Imports
+import { initializeAegisCore } from './core/initCore.js';
+import { serverEventBus } from './core/eventBus.js';
+import { serverContextEngine } from './core/contextEngine.js';
+import { serverServiceRegistry } from './core/serviceRegistry.js';
+import { serverAgentManager } from './core/agentManager.js';
+import { serverSkillRegistry } from './core/skillRegistry.js';
+import { SystemEvents } from './core/types.js';
+
 // Configure dotenv
 dotenv.config();
 
@@ -44,6 +53,9 @@ const app = express();
 const PORT = process.env.PORT || 3010;
 
 app.use(cors());
+
+// Initialize AEGISOS Core Architecture
+const aegisCore = initializeAegisCore();
 
 // Initialize SQLite database
 const dbPath = path.join(__dirname, 'vault_assistant.db');
@@ -252,6 +264,53 @@ async function runBackup() {
 }
 
 app.use(express.json({ limit: '50mb' }));
+
+// ----------------------------------------------------
+// AEGISOS Core Architecture System API Endpoints
+// ----------------------------------------------------
+
+app.get('/api/aegis/status', (req, res) => {
+  res.json({
+    status: 'online',
+    architecture: 'AEGISOS Phase 1',
+    context: serverContextEngine.getAll(),
+    services: serverServiceRegistry.list(),
+    agents: serverAgentManager.list(),
+    skills: serverSkillRegistry.listSkills()
+  });
+});
+
+app.get('/api/aegis/events', (req, res) => {
+  const limit = parseInt(req.query.limit || '20', 10);
+  res.json({ events: serverEventBus.getHistory(limit) });
+});
+
+app.get('/api/aegis/agents', (req, res) => {
+  res.json({ agents: serverAgentManager.list() });
+});
+
+app.get('/api/aegis/skills', (req, res) => {
+  res.json({ skills: serverSkillRegistry.listSkills() });
+});
+
+app.post('/api/aegis/skills/execute', async (req, res) => {
+  try {
+    const { skillId, params } = req.body;
+    const result = await serverSkillRegistry.executeSkill(skillId, params, serverContextEngine.getAll());
+    res.json({ success: true, result });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post('/api/aegis/context', (req, res) => {
+  const { key, value } = req.body;
+  if (key) {
+    serverContextEngine.set(key, value);
+    return res.json({ success: true, context: serverContextEngine.getAll() });
+  }
+  res.status(400).json({ error: 'Key is required' });
+});
 
 // Helper to recursively get markdown files
 async function getMarkdownFiles(dir) {

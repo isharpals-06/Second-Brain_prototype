@@ -1,0 +1,422 @@
+# AEGISOS — Phase 1
+## Foundation Refactor & Core Architecture
+
+# PROJECT CONTEXT
+
+You are the lead software architect for AEGISOS.
+
+AEGISOS is evolving from a "Second Brain" application into a fully modular AI Agent Operating System inspired by the philosophy of JARVIS—not by copying Iron Man, but by creating an intelligent local-first operating environment that continuously understands context, orchestrates specialized agents, manages memory, and proactively assists the user.
+
+The existing project is already functional.
+
+Current stack includes:
+
+- React 19
+- Vite
+- Express
+- SQLite
+- Ollama
+- Gemini
+- Obsidian integration
+- Chokidar file watcher
+- Local RAG
+- Daily Brief
+- Flashcards
+- AI Chat
+- Coprocessor
+- Notes Explorer
+
+The project must NEVER lose these existing capabilities.
+
+Everything built during this phase must preserve backwards compatibility.
+
+---
+
+# OBJECTIVE
+
+This phase is NOT about adding features.
+
+This phase is about rebuilding the internal architecture so future AI agents can plug into the system cleanly.
+
+Think like an operating system architect.
+
+By the end of this phase, AEGISOS should have a modular service-oriented architecture that can support dozens of independent AI agents.
+
+---
+
+# PRIMARY GOALS
+
+Refactor the codebase into clearly separated architectural layers.
+
+Introduce a centralized Event Bus.
+
+Introduce a Context Manager.
+
+Introduce an Agent Manager.
+
+Introduce a Skill Registry.
+
+Introduce a Service Registry.
+
+Create standardized interfaces.
+
+Remove tight coupling.
+
+Improve maintainability.
+
+Improve scalability.
+
+Prepare the project for future autonomous execution.
+
+---
+
+# DO NOT IMPLEMENT YET
+
+Do NOT implement:
+
+- voice assistant
+- planner
+- automation
+- agent reasoning
+- browser monitoring
+- file monitoring improvements
+- calendar integration
+- task execution
+
+Only build the architecture that will support them.
+
+---
+
+# REQUIRED ARCHITECTURE
+
+Design AEGISOS around these layers.
+
+AEGISOS
+
+├── Core
+│
+├── Event Bus
+│
+├── Context Engine
+│
+├── Agent Manager
+│
+├── Service Registry
+│
+├── Skill Registry
+│
+├── Memory Layer
+│
+├── Tool Layer
+│
+├── API Layer
+│
+└── UI Layer
+
+Every layer must have a clearly defined responsibility.
+
+No circular dependencies.
+
+No hidden globals.
+
+Everything should communicate through clean interfaces.
+
+---
+
+# EVENT BUS
+
+Implement an internal publish/subscribe event system.
+
+Example events:
+
+APPLICATION_STARTED
+
+NOTE_CREATED
+
+NOTE_UPDATED
+
+FILE_CHANGED
+
+CHAT_MESSAGE
+
+FLASHCARD_REVIEWED
+
+MODEL_CHANGED
+
+PROJECT_OPENED
+
+SERVICE_STARTED
+
+SERVICE_STOPPED
+
+The Event Bus should become the communication backbone of AEGISOS.
+
+Future services must subscribe instead of directly calling each other.
+
+---
+
+# CONTEXT ENGINE
+
+Create a centralized Context Engine.
+
+Responsibilities:
+
+Maintain runtime context.
+
+Store active project.
+
+Store active workspace.
+
+Store active note.
+
+Store active repository.
+
+Store current AI model.
+
+Store active conversation.
+
+Store user state.
+
+Provide read/write APIs.
+
+Future agents should never manage context independently.
+
+---
+
+# AGENT MANAGER
+
+Create an Agent Manager.
+
+This manager should NOT execute AI logic yet.
+
+It should only manage agent lifecycle.
+
+Example interface:
+
+register()
+
+unregister()
+
+enable()
+
+disable()
+
+status()
+
+heartbeat()
+
+Future agents will plug into this manager.
+
+---
+
+# SERVICE REGISTRY
+
+Create a registry for internal services.
+
+Examples:
+
+Database
+
+RAG
+
+Embedding
+
+Watcher
+
+Chat
+
+Memory
+
+Planner
+
+Voice
+
+Automation
+
+Services should be discoverable.
+
+No hardcoded imports across unrelated modules.
+
+---
+
+# SKILL REGISTRY
+
+Create a reusable skill system.
+
+Skills represent reusable capabilities.
+
+Examples:
+
+Summarize
+
+Search Notes
+
+Generate Flashcards
+
+Refactor Notes
+
+Commit to Vault
+
+Review Flashcards
+
+Only create the framework.
+
+No skill implementations yet.
+
+---
+
+# DIRECTORY STRUCTURE
+
+Refactor the project into a cleaner structure.
+
+Example:
+
+src/
+
+core/
+
+eventBus/
+
+context/
+
+agents/
+
+services/
+
+skills/
+
+memory/
+
+tools/
+
+api/
+
+hooks/
+
+stores/
+
+shared/
+
+types/
+
+config/
+
+utils/
+
+components/
+
+pages/
+
+This structure can evolve, but should remain modular and scalable.
+
+---
+
+# CODING STANDARDS
+
+Follow SOLID principles.
+
+Prefer composition over inheritance.
+
+Use dependency injection where appropriate.
+
+Avoid singleton abuse.
+
+Strong typing where possible.
+
+No duplicated logic.
+
+Clear interfaces.
+
+Consistent naming.
+
+Maintain backward compatibility.
+
+Write maintainable production-quality code.
+
+---
+
+# PERFORMANCE
+
+Architecture must remain lightweight.
+
+Do not introduce unnecessary abstraction.
+
+Avoid unnecessary renders.
+
+Avoid unnecessary database calls.
+
+Architecture should comfortably support dozens of future services.
+
+---
+
+# DELIVERABLES
+
+Produce:
+
+✔ Refactored folder structure
+
+✔ Event Bus
+
+✔ Context Engine
+
+✔ Agent Manager
+
+✔ Service Registry
+
+✔ Skill Registry
+
+✔ Shared interfaces
+
+✔ Updated documentation
+
+✔ Migration notes
+
+✔ Developer guide
+
+✔ Inline documentation
+
+---
+
+# VERIFICATION CHECKLIST
+
+Verify that:
+
+Existing dashboard still works.
+
+Chat still works.
+
+Flashcards still work.
+
+SQLite still works.
+
+RAG still works.
+
+File watcher still works.
+
+No functionality regressed.
+
+Architecture is modular.
+
+Future phases can plug directly into the new architecture.
+
+---
+
+# OUTPUT FORMAT
+
+Do not provide placeholder architecture.
+
+Actually refactor the project.
+
+Generate production-quality code.
+
+Explain every architectural decision.
+
+Document every new module.
+
+Document migration steps.
+
+Document extension points.
+
+The result should feel like the foundation of an operating system—not just a React application.
+
+This phase is considered complete only when AEGISOS is ready to support future autonomous AI agents without requiring another architectural rewrite.
