@@ -27,6 +27,8 @@ import { initializeSimulationEngine } from './simulation/initSimulation.js';
 import { simulationAPI } from './simulation/SimulationAPI.js';
 import { initializeAgentRuntime } from './agentRuntime/initAgentRuntime.js';
 import { agentRuntimeAPI } from './agentRuntime/AgentRuntimeAPI.js';
+import { initializeToolRuntime } from './toolRuntime/initToolRuntime.js';
+import { toolRuntimeAPI } from './toolRuntime/ToolRuntimeAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -607,6 +609,40 @@ app.post('/api/agents/:id/stop', (req, res) => {
 app.post('/api/agents/:id/restart', (req, res) => {
   const success = agentRuntimeAPI.restartAgent(req.params.id);
   res.json({ success, id: req.params.id });
+});
+
+// Boot Tool Runtime Subsystem
+initializeToolRuntime(db);
+
+// ----------------------------------------------------
+// AEGISOS Tool Runtime REST APIs
+// ----------------------------------------------------
+
+app.get('/api/tools', (req, res) => {
+  res.json({ tools: toolRuntimeAPI.listTools() });
+});
+
+app.get('/api/tools/history', (req, res) => {
+  res.json({ history: toolRuntimeAPI.getHistory() });
+});
+
+app.get('/api/tools/metrics', (req, res) => {
+  res.json({ metrics: toolRuntimeAPI.getMetrics() });
+});
+
+app.get('/api/tools/:id', (req, res) => {
+  const tool = toolRuntimeAPI.getTool(req.params.id);
+  if (!tool) return res.status(404).json({ error: 'Tool not found' });
+  res.json({ tool });
+});
+
+app.post('/api/tools/execute', async (req, res) => {
+  try {
+    const result = await toolRuntimeAPI.executeTool(req.body.id, req.body.input || {});
+    res.json({ result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Helper to recursively get markdown files

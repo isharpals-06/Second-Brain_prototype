@@ -1,0 +1,716 @@
+# AEGISOS v0.5.5
+# ADR-008 — Tool Runtime
+
+Status: Accepted
+
+Version: v0.5.5
+
+---
+
+# MISSION
+
+AEGISOS now possesses:
+
+✔ Kernel
+
+✔ Sentinel
+
+✔ World Model
+
+✔ Knowledge Graph
+
+✔ Executive Planner
+
+✔ Decision Simulation Engine
+
+✔ Agent Runtime
+
+The next objective is to create a secure, extensible Tool Runtime.
+
+The Tool Runtime is the only subsystem allowed to interact with external resources.
+
+Agents never call tools directly.
+
+Agents submit Tool Requests.
+
+The Tool Runtime validates, schedules, executes, monitors, and returns results.
+
+The Tool Runtime acts as the operating system's hardware abstraction layer.
+
+---
+
+# DESIGN PHILOSOPHY
+
+Tools are system resources.
+
+Execution is centralized.
+
+Permissions are explicit.
+
+Failures are isolated.
+
+Every invocation is observable.
+
+Everything is replaceable.
+
+---
+
+# PRIMARY OBJECTIVES
+
+Implement:
+
+✔ Tool Runtime
+
+✔ Tool Registry
+
+✔ Tool Manager
+
+✔ Execution Engine
+
+✔ Permission Gateway
+
+✔ Resource Gateway
+
+✔ Result Pipeline
+
+✔ Tool Sandbox
+
+✔ Tool Metrics
+
+✔ Tool APIs
+
+---
+
+# REQUIRED ARCHITECTURE
+
+Kernel
+
+↓
+
+Sentinel
+
+↓
+
+World Model
+
+↓
+
+Knowledge Graph
+
+↓
+
+Executive Planner
+
+↓
+
+Decision Simulation Engine
+
+↓
+
+Agent Runtime
+
+↓
+
+Tool Runtime
+
+├── Tool Registry
+├── Tool Manager
+├── Execution Engine
+├── Permission Gateway
+├── Resource Gateway
+├── Sandbox Manager
+├── Result Pipeline
+├── Tool Metrics
+└── Tool APIs
+
+↓
+
+External Resources
+
+---
+
+# TOOL MODEL
+
+Every tool implements one interface.
+
+Required lifecycle:
+
+register()
+
+initialize()
+
+validate()
+
+prepare()
+
+execute()
+
+cancel()
+
+cleanup()
+
+dispose()
+
+health()
+
+metadata()
+
+version()
+
+capabilities()
+
+permissions()
+
+---
+
+# TOOL REGISTRY
+
+Maintain:
+
+Tool ID
+
+Display Name
+
+Version
+
+Category
+
+Description
+
+Input Schema
+
+Output Schema
+
+Permissions
+
+Dependencies
+
+Health
+
+Timeout
+
+Retry Policy
+
+Resource Requirements
+
+Provider
+
+Supported Platforms
+
+---
+
+# TOOL CATEGORIES
+
+Support categories such as:
+
+Filesystem
+
+Terminal
+
+Git
+
+Browser
+
+SQLite
+
+PostgreSQL
+
+Docker
+
+MCP
+
+REST API
+
+Web Search
+
+RAG
+
+LLM
+
+Embedding
+
+Speech
+
+Vision
+
+Clipboard
+
+Notifications
+
+Email
+
+Calendar
+
+Obsidian
+
+VS Code
+
+Future categories must require zero runtime modifications.
+
+---
+
+# EXECUTION ENGINE
+
+Responsible for:
+
+Queueing
+
+Scheduling
+
+Validation
+
+Execution
+
+Timeouts
+
+Retries
+
+Cancellation
+
+Streaming
+
+Result collection
+
+Cleanup
+
+Support synchronous and asynchronous tools.
+
+Support long-running tools.
+
+Support progress reporting.
+
+---
+
+# PERMISSION GATEWAY
+
+Every execution request must declare permissions.
+
+Examples:
+
+Read Files
+
+Write Files
+
+Delete Files
+
+Run Terminal
+
+Git Commit
+
+Internet Access
+
+Browser Automation
+
+Docker Control
+
+Database Modification
+
+Clipboard Access
+
+Email Sending
+
+Microphone
+
+Camera
+
+System Settings
+
+Policies:
+
+Allow
+
+Deny
+
+Ask User
+
+Time-limited Approval
+
+Session Approval
+
+Persistent Approval
+
+---
+
+# RESOURCE GATEWAY
+
+Manage access to:
+
+Filesystem
+
+GPU
+
+CPU
+
+RAM
+
+Network
+
+Local Models
+
+Cloud Models
+
+Databases
+
+Containers
+
+Operating System
+
+Secrets
+
+Credential Store
+
+No tool accesses resources directly.
+
+Everything passes through the gateway.
+
+---
+
+# SANDBOX MANAGER
+
+Provide isolated execution environments.
+
+Support:
+
+Dry Run
+
+Read-only Mode
+
+Restricted Filesystem
+
+Restricted Network
+
+Temporary Workspace
+
+Execution Limits
+
+Memory Limits
+
+CPU Limits
+
+GPU Limits
+
+Future containerized execution.
+
+---
+
+# RESULT PIPELINE
+
+Normalize tool outputs.
+
+Every result contains:
+
+Execution ID
+
+Tool ID
+
+Timestamp
+
+Status
+
+Duration
+
+Input Summary
+
+Output
+
+Artifacts
+
+Warnings
+
+Errors
+
+Logs
+
+Resource Usage
+
+Confidence (if applicable)
+
+---
+
+# TOOL CHAINING
+
+Support composition without hardcoding.
+
+Example:
+
+Search →
+
+Download →
+
+Extract →
+
+Embed →
+
+Store →
+
+Summarize
+
+Chains should be declarative.
+
+Execution remains under Tool Runtime control.
+
+---
+
+# ERROR HANDLING
+
+Handle:
+
+Timeout
+
+Permission denied
+
+Dependency missing
+
+Tool unavailable
+
+Invalid input
+
+Partial execution
+
+Interrupted execution
+
+Network failure
+
+Disk failure
+
+Graceful degradation required.
+
+---
+
+# TOOL API
+
+Expose:
+
+Registered Tools
+
+Available Tools
+
+Tool Status
+
+Execution Queue
+
+Execution History
+
+Metrics
+
+Logs
+
+Permission Requests
+
+Sandbox Status
+
+Capability Lookup
+
+Health Reports
+
+---
+
+# OBSERVABILITY
+
+Track:
+
+Registered Tools
+
+Executions
+
+Average Duration
+
+Failures
+
+Retries
+
+Permission Requests
+
+Timeouts
+
+Queue Length
+
+CPU Usage
+
+GPU Usage
+
+Memory Usage
+
+Success Rate
+
+Latency
+
+---
+
+# SECURITY
+
+Implement:
+
+Least privilege
+
+Capability isolation
+
+Input validation
+
+Output sanitization
+
+Execution auditing
+
+Credential isolation
+
+No hardcoded secrets
+
+Secure logging
+
+Future policy engine integration.
+
+---
+
+# DOCUMENTATION
+
+Generate:
+
+Tool Runtime Architecture
+
+Tool SDK
+
+Tool Interface
+
+Execution Pipeline
+
+Permission Model
+
+Sandbox Design
+
+Resource Gateway
+
+Developer Guide
+
+Extension Guide
+
+---
+
+# PERFORMANCE
+
+Target:
+
+Low runtime overhead
+
+Concurrent execution
+
+Efficient queueing
+
+Streaming support
+
+Scalable to hundreds of tools
+
+Minimal memory footprint
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✔ Tool Runtime operational
+
+✔ Tool Registry operational
+
+✔ Execution Engine operational
+
+✔ Permission Gateway operational
+
+✔ Resource Gateway operational
+
+✔ Sandbox operational
+
+✔ Result Pipeline operational
+
+✔ Tool APIs exposed
+
+✔ Metrics implemented
+
+✔ Documentation complete
+
+---
+
+# REGRESSION CHECKLIST
+
+Verify:
+
+Kernel stable
+
+Sentinel stable
+
+World Model stable
+
+Knowledge Graph stable
+
+Executive Planner stable
+
+Decision Simulation Engine stable
+
+Agent Runtime stable
+
+No direct tool invocation
+
+No permission bypass
+
+No resource leaks
+
+No regression in existing features
+
+---
+
+# DO NOT IMPLEMENT
+
+Do NOT implement:
+
+Workflow orchestration
+
+Long-term memory
+
+Learning
+
+Automation scheduling
+
+Voice assistant
+
+Visual interface redesign
+
+Collaborative agents
+
+Those belong to later ADRs.
+
+---
+
+# FUTURE EXTENSION POINTS
+
+Reserve interfaces for:
+
+Workflow Engine
+
+Memory OS
+
+Automation Engine
+
+Plugin Marketplace
+
+Remote Tool Providers
+
+Distributed Execution
+
+Policy Engine
+
+Security Engine
+
+Cloud Executors
+
+Container Executors
+
+Custom Tool SDK
+
+---
+
+# FINAL OBJECTIVE
+
+At the completion of ADR-008, AEGISOS should possess a production-grade Tool Runtime capable of securely exposing system resources through standardized tools.
+
+The Tool Runtime becomes the exclusive execution layer between intelligent agents and external resources.
+
+Every interaction with files, terminals, databases, browsers, APIs, models, or operating system resources must pass through this runtime.
+
+Agents never invoke tools directly—they request capabilities from the Tool Runtime, which validates permissions, allocates resources, executes within a controlled sandbox, and returns normalized results with complete observability.
