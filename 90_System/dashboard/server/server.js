@@ -31,6 +31,8 @@ import { initializeToolRuntime } from './toolRuntime/initToolRuntime.js';
 import { toolRuntimeAPI } from './toolRuntime/ToolRuntimeAPI.js';
 import { initializeWorkflowPlatform } from './workflow/initWorkflow.js';
 import { workflowAPI } from './workflow/WorkflowAPI.js';
+import { initializeMemoryPlatform } from './memory/initMemory.js';
+import { memoryAPI } from './memory/MemoryAPI.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -694,6 +696,61 @@ app.post('/api/workflows/approve', (req, res) => {
 app.post('/api/workflows/reject', (req, res) => {
   const success = workflowAPI.reject(req.body.approvalId, req.body.reason || '');
   res.json({ success, approvalId: req.body.approvalId });
+});
+
+// Boot Memory OS Subsystem
+initializeMemoryPlatform(db);
+
+// ----------------------------------------------------
+// AEGISOS Memory OS REST APIs
+// ----------------------------------------------------
+
+app.get('/api/memory/search', (req, res) => {
+  const results = memoryAPI.search({
+    query: req.query.q || '',
+    type: req.query.type || null,
+    limit: parseInt(req.query.limit || '10', 10)
+  });
+  res.json({ results });
+});
+
+app.get('/api/memory/recent', (req, res) => {
+  res.json({ memories: memoryAPI.listRecent(parseInt(req.query.limit || '10', 10)) });
+});
+
+app.get('/api/memory/important', (req, res) => {
+  res.json({ memories: memoryAPI.listImportant(parseInt(req.query.limit || '10', 10)) });
+});
+
+app.get('/api/memory/reflection', (req, res) => {
+  res.json({ reflection: memoryAPI.reflect() });
+});
+
+app.get('/api/memory/experience', (req, res) => {
+  res.json({ experiences: memoryAPI.listExperiences() });
+});
+
+app.get('/api/memory/metrics', (req, res) => {
+  res.json({ metrics: memoryAPI.getMetrics() });
+});
+
+app.post('/api/memory/store', (req, res) => {
+  try {
+    const memory = memoryAPI.storeMemory(req.body);
+    res.json({ memory });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/memory/consolidate', (req, res) => {
+  const result = memoryAPI.consolidate();
+  res.json({ result });
+});
+
+app.delete('/api/memory/:id', (req, res) => {
+  const success = memoryAPI.forget(req.params.id, req.body?.reason);
+  res.json({ success, id: req.params.id });
 });
 
 // Helper to recursively get markdown files

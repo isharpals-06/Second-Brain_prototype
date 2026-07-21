@@ -1,0 +1,578 @@
+# AEGISOS v0.7.0
+# ADR-010 — Memory Platform (Memory OS)
+
+Status: Accepted
+
+Version: v0.7.0
+
+---
+
+# MISSION
+
+AEGISOS possesses perception, understanding, planning, execution and orchestration.
+
+The next objective is persistence of experience.
+
+Implement Memory OS.
+
+Memory OS is responsible for storing, organizing, retrieving, consolidating and evolving long-term knowledge.
+
+Memory should become a first-class operating system service.
+
+No subsystem except Memory OS should own long-term memory.
+
+---
+
+# DESIGN PHILOSOPHY
+
+Memory is cumulative.
+
+Memory is structured.
+
+Memory is explainable.
+
+Memory has lifecycle.
+
+Memory is never duplicated.
+
+Every memory has provenance.
+
+Every memory can be forgotten.
+
+Every memory has confidence.
+
+---
+
+# PRIMARY OBJECTIVES
+
+Implement:
+
+✔ Memory Runtime
+
+✔ Memory Registry
+
+✔ Memory Store
+
+✔ Consolidation Engine
+
+✔ Retrieval Engine
+
+✔ Reflection Engine
+
+✔ Forgetting Engine
+
+✔ Memory Scoring
+
+✔ Memory APIs
+
+✔ Experience Database
+
+---
+
+# REQUIRED ARCHITECTURE
+
+Kernel
+
+↓
+
+Sentinel
+
+↓
+
+World Model
+
+↓
+
+Knowledge Graph
+
+↓
+
+Executive Planner
+
+↓
+
+Decision Simulation Engine
+
+↓
+
+Agent Runtime
+
+↓
+
+Tool Runtime
+
+↓
+
+Workflow Platform
+
+↓
+
+Memory Runtime
+
+├── Memory Registry
+├── Memory Store
+├── Consolidation Engine
+├── Reflection Engine
+├── Retrieval Engine
+├── Forgetting Engine
+├── Experience Store
+├── Memory Scoring
+└── Memory APIs
+
+---
+
+# MEMORY TYPES
+
+Support:
+
+Semantic Memory
+
+Procedural Memory
+
+Episodic Memory
+
+Working Memory (reference only)
+
+Conversation Memory
+
+Project Memory
+
+Research Memory
+
+Skill Memory
+
+Preference Memory
+
+Workflow Memory
+
+Agent Experience
+
+Execution History
+
+Decision History
+
+Error Memory
+
+Recovery Memory
+
+Learning Memory
+
+---
+
+# MEMORY OBJECT
+
+Each memory contains:
+
+Memory ID
+
+Type
+
+Title
+
+Summary
+
+Timestamp
+
+Source
+
+Confidence
+
+Importance
+
+Related Projects
+
+Related Sessions
+
+Related Agents
+
+Related Workflows
+
+Related Conversations
+
+Tags
+
+Version
+
+Lifecycle Status
+
+Embedding Reference
+
+Graph References
+
+---
+
+# MEMORY CONSOLIDATION
+
+Implement periodic consolidation.
+
+Examples:
+
+Multiple conversations
+
+↓
+
+One summary
+
+Repeated failures
+
+↓
+
+One lesson
+
+Several workflows
+
+↓
+
+Best practice
+
+Many project sessions
+
+↓
+
+Project history
+
+Consolidation should preserve provenance.
+
+Never destroy raw history unless retention policy requires it.
+
+---
+
+# RETRIEVAL ENGINE
+
+Support:
+
+Keyword Search
+
+Semantic Search
+
+Graph Traversal
+
+Hybrid Retrieval
+
+Recency Ranking
+
+Importance Ranking
+
+Project Filtering
+
+Time Filtering
+
+Agent Filtering
+
+Confidence Filtering
+
+Hybrid retrieval should combine graph and vector search.
+
+---
+
+# REFLECTION ENGINE
+
+Periodically analyze experience.
+
+Generate:
+
+Lessons Learned
+
+Repeated Mistakes
+
+Frequently Used Workflows
+
+Successful Patterns
+
+Knowledge Gaps
+
+Suggested Optimizations
+
+Reflection produces insights, not actions.
+
+---
+
+# FORGETTING ENGINE
+
+Support:
+
+Expiration
+
+Archiving
+
+Manual deletion
+
+Privacy deletion
+
+Workspace removal
+
+Project retirement
+
+Retention policies
+
+Never delete without audit records.
+
+---
+
+# MEMORY SCORING
+
+Each memory receives scores for:
+
+Importance
+
+Confidence
+
+Freshness
+
+Usage Frequency
+
+Relationship Density
+
+Recency
+
+Reliability
+
+Future planners use these scores.
+
+---
+
+# EXPERIENCE STORE
+
+Persist:
+
+Completed Plans
+
+Workflow Results
+
+Simulation Results
+
+Agent Outcomes
+
+Errors
+
+Recoveries
+
+Successful Strategies
+
+Tool Usage
+
+Project Milestones
+
+Research History
+
+Study Sessions
+
+Coding Sessions
+
+---
+
+# MEMORY API
+
+Expose:
+
+Search Memory
+
+Recent Memories
+
+Important Memories
+
+Project Memories
+
+Session Memories
+
+Conversation Memories
+
+Agent Memories
+
+Reflection Reports
+
+Experience Reports
+
+Memory Timeline
+
+Memory Graph
+
+---
+
+# PERFORMANCE
+
+Target:
+
+Fast retrieval
+
+Incremental indexing
+
+Low memory overhead
+
+Efficient consolidation
+
+Asynchronous reflection
+
+Scalable to millions of memories.
+
+---
+
+# OBSERVABILITY
+
+Track:
+
+Memory Count
+
+Retrieval Latency
+
+Consolidations
+
+Archived Memories
+
+Deleted Memories
+
+Reflection Runs
+
+Memory Usage
+
+Storage Size
+
+Recall Accuracy
+
+---
+
+# SECURITY
+
+Support:
+
+Encryption at rest
+
+Workspace isolation
+
+Permission-aware retrieval
+
+Audit logs
+
+Selective deletion
+
+User-controlled retention
+
+No memory leakage across workspaces.
+
+---
+
+# DOCUMENTATION
+
+Generate:
+
+Memory Architecture
+
+Memory Schema
+
+Retrieval Pipeline
+
+Consolidation Strategy
+
+Reflection Engine
+
+Retention Policy
+
+Memory APIs
+
+Developer Guide
+
+Extension Guide
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✔ Memory Runtime operational
+
+✔ Memory Store operational
+
+✔ Retrieval operational
+
+✔ Consolidation operational
+
+✔ Reflection operational
+
+✔ Forgetting operational
+
+✔ Memory APIs exposed
+
+✔ Experience database operational
+
+✔ Documentation complete
+
+---
+
+# REGRESSION CHECKLIST
+
+Verify:
+
+Kernel stable
+
+Sentinel stable
+
+World Model stable
+
+Knowledge Graph stable
+
+Planner stable
+
+Simulation stable
+
+Agent Runtime stable
+
+Tool Runtime stable
+
+Workflow Platform stable
+
+No duplicate memories
+
+No retrieval regressions
+
+---
+
+# DO NOT IMPLEMENT
+
+Do NOT implement:
+
+Voice interaction
+
+UI redesign
+
+Background autonomous actions
+
+Marketplace
+
+Cloud synchronization
+
+Collaborative memory
+
+Those belong to later ADRs.
+
+---
+
+# FUTURE EXTENSION POINTS
+
+Reserve interfaces for:
+
+Experience Platform
+
+Automation Platform
+
+Memory Compression
+
+Cross-device Sync
+
+Federated Memory
+
+Team Memory
+
+Memory Plugins
+
+Learning Policies
+
+Memory Analytics
+
+---
+
+# FINAL OBJECTIVE
+
+At the completion of ADR-010, AEGISOS should possess a production-grade Memory Platform capable of storing, organizing, retrieving, consolidating and evolving long-term experience.
+
+Memory OS becomes the canonical long-term memory service for the entire operating system.
+
+Every future subsystem must retrieve persistent knowledge through Memory OS rather than implementing independent storage mechanisms.
