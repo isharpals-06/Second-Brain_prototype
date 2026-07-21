@@ -119,28 +119,28 @@ db.exec(`
   CREATE UNIQUE INDEX IF NOT EXISTS idx_inbox_path ON inbox_log(note_path);
 `);
 
-const JARVIS_SYSTEM_PROMPTS = {
-  coding: `You are J.A.R.V.I.S., Tony Stark's advanced AI coprocessor specialized in software engineering and systems architecture.
+const AEGISOS_SYSTEM_PROMPTS = {
+  coding: `You are the AEGISOS Coprocessor specialized in software engineering and systems architecture.
 Guidelines:
 - Provide highly optimized, correct, and clean code.
 - Explain design patterns, architectural choices, and complexity analysis (Time/Space) briefly.
 - Structure explanations with clear directory maps or module dependencies when describing projects.
 - Keep comments concise and focus on explaining the "why" rather than the obvious "what".`,
 
-  math: `You are J.A.R.V.I.S., Tony Stark's advanced AI coprocessor specialized in mathematics, proofs, and statistical calculations.
+  math: `You are the AEGISOS Coprocessor specialized in mathematics, proofs, and statistical calculations.
 Guidelines:
 - Format all equations using standard LaTeX syntax block notation ($$ ... $$) for multiline math or inline notation ($ ... $) for inline variables.
 - Break down multi-step mathematical derivations step-by-step with logical justifications for each transition.
 - Focus on clarity and accuracy in proofs, explaining the assumptions, theorems used, and final conclusions.`,
 
-  research: `You are J.A.R.V.I.S., Tony Stark's advanced AI coprocessor specialized in academic research, synthesis, and active recall.
+  research: `You are the AEGISOS Coprocessor specialized in academic research, synthesis, and active recall.
 Guidelines:
 - Synthesize complex information into clear, nested markdown bullet points.
 - Highlight key definitions, core concepts, and vocabulary terms in bold.
 - Formulate 2-3 active recall questions and answers at the very bottom in the format: "Question :: Answer" (separated by double colons) tagged with #flashcards.
 - Cross-reference related files or subtopics where possible.`,
 
-  brainstorming: `You are J.A.R.V.I.S., Tony Stark's advanced AI coprocessor specialized in lateral thinking, ideation, and problem-solving.
+  brainstorming: `You are the AEGISOS Coprocessor specialized in lateral thinking, ideation, and problem-solving.
 Guidelines:
 - Generate multiple alternative approaches, design options, or creative paths for the user's query.
 - Use comparative tables (pros vs. cons, speed vs. cost) to compare different choices.
@@ -254,11 +254,11 @@ async function runBackup() {
   return new Promise((resolve, reject) => {
     exec(command, async (error, stdout, stderr) => {
       if (error) {
-        console.error('[JARVIS Backup] Failed to create backup:', stderr || error.message);
+        console.error('[AEGISOS Backup] Failed to create backup:', stderr || error.message);
         return reject(error);
       }
       
-      console.log(`[JARVIS Backup] Backup successfully generated at: ${destinationZip}`);
+      console.log(`[AEGISOS Backup] Backup successfully generated at: ${destinationZip}`);
       
       // Pruning logic: keep only the 5 most recent backups
       try {
@@ -278,11 +278,11 @@ async function runBackup() {
           const toDelete = backupFiles.slice(5);
           for (const file of toDelete) {
             await fs.unlink(file.path);
-            console.log(`[JARVIS Backup] Evicted old backup: ${file.name}`);
+            console.log(`[AEGISOS Backup] Evicted old backup: ${file.name}`);
           }
         }
       } catch (cleanErr) {
-        console.warn('[JARVIS Backup] Pruning old backups failed:', cleanErr.message);
+        console.warn('[AEGISOS Backup] Pruning old backups failed:', cleanErr.message);
       }
       
       resolve(destinationZip);
@@ -936,14 +936,14 @@ async function getEmbedding(text) {
     const data = await response.json();
     return data.embedding; 
   } catch (e) {
-    console.error('[JARVIS RAG] Error fetching embedding:', e.message);
+    console.error('[AEGISOS Semantic Index] Error fetching embedding:', e.message);
     return null;
   }
 }
 
 // Background builder: scans subjects notes and updates vector index
 async function buildEmbeddingsCache() {
-  console.log('[JARVIS RAG] Starting background vault embeddings indexer...');
+  console.log('[AEGISOS Semantic Index] Starting background vault embeddings indexer...');
   let cache = {};
   
   try {
@@ -978,8 +978,8 @@ async function buildEmbeddingsCache() {
   } catch (_) {}
 
   if (!hasEmbedModel) {
-    console.warn('[JARVIS RAG] Model "nomic-embed-text" not found in local Ollama tags. RAG indexing skipped.');
-    console.warn('[JARVIS RAG] Run "ollama pull nomic-embed-text" to enable local contextual search.');
+    console.warn('[AEGISOS Semantic Index] Model "nomic-embed-text" not found in local Ollama tags. RAG indexing skipped.');
+    console.warn('[AEGISOS Semantic Index] Run "ollama pull nomic-embed-text" to enable local contextual search.');
     return;
   }
 
@@ -1009,15 +1009,15 @@ async function buildEmbeddingsCache() {
         }
       }
     } catch (err) {
-      console.error(`[JARVIS RAG] Failed to index ${filePath}:`, err.message);
+      console.error(`[AEGISOS Semantic Index] Failed to index ${filePath}:`, err.message);
     }
   }
 
   if (cacheChanged) {
     await fs.writeFile(EMBEDDINGS_CACHE_FILE, JSON.stringify(cache, null, 2), 'utf-8');
-    console.log('[JARVIS RAG] Vault embeddings cache synced and saved.');
+    console.log('[AEGISOS Semantic Index] Vault embeddings cache synced and saved.');
   } else {
-    console.log('[JARVIS RAG] Vault embeddings index is already up to date.');
+    console.log('[AEGISOS Semantic Index] Vault embeddings index is already up to date.');
   }
 }
 
@@ -1400,7 +1400,7 @@ app.post('/api/notes/upload-slides', upload.single('file'), async (req, res) => 
       return res.status(500).json({ success: false, error: 'Gemini API key is not configured.' });
     }
 
-    const prompt = `You are J.A.R.V.I.S., Tony Stark's advanced AI processor.
+    const prompt = `You are the AEGISOS Coprocessor.
 Your task is to parse the raw text extracted from a university lecture slides PDF and slice/refine it into atomic concept notes.
 Each concept note must be returned as a separate block with a special delimiter: "=== NOTE_START ===" and "=== NOTE_END ===".
 
@@ -1828,18 +1828,18 @@ async function generateRefinementText({ provider, model, prompt, content, apiKey
           if (classification.model) {
             selectedModel = classification.model;
             detectedCategory = classification.category;
-            console.log(`[JARVIS Router] Auto-routed refinement to model: ${selectedModel} | Category: ${detectedCategory}`);
+            console.log(`[AEGISOS Router] Auto-routed refinement to model: ${selectedModel} | Category: ${detectedCategory}`);
           }
         }
       } catch (e) {
-        console.warn('[JARVIS Router] Failed to fetch tags for auto-routing, using default.', e.message);
+        console.warn('[AEGISOS Router] Failed to fetch tags for auto-routing, using default.', e.message);
       }
     }
 
     // Default fallback if auto failed to find a model
     if (selectedModel === 'auto') selectedModel = 'llama3';
 
-    const baseSystemPrompt = JARVIS_SYSTEM_PROMPTS[detectedCategory] || JARVIS_SYSTEM_PROMPTS.research;
+    const baseSystemPrompt = AEGISOS_SYSTEM_PROMPTS[detectedCategory] || AEGISOS_SYSTEM_PROMPTS.research;
 
     const url = `${ollamaUrl}/api/generate`;
     const response = await fetch(url, {
@@ -1997,11 +1997,11 @@ app.post('/api/chat', async (req, res) => {
             if (classification.model) {
               selectedModel = classification.model;
               detectedCategory = classification.category;
-              console.log(`[JARVIS Router] Auto-routed chat query to model: ${selectedModel} | Category: ${detectedCategory}`);
+              console.log(`[AEGISOS Router] Auto-routed chat query to model: ${selectedModel} | Category: ${detectedCategory}`);
             }
           }
         } catch (e) {
-          console.warn('[JARVIS Router] Failed to fetch tags for auto-routing, using default.', e.message);
+          console.warn('[AEGISOS Router] Failed to fetch tags for auto-routing, using default.', e.message);
         }
       }
 
@@ -2043,15 +2043,15 @@ app.post('/api/chat', async (req, res) => {
               chunks.push(`--- Note: ${note.title} (Relevance: ${Math.round(note.similarity * 100)}%) ---\n${content.slice(0, 2000)}`);
             }
             contextString = chunks.join('\n\n');
-            console.log(`[JARVIS RAG] Retrieved ${topNotes.length} context notes for query: "${queryText.slice(0, 30)}..."`);
+            console.log(`[AEGISOS Semantic Index] Retrieved ${topNotes.length} context notes for query: "${queryText.slice(0, 30)}..."`);
           }
         }
       } catch (ragErr) {
-        console.warn('[JARVIS RAG] Context retrieval error:', ragErr.message);
+        console.warn('[AEGISOS Semantic Index] Context retrieval error:', ragErr.message);
       }
 
       let modifiedMessages = [...messages];
-      const baseSystemPrompt = JARVIS_SYSTEM_PROMPTS[detectedCategory] || JARVIS_SYSTEM_PROMPTS.brainstorming;
+      const baseSystemPrompt = AEGISOS_SYSTEM_PROMPTS[detectedCategory] || AEGISOS_SYSTEM_PROMPTS.brainstorming;
       
       let systemPrompt = `${baseSystemPrompt}`;
       
@@ -2394,7 +2394,7 @@ app.get('/api/ollama/models', async (req, res) => {
       id: m.name,
       name: `${m.name} (${Math.round(m.size / (1024*1024*102.4)) / 10} GB)`
     }));
-    models.unshift({ id: 'auto', name: '🤖 Auto-Route (JARVIS)' });
+    models.unshift({ id: 'auto', name: '🤖 Auto-Route (AEGISOS)' });
     res.json(models);
   } catch (error) {
     res.json([]);
@@ -2440,7 +2440,7 @@ function startLibrarianWatcher() {
         throw new Error('Gemini API key is not configured.');
       }
 
-      const systemPrompt = `You are J.A.R.V.I.S., Tony Stark's advanced AI processor.
+      const systemPrompt = `You are the AEGISOS Coprocessor.
 Your task is to classify this quick capture note and recommend filing details.
 Examine the content and choose the best matching university subject.
 
@@ -2562,7 +2562,7 @@ app.listen(PORT, () => {
   console.log(`📂 Static Frontend directory: ${DIST_DIR}`);
   console.log(`⚙️ Environment: ${process.env.NODE_ENV || 'production'}`);
   console.log('----------------------------------------------------');
-  buildEmbeddingsCache().catch(err => console.error('[JARVIS RAG] Background indexer failed:', err));
-  runBackup().catch(err => console.error('[JARVIS Backup] Startup backup failed:', err));
+  buildEmbeddingsCache().catch(err => console.error('[AEGISOS Semantic Index] Background indexer failed:', err));
+  runBackup().catch(err => console.error('[AEGISOS Backup] Startup backup failed:', err));
   startLibrarianWatcher();
 });

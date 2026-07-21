@@ -690,7 +690,7 @@ export default function AIChatConsole({ onSelectNote }) {
                     position: 'relative'
                   }}
                 >
-                  {/* Glowing left accent border for JARVIS */}
+                  {/* Glowing left accent border for AEGISOS */}
                   {msg.role !== 'user' && (
                     <div style={{
                       position: 'absolute',

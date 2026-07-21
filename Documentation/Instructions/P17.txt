@@ -1,0 +1,498 @@
+# TASK
+
+Perform a full Architecture Reconciliation of the AEGISOS codebase.
+
+The project has evolved through multiple architectural phases:
+
+Assistant
+↓
+
+Desktop Assistant
+
+↓
+
+JARVIS
+
+↓
+
+AI Agent
+
+↓
+
+AI Operating System
+
+↓
+
+AEGISOS
+
+These transitions have likely left obsolete code, conflicting routes, duplicated components, incompatible startup logic, and mixed architectural patterns.
+
+The objective is NOT to fix isolated bugs.
+
+The objective is to reconcile the entire codebase so that it reflects ONE coherent architecture.
+
+AEGISOS is now an AI Operating System.
+
+Every legacy assumption should be questioned.
+
+---
+
+# PRIMARY OBJECTIVES
+
+✔ Detect architectural drift
+
+✔ Remove obsolete architecture
+
+✔ Eliminate duplicated functionality
+
+✔ Rebuild application entry point
+
+✔ Normalize routing
+
+✔ Normalize startup
+
+✔ Normalize state
+
+✔ Normalize services
+
+✔ Normalize naming
+
+✔ Produce migration report
+
+---
+
+# STEP 1 — Architecture Audit
+
+Analyze the complete repository.
+
+Identify:
+
+Project structure
+
+Runtime architecture
+
+Frontend framework
+
+Backend framework
+
+Shared packages
+
+Monorepo configuration
+
+Workspace layout
+
+Service boundaries
+
+Generate an Architecture Report.
+
+---
+
+# STEP 2 — Detect Legacy Components
+
+Search for remnants of previous versions.
+
+Examples:
+
+Assistant UI
+
+Chat UI
+
+Old Dashboard
+
+Legacy Landing Page
+
+Legacy Terminal
+
+Experimental Panels
+
+Duplicate Settings
+
+Unused APIs
+
+Old Context Providers
+
+Deprecated Stores
+
+Legacy Hooks
+
+Legacy Services
+
+Legacy Utilities
+
+Anything no longer aligned with AEGISOS.
+
+Create a Legacy Inventory.
+
+---
+
+# STEP 3 — Route Reconciliation
+
+Inspect every route.
+
+Examples:
+
+/
+
+/chat
+
+/dashboard
+
+/home
+
+/assistant
+
+/cockpit
+
+/settings
+
+/projects
+
+Determine:
+
+Which routes belong to AEGISOS.
+
+Which are obsolete.
+
+Replace conflicting routing with one coherent navigation model.
+
+The Cockpit becomes the canonical entry point.
+
+---
+
+# STEP 4 — Startup Reconciliation
+
+Inspect:
+
+package.json
+
+startup scripts
+
+dev scripts
+
+build scripts
+
+Express startup
+
+Vite startup
+
+Next startup
+
+Proxy configuration
+
+Environment configuration
+
+Ensure:
+
+One startup pipeline.
+
+One frontend.
+
+One backend.
+
+No duplicate servers.
+
+No conflicting ports.
+
+---
+
+# STEP 5 — UI Reconciliation
+
+Remove remaining UI patterns from previous generations.
+
+Replace with AEGIS Cockpit.
+
+Validate:
+
+Mission Control
+
+Command Palette
+
+Sidebar
+
+Inspector
+
+Activity Timeline
+
+System Console
+
+Knowledge Graph
+
+Planner
+
+Memory Explorer
+
+World Model
+
+Tool Runtime
+
+Automation
+
+Everything should follow the new design language.
+
+---
+
+# STEP 6 — Service Reconciliation
+
+Inspect:
+
+Planner
+
+Memory
+
+Knowledge
+
+Agents
+
+Tools
+
+Automation
+
+Policies
+
+Detect duplicate implementations.
+
+Merge where appropriate.
+
+Delete obsolete services.
+
+---
+
+# STEP 7 — State Reconciliation
+
+Inspect:
+
+Redux
+
+Zustand
+
+Context
+
+Signals
+
+MobX
+
+Jotai
+
+React Query
+
+Server State
+
+Detect duplicated state.
+
+Create one canonical state architecture.
+
+---
+
+# STEP 8 — API Reconciliation
+
+Inspect:
+
+REST
+
+WebSocket
+
+MCP
+
+RPC
+
+Internal APIs
+
+Remove:
+
+Unused endpoints
+
+Duplicate endpoints
+
+Legacy endpoints
+
+Normalize API naming.
+
+---
+
+# STEP 9 — Naming Reconciliation
+
+Replace obsolete terminology.
+
+Examples:
+
+Assistant
+
+ChatBot
+
+Jarvis
+
+AI Assistant
+
+Dashboard
+
+Workspace
+
+Replace with:
+
+AEGISOS
+
+Cockpit
+
+Mission Control
+
+Planner
+
+Memory OS
+
+Knowledge Graph
+
+Sentinel
+
+World Model
+
+Automation
+
+Agent Runtime
+
+Tool Runtime
+
+Maintain naming consistency.
+
+---
+
+# STEP 10 — Dependency Audit
+
+Identify:
+
+Unused packages
+
+Duplicate libraries
+
+Deprecated packages
+
+Conflicting versions
+
+Unused UI libraries
+
+Unused icons
+
+Unused themes
+
+Generate cleanup plan.
+
+---
+
+# STEP 11 — File Cleanup
+
+Detect:
+
+Dead files
+
+Unused components
+
+Unused pages
+
+Unused hooks
+
+Unused services
+
+Unused assets
+
+Unused CSS
+
+Unused configs
+
+Unused documentation
+
+Archive or remove them.
+
+---
+
+# STEP 12 — Entry Point Reconstruction
+
+Rebuild application startup.
+
+Desired flow:
+
+Boot Loader
+
+↓
+
+Kernel Initialization
+
+↓
+
+Runtime Initialization
+
+↓
+
+Health Checks
+
+↓
+
+Cockpit Launch
+
+↓
+
+Mission Control
+
+The root URL (/) must always load AEGIS Cockpit.
+
+No legacy landing pages.
+
+---
+
+# STEP 13 — Documentation
+
+Generate:
+
+Architecture Migration Report
+
+Legacy Inventory
+
+Deleted Components
+
+Updated Architecture Diagram
+
+Route Map
+
+Startup Flow
+
+Folder Structure
+
+Naming Conventions
+
+Migration Notes
+
+---
+
+# STEP 14 — Validation
+
+Verify:
+
+✔ Root URL loads Cockpit
+
+✔ No "Cannot GET /"
+
+✔ One routing system
+
+✔ One startup system
+
+✔ No duplicate services
+
+✔ No duplicate state
+
+✔ No legacy UI
+
+✔ No dead routes
+
+✔ No obsolete naming
+
+✔ No conflicting architecture
+
+---
+
+# ACCEPTANCE CRITERIA
+
+The repository should behave as though AEGISOS had been designed from day one.
+
+There should be no visible evidence of previous architectural generations.
+
+The application should boot directly into the AEGIS Cockpit through a clean, unified startup pipeline.
+
+The resulting codebase should be simpler, more maintainable, and fully aligned with the current ADR roadmap rather than a patched evolution of older designs.
