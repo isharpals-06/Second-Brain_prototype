@@ -1,0 +1,771 @@
+# AEGISOS
+# FRONTEND REARCHITECTURE PROGRAM
+# PROJECT: SECOND BRAIN → AEGISOS
+# VERSION: 1.0
+# TYPE: FULL FRONTEND MIGRATION
+
+---
+
+# CONTEXT
+
+This repository has evolved significantly.
+
+Originally it was a Study Assistant.
+
+Later it evolved into an AI Assistant.
+
+Then into an AI Agent.
+
+Finally it evolved into AEGISOS,
+an AI Operating System.
+
+The backend architecture reflects this evolution.
+
+The frontend does not.
+
+The backend contains modular platform services
+(Kernel, Sentinel, World Model, Planner,
+Knowledge Graph, Memory OS, Governance,
+Automation, Workflow Runtime, Tool Runtime, etc.)
+
+The frontend still behaves as a Study Dashboard.
+
+This is NOT considered a failure.
+
+The Study Dashboard represents a mature,
+high-value application.
+
+It should become one Workspace inside AEGISOS.
+
+Do NOT destroy working functionality.
+
+Build an Operating System around it.
+
+---
+
+# PRIMARY OBJECTIVE
+
+Transform the current frontend into
+AEGISOS Cockpit.
+
+The Cockpit becomes the operating system shell.
+
+Existing Study components become the first Workspace.
+
+AEGISOS should feel like:
+
+VS Code
+
++
+
+Raycast
+
++
+
+Linear
+
++
+
+Warp
+
++
+
+Apple System Settings
+
++
+
+NASA Mission Control
+
++
+
+Iron Man JARVIS
+
+WITHOUT copying their visual style.
+
+Professional.
+
+Minimal.
+
+Scientific.
+
+Elegant.
+
+Information dense.
+
+Fast.
+
+No gimmicks.
+
+No childish UI.
+
+---
+
+# NON-NEGOTIABLE RULES
+
+DO NOT rewrite everything.
+
+DO NOT replace working components.
+
+DO NOT break existing features.
+
+DO NOT introduce duplicate architectures.
+
+DO NOT create temporary compatibility layers.
+
+DO NOT create multiple navigation systems.
+
+DO NOT create multiple layouts.
+
+DO NOT introduce mock UI.
+
+Every screen must be functional.
+
+---
+
+# PHASE 1
+ARCHITECTURAL RESTRUCTURING
+
+Create a brand new application shell.
+
+This shell becomes the only root layout.
+
+Everything renders inside it.
+
+Current App.jsx should become:
+
+CockpitShell
+
+NOT
+
+StudyDashboard
+
+The shell owns:
+
+Navigation
+
+Command Palette
+
+Notifications
+
+Workspace Manager
+
+Window Layout
+
+Routing
+
+Session Context
+
+Global Search
+
+Status Bar
+
+System Health
+
+Theme
+
+---
+
+# PHASE 2
+WORKSPACE SYSTEM
+
+AEGISOS is workspace-driven.
+
+Every major capability becomes a Workspace.
+
+Implement:
+
+Mission Control
+
+Knowledge Workspace
+
+Agent Workspace
+
+Memory Workspace
+
+Planner Workspace
+
+Workflow Workspace
+
+Automation Workspace
+
+Governance Workspace
+
+Tool Runtime Workspace
+
+Settings
+
+Future:
+
+Developer Workspace
+
+Research Workspace
+
+Vision Workspace
+
+Voice Workspace
+
+Marketplace
+
+---
+
+# PHASE 3
+KNOWLEDGE WORKSPACE
+
+Move existing application here.
+
+Reuse:
+
+DashboardOverview
+
+DailyBrief
+
+NotesExplorer
+
+Flashcards
+
+AIChatConsole
+
+CoprocessorConsole
+
+Graph View
+
+Vault
+
+Everything should continue working.
+
+Do NOT redesign these yet.
+
+Only integrate them.
+
+---
+
+# PHASE 4
+MISSION CONTROL
+
+Mission Control becomes default.
+
+This is NOT a dashboard.
+
+It is the system overview.
+
+Display:
+
+Current Goal
+
+Current Project
+
+Running Agents
+
+Planner Queue
+
+Memory Usage
+
+Knowledge Graph
+
+Workflow Status
+
+Recent Events
+
+Tool Runtime
+
+Policy Alerts
+
+System Health
+
+GPU
+
+CPU
+
+RAM
+
+Storage
+
+Embedding Status
+
+LLM Status
+
+Event Stream
+
+Recent Automations
+
+Quick Actions
+
+Health Score
+
+Everything must come from real APIs.
+
+Never fake telemetry.
+
+---
+
+# PHASE 5
+GLOBAL NAVIGATION
+
+Left Sidebar
+
+Mission Control
+
+Knowledge
+
+Planner
+
+Agents
+
+Memory
+
+Automation
+
+Governance
+
+Workflows
+
+Tools
+
+Projects
+
+Settings
+
+Bottom:
+
+Profile
+
+Workspace Switcher
+
+System Status
+
+No tabs.
+
+No old navigation.
+
+---
+
+# PHASE 6
+COMMAND PALETTE
+
+Ctrl + K
+
+Search everything.
+
+Commands
+
+Projects
+
+Files
+
+Notes
+
+Agents
+
+Workflows
+
+Policies
+
+Memories
+
+Knowledge
+
+Tools
+
+Settings
+
+Natural language supported.
+
+Example:
+
+Open Knowledge Workspace
+
+Start Planner
+
+Search Machine Learning notes
+
+Open CUDA project
+
+Inspect Memory
+
+Restart Sentinel
+
+---
+
+# PHASE 7
+TOP BAR
+
+Display:
+
+Current Workspace
+
+Current Project
+
+Current Goal
+
+Global Search
+
+Notifications
+
+LLM Status
+
+Connection Status
+
+Workspace Actions
+
+Breadcrumbs
+
+---
+
+# PHASE 8
+RIGHT INSPECTOR
+
+Context-sensitive panel.
+
+Depending on selection show:
+
+Metadata
+
+Properties
+
+Logs
+
+Agent Status
+
+Workflow Details
+
+Knowledge
+
+Memory
+
+Policies
+
+Timeline
+
+Execution
+
+Resources
+
+---
+
+# PHASE 9
+BOTTOM PANEL
+
+Docked console.
+
+Contains:
+
+Runtime Logs
+
+Event Stream
+
+Errors
+
+Warnings
+
+Planner Logs
+
+Workflow Logs
+
+Tool Output
+
+Terminal
+
+Notifications
+
+Can collapse.
+
+Resizable.
+
+---
+
+# PHASE 10
+DESIGN SYSTEM
+
+Replace inconsistent UI.
+
+Create unified design system.
+
+Typography
+
+Spacing
+
+Color Tokens
+
+Elevation
+
+Cards
+
+Buttons
+
+Inputs
+
+Tables
+
+Panels
+
+Icons
+
+Animations
+
+Everything follows one language.
+
+---
+
+# PHASE 11
+DESIGN LANGUAGE
+
+No cyberpunk.
+
+No RGB.
+
+No neon.
+
+No glassmorphism overload.
+
+No childish gradients.
+
+Prefer:
+
+Scientific
+
+Professional
+
+Minimal
+
+Monochrome base
+
+Accent colors only for state.
+
+Animations communicate state.
+
+---
+
+# PHASE 12
+LIVE PLATFORM INTEGRATION
+
+Mission Control must connect to:
+
+Sentinel
+
+Planner
+
+Knowledge Graph
+
+Workflow Engine
+
+Memory OS
+
+Governance
+
+Automation
+
+Tool Runtime
+
+Agent Runtime
+
+World Model
+
+Health APIs
+
+No placeholder cards.
+
+---
+
+# PHASE 13
+STATE MANAGEMENT
+
+Audit current state.
+
+Create one canonical architecture.
+
+Avoid duplicated contexts.
+
+Avoid duplicated stores.
+
+Separate:
+
+UI State
+
+Server State
+
+Session State
+
+Workspace State
+
+Runtime State
+
+---
+
+# PHASE 14
+ROUTING
+
+Move to workspace routing.
+
+Example:
+
+/
+
+Mission Control
+
+/workspace/knowledge
+
+/workspace/planner
+
+/workspace/memory
+
+/workspace/automation
+
+/workspace/governance
+
+/settings
+
+No legacy routes.
+
+---
+
+# PHASE 15
+COMPONENT AUDIT
+
+Inspect every component.
+
+Mark:
+
+Reusable
+
+Needs Refactor
+
+Needs Rewrite
+
+Deprecated
+
+Dead
+
+Generate report.
+
+---
+
+# PHASE 16
+PERFORMANCE
+
+Lazy loading.
+
+Code splitting.
+
+Virtualized lists.
+
+Memoization.
+
+Streaming.
+
+Avoid unnecessary rerenders.
+
+Target:
+
+60 FPS
+
+Cold start <2s
+
+Instant workspace switching.
+
+---
+
+# PHASE 17
+RESPONSIVENESS
+
+Support:
+
+Desktop
+
+Ultra-wide
+
+Laptop
+
+Large monitors
+
+Future:
+
+Tablet
+
+Do NOT optimize for mobile.
+
+Desktop-first.
+
+---
+
+# PHASE 18
+TESTING
+
+Validate:
+
+Navigation
+
+Workspace switching
+
+Routing
+
+Component rendering
+
+API integration
+
+State consistency
+
+Keyboard shortcuts
+
+Accessibility
+
+---
+
+# PHASE 19
+DOCUMENTATION
+
+Generate:
+
+Frontend Architecture
+
+Workspace System
+
+Component Hierarchy
+
+Routing Diagram
+
+Design System
+
+Migration Report
+
+Developer Guide
+
+Future Extension Guide
+
+---
+
+# PHASE 20
+FINAL VALIDATION
+
+AEGISOS should boot directly into Mission Control.
+
+Knowledge Workspace should contain the existing Study Assistant.
+
+No feature regressions.
+
+No duplicated UI.
+
+No legacy layouts.
+
+No multiple navigation systems.
+
+No dead routes.
+
+No placeholder panels.
+
+No fake telemetry.
+
+Everything should appear as if AEGISOS had always been designed this way.
+
+---
+
+# DEFINITION OF DONE
+
+The application must no longer feel like a Study Dashboard with AI features.
+
+It must feel like a true AI Operating System where the Study Assistant is simply one powerful workspace among many.
+
+A new developer opening the repository for the first time should naturally conclude:
+
+"This project was designed from the beginning as an AI Operating System."
+
+The migration is complete only when that impression is achieved.
