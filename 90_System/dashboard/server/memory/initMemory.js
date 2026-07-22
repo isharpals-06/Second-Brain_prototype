@@ -1,4 +1,5 @@
 import { MemoryStorage } from './MemoryStorage.js';
+import { memoryStore } from './MemoryStore.js';
 import { memoryAPI } from './MemoryAPI.js';
 import { serverServiceRegistry } from '../core/serviceRegistry.js';
 import { aegisLogger } from '../core/logger.js';
@@ -10,8 +11,9 @@ export function initializeMemoryPlatform(dbInstance) {
   console.log('🧠 Initializing AEGISOS Memory OS (v0.7.0)...');
   console.log('----------------------------------------------------');
 
-  // 1. Initialize SQLite Storage
+  // 1. Initialize SQLite Storage & Bind to Store
   const storage = new MemoryStorage(dbInstance);
+  memoryStore.setStorage(storage);
 
   // 2. Initial Reflection Pass
   memoryAPI.reflect();

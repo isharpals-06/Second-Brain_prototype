@@ -3,6 +3,8 @@ import { goalEngine } from './GoalEngine.js';
 import { priorityEngine } from './PriorityEngine.js';
 import { planValidator } from './PlanValidator.js';
 import { PlanStatus } from './types.js';
+import { serverEventBus, SystemEvents, EventSeverity } from '../core/eventBus.js';
+import { agentScheduler } from '../agentRuntime/AgentScheduler.js';
 import { aegisLogger } from '../core/logger.js';
 
 const log = aegisLogger.child('Planner:PlanningEngine');
@@ -45,6 +47,7 @@ export class PlanningEngine {
         {
           id: 'task_1',
           title: 'Review system context & requirements',
+          type: 'telemetry_inspection',
           steps: ['Read instruction spec', 'Verify component state'],
           requiredResources: goal.relatedResources || [],
           requiredSkills: ['summarize', 'search_notes'],
@@ -53,7 +56,9 @@ export class PlanningEngine {
         {
           id: 'task_2',
           title: 'Synthesize architecture deliverables',
-          steps: ['Generate markdown architecture docs', 'Expose REST APIs'],
+          type: 'tool_execution',
+          toolId: 'tool_git_status',
+          steps: ['Inspect repository state', 'Verify build stability'],
           requiredResources: [],
           requiredSkills: ['refactor_notes', 'commit_to_vault'],
           suggestedAgents: ['Coprocessor Agent']
@@ -61,12 +66,12 @@ export class PlanningEngine {
       ],
       requiredSkills: ['summarize', 'search_notes', 'refactor_notes', 'commit_to_vault'],
       suggestedAgents: ['Librarian Agent', 'Coprocessor Agent'],
-      requiredTools: ['read_file', 'write_file'],
+      requiredTools: ['tool_git_status', 'tool_file_read'],
       confidence: 0.94,
       reasoningTrace: [
         `Inferred intent: "${intent.primaryIntent}"`,
         `Goal priority evaluated as "${goalPriority}"`,
-        `Identified 2 core objectives and 2 sub-tasks`
+        `Identified 2 core objectives and 2 executable tasks`
       ],
       validationStatus: PlanStatus.DRAFT,
       version: '1.0.0'
@@ -78,6 +83,21 @@ export class PlanningEngine {
 
     this.plans.set(planId, plan);
     log.info(`Generated plan "${planId}" for goal "${goal.title}" (Status: ${plan.validationStatus})`);
+
+    // Auto-enqueue tasks into AgentScheduler if plan is validated
+    if (plan.validationStatus === PlanStatus.VALIDATED) {
+      agentScheduler.enqueuePlanTasks(plan);
+    }
+
+    // Publish event
+    serverEventBus.publish(SystemEvents.PLANNER_UPDATED, {
+      planId,
+      goalId: goal.id,
+      goalTitle: goal.title,
+      status: plan.validationStatus,
+      tasksCount: plan.tasks.length
+    }, { subsystem: 'Planner', severity: EventSeverity.INFO });
+
     return plan;
   }
 

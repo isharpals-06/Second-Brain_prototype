@@ -38,6 +38,7 @@ import { governanceAPI } from './governance/GovernanceAPI.js';
 import { initializeAutomationPlatform } from './automation/initAutomation.js';
 import { automationAPI } from './automation/AutomationAPI.js';
 import { productionAPI } from './production/ProductionAPI.js';
+import { companionEngine } from './core/companionEngine.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -308,8 +309,47 @@ app.get('/api/aegis/status', (req, res) => {
 });
 
 app.get('/api/aegis/events', (req, res) => {
-  const limit = parseInt(req.query.limit || '20', 10);
+  const limit = parseInt(req.query.limit || '50', 10);
   res.json({ events: serverEventBus.getHistory(limit) });
+});
+
+// Real-Time Server-Sent Events (SSE) Telemetry Stream
+app.get(['/api/stream/events', '/api/aegis/stream'], (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  // Initial event history backfill
+  const history = serverEventBus.getHistory(20);
+  history.forEach(evt => {
+    res.write(`data: ${JSON.stringify(evt)}\n\n`);
+  });
+
+  // Subscribe to all live system events via EventBus wildcard
+  const unsubscribe = serverEventBus.subscribe('*', (eventRecord) => {
+    res.write(`data: ${JSON.stringify(eventRecord)}\n\n`);
+  });
+
+  req.on('close', () => {
+    unsubscribe();
+    res.end();
+  });
+});
+
+// AI Companion Loop Telemetry & Reasoning Endpoints
+app.get('/api/companion/reasoning', (req, res) => {
+  res.json({
+    reasoningTrace: companionEngine.getReasoningHistory(),
+    tickCount: companionEngine.tickCount,
+    status: companionEngine.isRunning ? 'running' : 'stopped'
+  });
+});
+
+app.get('/api/companion/suggestions', (req, res) => {
+  res.json({
+    suggestions: companionEngine.getPendingSuggestions()
+  });
 });
 
 app.get('/api/aegis/agents', (req, res) => {
@@ -2556,7 +2596,7 @@ app.get('*', (req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
+const serverInstance = app.listen(PORT, () => {
   console.log('----------------------------------------------------');
   console.log(`🚀 AEGISOS v1.0.0 Server active at http://localhost:${PORT}`);
   console.log(`📂 Static Frontend directory: ${DIST_DIR}`);
@@ -2565,4 +2605,37 @@ app.listen(PORT, () => {
   buildEmbeddingsCache().catch(err => console.error('[AEGISOS Semantic Index] Background indexer failed:', err));
   runBackup().catch(err => console.error('[AEGISOS Backup] Startup backup failed:', err));
   startLibrarianWatcher();
+});
+
+// Graceful Shutdown & Error Handlers
+function gracefulShutdown(signal) {
+  console.log(`\n[AEGISOS Kernel] Received signal ${signal}. Shutting down gracefully...`);
+  companionEngine.stop();
+  sentinelObserverManager.stopAll().catch(() => {});
+  
+  serverEventBus.publish(SystemEvents.APPLICATION_SHUTDOWN, {
+    signal,
+    timestamp: new Date().toISOString()
+  }, { subsystem: 'Kernel', severity: 'WARN' });
+
+  serverInstance.close(() => {
+    console.log('[AEGISOS Kernel] Server closed. Database connections released.');
+    process.exit(0);
+  });
+
+  setTimeout(() => {
+    console.error('[AEGISOS Kernel] Forcefully shutting down after 5s timeout.');
+    process.exit(1);
+  }, 5000);
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
+process.on('uncaughtException', (err) => {
+  console.error('[AEGISOS Kernel] Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[AEGISOS Kernel] Unhandled Promise Rejection:', reason);
 });

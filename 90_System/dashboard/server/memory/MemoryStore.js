@@ -1,5 +1,6 @@
 import { MemoryType, LifecycleStatus } from './types.js';
 import { memoryScorer } from './MemoryScorer.js';
+import { serverEventBus, SystemEvents, EventSeverity } from '../core/eventBus.js';
 import { aegisLogger } from '../core/logger.js';
 
 const log = aegisLogger.child('Memory:Store');
@@ -7,7 +8,12 @@ const log = aegisLogger.child('Memory:Store');
 export class MemoryStore {
   constructor() {
     this.memories = new Map();
+    this.storage = null;
     this.initDefaultMemories();
+  }
+
+  setStorage(storageInstance) {
+    this.storage = storageInstance;
   }
 
   initDefaultMemories() {
@@ -74,7 +80,19 @@ export class MemoryStore {
     record.score = memoryScorer.computeCompositeScore(record);
     this.memories.set(id, record);
 
+    if (this.storage) {
+      this.storage.saveMemory(record);
+    }
+
     log.info(`Created memory "${record.title}" (${id}) [Type: ${record.type}, Score: ${record.score}]`);
+
+    serverEventBus.publish(SystemEvents.MEMORY_CREATED, {
+      memoryId: id,
+      title: record.title,
+      type: record.type,
+      score: record.score
+    }, { subsystem: 'MemoryOS', severity: EventSeverity.INFO });
+
     return record;
   }
 

@@ -1,4 +1,4 @@
-import { SystemEvents } from './types.js';
+import { SystemEvents, EventSeverity } from './types.js';
 import { aegisLogger } from './logger.js';
 import { AegisError, ErrorCodes } from './errors.js';
 
@@ -7,13 +7,14 @@ const log = aegisLogger.child('EventBus');
 class EventBus {
   constructor(options = {}) {
     this.listeners = new Map();
+    this.globalListeners = new Set();
     this.eventHistory = [];
-    this.maxHistorySize = options.maxHistorySize || 100;
-    this.maxListenersPerEvent = options.maxListeners || 25;
+    this.maxHistorySize = options.maxHistorySize || 500;
+    this.maxListenersPerEvent = options.maxListeners || 50;
   }
 
   /**
-   * Subscribe to a specific system event.
+   * Subscribe to a specific system event or '*' for all events.
    * @param {string} event 
    * @param {Function} callback 
    * @returns {Function} Unsubscribe function
@@ -21,6 +22,11 @@ class EventBus {
   subscribe(event, callback) {
     if (!event || typeof callback !== 'function') {
       throw new AegisError(ErrorCodes.EVENT_ERROR, 'Event name and callback function are required.');
+    }
+
+    if (event === '*') {
+      this.globalListeners.add(callback);
+      return () => this.globalListeners.delete(callback);
     }
 
     if (!this.listeners.has(event)) {
@@ -42,6 +48,11 @@ class EventBus {
    * @param {Function} callback 
    */
   unsubscribe(event, callback) {
+    if (event === '*') {
+      this.globalListeners.delete(callback);
+      return;
+    }
+
     if (this.listeners.has(event)) {
       this.listeners.get(event).delete(callback);
       if (this.listeners.get(event).size === 0) {
@@ -51,13 +62,26 @@ class EventBus {
   }
 
   /**
-   * Publish an event to all subscribers asynchronously.
+   * Publish a structured event to subscribers asynchronously.
    * @param {string} event 
-   * @param {any} payload 
+   * @param {Object} payload 
+   * @param {Object} [meta={}] 
    */
-  publish(event, payload = {}) {
+  publish(event, payload = {}, meta = {}) {
     const timestamp = new Date().toISOString();
-    const eventRecord = { event, payload, timestamp };
+    const correlationId = meta.correlationId || `corr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const subsystem = meta.subsystem || payload.subsystem || 'Kernel';
+    const severity = meta.severity || payload.severity || EventSeverity.INFO;
+
+    const eventRecord = {
+      id: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      event,
+      timestamp,
+      correlationId,
+      subsystem,
+      severity,
+      payload
+    };
 
     // Record history with size cap
     this.eventHistory.push(eventRecord);
@@ -65,6 +89,7 @@ class EventBus {
       this.eventHistory.shift();
     }
 
+    // 1. Notify specific topic listeners
     const callbacks = this.listeners.get(event);
     if (callbacks && callbacks.size > 0) {
       callbacks.forEach((cb) => {
@@ -72,6 +97,17 @@ class EventBus {
           cb(payload, eventRecord);
         } catch (err) {
           log.error(`Exception in subscriber for event "${event}": ${err.message}`, { error: err.stack });
+        }
+      });
+    }
+
+    // 2. Notify global stream subscribers (SSE / WebSockets)
+    if (this.globalListeners.size > 0) {
+      this.globalListeners.forEach((cb) => {
+        try {
+          cb(eventRecord);
+        } catch (err) {
+          log.error(`Exception in global subscriber for event "${event}": ${err.message}`, { error: err.stack });
         }
       });
     }
@@ -84,7 +120,7 @@ class EventBus {
   getEventCatalog() {
     return Object.values(SystemEvents).map(eventName => ({
       name: eventName,
-      activeSubscribers: this.listeners.has(eventName) ? this.listeners.get(eventName).size : 0
+      activeSubscribers: (this.listeners.has(eventName) ? this.listeners.get(eventName).size : 0) + this.globalListeners.size
     }));
   }
 
@@ -93,7 +129,7 @@ class EventBus {
    * @param {number} limit 
    * @returns {Array}
    */
-  getHistory(limit = 20) {
+  getHistory(limit = 50) {
     return this.eventHistory.slice(-limit);
   }
 
@@ -102,9 +138,10 @@ class EventBus {
    */
   clear() {
     this.listeners.clear();
+    this.globalListeners.clear();
     this.eventHistory = [];
   }
 }
 
 export const serverEventBus = new EventBus();
-export { EventBus, SystemEvents };
+export { EventBus, SystemEvents, EventSeverity };

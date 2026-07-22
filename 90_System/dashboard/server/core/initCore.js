@@ -3,6 +3,7 @@ import { serverContextEngine } from './contextEngine.js';
 import { serverServiceRegistry } from './serviceRegistry.js';
 import { serverAgentManager } from './agentManager.js';
 import { serverSkillRegistry } from './skillRegistry.js';
+import { companionEngine } from './companionEngine.js';
 import { SystemEvents, ServiceNames, AgentStatus } from './types.js';
 
 export function initializeAegisCore() {
@@ -85,19 +86,28 @@ export function initializeAegisCore() {
 
   defaultAgents.forEach(agent => serverAgentManager.register(agent));
 
-  // 4. Publish System Boot Event
-  serverEventBus.publish(SystemEvents.APPLICATION_STARTED, {
-    timestamp: new Date().toISOString(),
-    version: 'AEGISOS-1.0.0-Phase1',
-    status: 'initialized'
+  // 4. Start Persistent AI Companion Loop
+  companionEngine.start();
+  serverServiceRegistry.register(ServiceNames.COMPANION, {
+    name: 'AI Companion Loop Engine',
+    status: 'running',
+    companionEngine
   });
 
-  console.log('[AEGISOS Core] EventBus, ContextEngine, ServiceRegistry, AgentManager, and SkillRegistry ready.');
+  // 5. Publish System Boot Event
+  serverEventBus.publish(SystemEvents.APPLICATION_STARTED, {
+    timestamp: new Date().toISOString(),
+    version: 'AEGISOS-v1.0.0 (GA)',
+    status: 'initialized'
+  }, { subsystem: 'Kernel', severity: 'INFO' });
+
+  console.log('[AEGISOS Core] EventBus, CompanionEngine, ServiceRegistry, AgentManager, and SkillRegistry active.');
   return {
     eventBus: serverEventBus,
     contextEngine: serverContextEngine,
     serviceRegistry: serverServiceRegistry,
     agentManager: serverAgentManager,
-    skillRegistry: serverSkillRegistry
+    skillRegistry: serverSkillRegistry,
+    companionEngine
   };
 }
