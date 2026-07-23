@@ -1,0 +1,507 @@
+# ==========================================================
+# TRACK A — FRONTEND
+#
+# Phase A1
+#
+# Build the Foundation
+#
+# Role:
+#
+# Principal Frontend Architect
+# Senior React Engineer
+# Design System Engineer
+#
+# IMPORTANT
+#
+# DO NOT build features.
+#
+# DO NOT build pages.
+#
+# DO NOT build dashboard widgets.
+#
+# First build the Operating System itself.
+# ==========================================================
+
+# GOAL
+
+The Stitch prototype is now the canonical design reference.
+
+Your task is NOT to recreate screenshots.
+
+Your task is to recreate the SYSTEM.
+
+Every future feature should plug into this foundation.
+
+Think like building Windows Explorer before Word.
+
+Or macOS before Safari.
+
+==========================================================
+
+# PHASE 1
+
+## Remove Legacy Frontend
+
+Completely retire the old SecondBrain UI.
+
+Remove legacy:
+
+Dashboard
+
+Overview
+
+Daily Brief
+
+Legacy Sidebar
+
+Legacy Navigation
+
+Old Layout
+
+Old Header
+
+Legacy Theme
+
+Legacy CSS
+
+Legacy Routes
+
+Legacy Containers
+
+Preserve only business logic that is reusable.
+
+No old visual components should remain.
+
+==========================================================
+
+# PHASE 2
+
+## Build the Application Shell
+
+Build ONE permanent shell.
+
+Everything must exist inside this shell.
+
+Layout:
+
+┌─────────────────────────────────────────────┐
+│ Global Header                              │
+├───────┬───────────────────────┬─────────────┤
+│Living │                       │             │
+│Context│ Adaptive Workspace    │ Inspector   │
+│Rail   │                       │             │
+├───────┴───────────────────────┴─────────────┤
+│ Cognitive Stream (collapsible)             │
+└─────────────────────────────────────────────┘
+
+Never create alternative layouts.
+
+Everything renders inside this shell.
+
+==========================================================
+
+# PHASE 3
+
+## Global Header
+
+Contains:
+
+Mission Status
+
+AI Presence
+
+Search
+
+Notifications
+
+Quick Actions
+
+Current Provider
+
+Workspace Indicator
+
+Profile
+
+Settings
+
+No decorative items.
+
+Every item must be functional.
+
+==========================================================
+
+# PHASE 4
+
+## Living Context Rail
+
+This is NOT a sidebar.
+
+It is contextual.
+
+It evolves.
+
+Shows:
+
+Current Project
+
+Pinned Context
+
+Active Agent
+
+Recent Memories
+
+Suggested Actions
+
+Running Workflow
+
+Recent Files
+
+Current Mission
+
+Hide irrelevant information.
+
+Show only context.
+
+==========================================================
+
+# PHASE 5
+
+## Adaptive Workspace
+
+This is the heart of AEGISOS.
+
+It should NOT feel like a page.
+
+The workspace evolves.
+
+Planning
+
+↓
+
+Execution
+
+↓
+
+Review
+
+↓
+
+Learning
+
+↓
+
+Memory
+
+without page transitions.
+
+==========================================================
+
+# PHASE 6
+
+## Inspector Panel
+
+Appears only when useful.
+
+Can inspect:
+
+Projects
+
+Tasks
+
+Agents
+
+Memory
+
+Knowledge
+
+Workflow
+
+Files
+
+Documents
+
+Never permanently occupy space.
+
+==========================================================
+
+# PHASE 7
+
+## Cognitive Stream
+
+Replace terminal logs.
+
+Show:
+
+Planning
+
+Searching
+
+Executing
+
+Learning
+
+Memory Updates
+
+Knowledge Extraction
+
+Workflow Progress
+
+No debug logs.
+
+No stack traces.
+
+Communicate intelligence.
+
+==========================================================
+
+# PHASE 8
+
+## Global Search
+
+Implement universal search.
+
+Must search:
+
+Projects
+
+Files
+
+Knowledge
+
+Memory
+
+Agents
+
+Commands
+
+Settings
+
+Workflows
+
+Models
+
+Providers
+
+Future integrations.
+
+==========================================================
+
+# PHASE 9
+
+## Command Palette
+
+Primary interaction.
+
+Everything should be executable.
+
+Examples:
+
+Open Project
+
+Delegate Task
+
+Create Agent
+
+Launch Workflow
+
+Switch Model
+
+Search Memory
+
+Open Settings
+
+Run Command
+
+==========================================================
+
+# PHASE 10
+
+## Design Tokens
+
+Extract from Stitch.
+
+Create one design token system.
+
+colors/
+
+spacing/
+
+radius/
+
+typography/
+
+icons/
+
+motion/
+
+shadows/
+
+breakpoints/
+
+No hardcoded values.
+
+==========================================================
+
+# PHASE 11
+
+## Component Library
+
+Build reusable primitives.
+
+Button
+
+Input
+
+Search
+
+Dropdown
+
+Panel
+
+Dialog
+
+Sheet
+
+Tooltip
+
+Toast
+
+Card
+
+Timeline
+
+Activity
+
+Badge
+
+Avatar
+
+Tabs
+
+Command
+
+Every future component must compose these primitives.
+
+==========================================================
+
+# PHASE 12
+
+## Motion System
+
+Motion communicates cognition.
+
+Avoid decorative animations.
+
+Motion should indicate:
+
+Focus
+
+Thinking
+
+Transitions
+
+Completion
+
+Agent activity
+
+Workspace evolution
+
+Use consistent timing.
+
+==========================================================
+
+# PHASE 13
+
+## Responsive Architecture
+
+Desktop
+
+↓
+
+Workstation
+
+Tablet
+
+↓
+
+Portable Workstation
+
+Phone
+
+↓
+
+AI Companion
+
+Never shrink desktop.
+
+Design each experience intentionally.
+
+==========================================================
+
+# PHASE 14
+
+## Accessibility
+
+Keyboard-first.
+
+Command Palette accessible.
+
+Focus states visible.
+
+ARIA labels.
+
+Reduced motion support.
+
+Screen reader compatibility.
+
+Responsive touch targets.
+
+==========================================================
+
+# DELIVERABLES
+
+Produce:
+
+✔ New frontend folder structure
+
+✔ Application shell
+
+✔ Design token system
+
+✔ Component library foundation
+
+✔ Layout architecture
+
+✔ Responsive strategy
+
+✔ Motion system
+
+✔ Global providers
+
+✔ State scaffolding
+
+✔ Theme scaffolding
+
+DO NOT build Planner.
+
+DO NOT build Memory.
+
+DO NOT build Agents.
+
+DO NOT build Mission.
+
+Build only the Operating System they will live inside.
+
+==========================================================
+
+# SUCCESS
+
+At the end of this phase:
+
+The old dashboard no longer exists.
+
+The frontend feels like an empty but fully operational operating system.
+
+Future workspaces can be plugged in without changing the shell.
+
+Think infrastructure, not features.

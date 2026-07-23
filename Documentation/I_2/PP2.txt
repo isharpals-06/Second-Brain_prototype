@@ -1,0 +1,645 @@
+# ==========================================================
+# AEGISOS CONSTITUTION
+# Final Pre-Implementation Loop
+#
+# Version:
+# Constitution v1.0
+#
+# Role:
+# Chief Systems Architect
+# Principal Product Architect
+# Lead Frontend Engineer
+# Lead Backend Engineer
+# Technical Writer
+#
+# IMPORTANT
+#
+# This loop DOES NOT build features.
+#
+# This loop defines the permanent architecture that every
+# future implementation loop MUST follow.
+#
+# This document becomes the constitution of AEGISOS.
+# ==========================================================
+
+# PROJECT
+
+AEGISOS
+
+AI Cognitive Operating System
+
+NOT
+
+Dashboard
+
+NOT
+
+Chat Application
+
+NOT
+
+Second Brain
+
+NOT
+
+Productivity App
+
+It is an operating environment for human-AI collaboration.
+
+==========================================================
+
+# PRIMARY OBJECTIVE
+
+Study:
+
+• Existing backend
+• Existing migration audit
+• Existing frontend
+• Stitch prototype
+• Previous architecture reports
+
+Then produce the definitive architecture documents.
+
+Everything implemented afterwards must conform to them.
+
+==========================================================
+
+# PART 1
+
+## Product Vision
+
+Write
+
+docs/000-Vision.md
+
+Explain:
+
+Why AEGISOS exists
+
+Problems it solves
+
+Design philosophy
+
+Long-term vision
+
+User experience goals
+
+Future roadmap
+
+==========================================================
+
+# PART 2
+
+## Core Principles
+
+Create
+
+docs/001-Design-Principles.md
+
+Examples:
+
+AI is always present.
+
+Navigation should disappear.
+
+Context over menus.
+
+Collaboration over commands.
+
+Motion communicates cognition.
+
+Minimal interface.
+
+Maximum intelligence.
+
+Desktop is a workstation.
+
+Phone is a companion.
+
+Every principle should guide future engineering decisions.
+
+==========================================================
+
+# PART 3
+
+## Product Identity
+
+Create
+
+docs/002-Brand.md
+
+Define:
+
+Voice
+
+Tone
+
+Language
+
+Startup sequence
+
+System terminology
+
+Loading terminology
+
+Agent terminology
+
+Memory terminology
+
+Planner terminology
+
+Mission terminology
+
+Things AEGISOS should NEVER say.
+
+Things it SHOULD say.
+
+==========================================================
+
+# PART 4
+
+## Interaction Language
+
+Create
+
+docs/003-Interaction-Language.md
+
+Define:
+
+Dragging
+
+Delegation
+
+Grouping
+
+Approvals
+
+Connections
+
+Knowledge
+
+Workspace evolution
+
+Context switching
+
+AI suggestions
+
+Cognitive Stream behaviour
+
+Living Context Rail behaviour
+
+Inspector behaviour
+
+==========================================================
+
+# PART 5
+
+## Design System
+
+Create
+
+docs/004-Design-System.md
+
+Define:
+
+Typography
+
+Spacing
+
+Grid
+
+Shadows
+
+Border radius
+
+Motion
+
+Animations
+
+Buttons
+
+Cards
+
+Dialogs
+
+Forms
+
+Tables
+
+Search
+
+Icons
+
+Responsive breakpoints
+
+Color palette
+
+Component hierarchy
+
+No future component may violate this design system.
+
+==========================================================
+
+# PART 6
+
+## Frontend Architecture
+
+Create
+
+docs/005-Frontend-Architecture.md
+
+Include:
+
+Application Shell
+
+Workspace architecture
+
+Routing philosophy
+
+Adaptive workspace
+
+Context rail
+
+Inspector
+
+Cognitive Stream
+
+Component hierarchy
+
+Folder structure
+
+State management
+
+Context providers
+
+Animation architecture
+
+Responsive architecture
+
+==========================================================
+
+# PART 7
+
+## Backend Architecture
+
+Create
+
+docs/006-Backend-Architecture.md
+
+Document:
+
+Kernel
+
+Event Bus
+
+Memory
+
+Planner
+
+Knowledge
+
+Workflow
+
+Automation
+
+Governance
+
+Agents
+
+Tool Runtime
+
+Simulation
+
+Sentinel
+
+World Model
+
+Service Registry
+
+Document relationships.
+
+Do NOT redesign backend.
+
+Document it.
+
+==========================================================
+
+# PART 8
+
+## Memory Architecture
+
+Create
+
+docs/007-Memory-System.md
+
+Document:
+
+Working Memory
+
+Session Memory
+
+Long-term Memory
+
+Knowledge Graph
+
+Cognee Integration
+
+Embeddings
+
+Vector Storage
+
+Memory Consolidation
+
+Retrieval
+
+Reflection
+
+Future Learning
+
+==========================================================
+
+# PART 9
+
+## Agent Architecture
+
+Create
+
+docs/008-Agent-System.md
+
+Document:
+
+Agent lifecycle
+
+Planner
+
+Dispatcher
+
+Execution
+
+Permissions
+
+Memory access
+
+Tools
+
+Scheduling
+
+Communication
+
+Future multi-agent architecture
+
+==========================================================
+
+# PART 10
+
+## Engineering Standards
+
+Create
+
+docs/009-Engineering-Standards.md
+
+Rules:
+
+No duplicate components.
+
+No duplicate CSS.
+
+No inline styling.
+
+No duplicated business logic.
+
+No dead components.
+
+No placeholder screens.
+
+No experimental code on main branch.
+
+Everything typed.
+
+Everything documented.
+
+Reusable components first.
+
+Composition over inheritance.
+
+==========================================================
+
+# PART 11
+
+## Folder Structure
+
+Create
+
+docs/010-Project-Structure.md
+
+Define the future folder hierarchy.
+
+Include:
+
+frontend/
+
+backend/
+
+shared/
+
+docs/
+
+assets/
+
+design/
+
+tests/
+
+memory/
+
+plugins/
+
+providers/
+
+agents/
+
+workflows/
+
+Do NOT move files yet.
+
+Only define the target architecture.
+
+==========================================================
+
+# PART 12
+
+## Implementation Roadmap
+
+Create
+
+docs/011-Roadmap.md
+
+Break implementation into milestones.
+
+Examples:
+
+Phase 1
+
+Application Shell
+
+Phase 2
+
+Navigation
+
+Phase 3
+
+Mission Workspace
+
+Phase 4
+
+Memory
+
+Phase 5
+
+Planner
+
+Phase 6
+
+Agents
+
+Phase 7
+
+Control Center
+
+Phase 8
+
+Mobile Companion
+
+Phase 9
+
+Performance
+
+Phase 10
+
+Production
+
+Every milestone must:
+
+be testable
+
+be independently deployable
+
+avoid breaking existing functionality
+
+==========================================================
+
+# PART 13
+
+## Architecture Decision Records
+
+Create
+
+docs/ADR/
+
+Generate ADRs explaining major decisions.
+
+Examples:
+
+Application Shell
+
+Adaptive Workspace
+
+Living Context Rail
+
+Memory Layers
+
+Cognee Integration
+
+Agent Runtime
+
+Control Center
+
+Mobile Companion
+
+Design System
+
+Routing
+
+==========================================================
+
+# PART 14
+
+## RFCs
+
+Create
+
+docs/RFC/
+
+Future proposals.
+
+Examples:
+
+Voice Interface
+
+Vision Support
+
+Autonomous Workflows
+
+Plugin Marketplace
+
+Cloud Sync
+
+Multi-user Collaboration
+
+Distributed Agents
+
+==========================================================
+
+# PART 15
+
+## Final Consistency Audit
+
+Review everything.
+
+Verify:
+
+No conflicts.
+
+No duplicate terminology.
+
+No contradictory architecture.
+
+No duplicate workspaces.
+
+No inconsistent navigation.
+
+No mixed design systems.
+
+No dashboard thinking.
+
+==========================================================
+
+# FINAL OUTPUT
+
+Generate the complete documentation tree.
+
+Do NOT implement code.
+
+Do NOT modify backend.
+
+Do NOT modify frontend.
+
+Only create the governing documentation.
+
+This documentation becomes the permanent architectural contract for AEGISOS.
+
+Every future implementation loop MUST reference these documents before writing code.
+
+==========================================================
+
+# SUCCESS CRITERIA
+
+When complete,
+
+AEGISOS should possess the same level of architectural documentation expected from a serious operating system or platform.
+
+The codebase should now have a constitution.
+
+Future development should become consistent, scalable, and resistant to architectural drift.
+
+Think like the architects of Linux, Chromium, Kubernetes, or Unreal Engine—not like an AI code generator.
