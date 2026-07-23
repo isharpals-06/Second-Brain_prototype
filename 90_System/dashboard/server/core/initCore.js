@@ -4,6 +4,7 @@ import { serverServiceRegistry } from './serviceRegistry.js';
 import { serverAgentManager } from './agentManager.js';
 import { serverSkillRegistry } from './skillRegistry.js';
 import { companionEngine } from './companionEngine.js';
+import { cognitiveCoreKernel } from './CognitiveCoreKernel.js';
 import { SystemEvents, ServiceNames, AgentStatus } from './types.js';
 
 export function initializeAegisCore() {
@@ -11,13 +12,20 @@ export function initializeAegisCore() {
   console.log('⚡ Initializing AEGISOS Core Architecture (Phase 1)...');
   console.log('----------------------------------------------------');
 
-  // 1. Register Default Service Stubs
+  // 1. Register CognitiveCoreKernel in ServiceRegistry
+  serverServiceRegistry.register('CognitiveCoreKernel', {
+    name: 'Unified Cognitive Operating System Kernel',
+    status: 'running',
+    cognitiveCoreKernel,
+  });
+
+  // 2. Register Default Service Stubs
   serverServiceRegistry.register(ServiceNames.DATABASE, { name: 'SQLite Database', status: 'active' });
   serverServiceRegistry.register(ServiceNames.WATCHER, { name: 'Chokidar Vault Observer', status: 'active' });
   serverServiceRegistry.register(ServiceNames.RAG, { name: 'Local Vector RAG Engine', status: 'active' });
   serverServiceRegistry.register(ServiceNames.CHAT, { name: 'Ollama/Gemini Model Router', status: 'active' });
 
-  // 2. Register Standard AEGISOS Skills Framework
+  // 3. Register Standard AEGISOS Skills Framework
   const defaultSkills = [
     {
       id: 'summarize',
@@ -59,7 +67,7 @@ export function initializeAegisCore() {
 
   defaultSkills.forEach(skill => serverSkillRegistry.registerSkill(skill));
 
-  // 3. Register Standard AEGISOS Agents Framework
+  // 4. Register Standard AEGISOS Agents Framework
   const defaultAgents = [
     {
       id: 'agent_librarian',
@@ -86,7 +94,7 @@ export function initializeAegisCore() {
 
   defaultAgents.forEach(agent => serverAgentManager.register(agent));
 
-  // 4. Start Persistent AI Companion Loop
+  // 5. Start Persistent AI Companion Loop
   companionEngine.start();
   serverServiceRegistry.register(ServiceNames.COMPANION, {
     name: 'AI Companion Loop Engine',
@@ -94,20 +102,21 @@ export function initializeAegisCore() {
     companionEngine
   });
 
-  // 5. Publish System Boot Event
+  // 6. Publish System Boot Event
   serverEventBus.publish(SystemEvents.APPLICATION_STARTED, {
     timestamp: new Date().toISOString(),
     version: 'AEGISOS-v1.0.0 (GA)',
     status: 'initialized'
   }, { subsystem: 'Kernel', severity: 'INFO' });
 
-  console.log('[AEGISOS Core] EventBus, CompanionEngine, ServiceRegistry, AgentManager, and SkillRegistry active.');
+  console.log('[AEGISOS Core] EventBus, CognitiveCoreKernel, CompanionEngine, ServiceRegistry active.');
   return {
     eventBus: serverEventBus,
     contextEngine: serverContextEngine,
     serviceRegistry: serverServiceRegistry,
     agentManager: serverAgentManager,
     skillRegistry: serverSkillRegistry,
-    companionEngine
+    companionEngine,
+    cognitiveCoreKernel,
   };
 }

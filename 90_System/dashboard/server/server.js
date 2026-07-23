@@ -52,6 +52,7 @@ import { projectUserIntelligence } from './knowledge/ProjectUserIntelligence.js'
 import { entityExtractionEngine } from './knowledge/EntityExtractionEngine.js';
 import { semanticIntelligenceEngine } from './knowledge/SemanticIntelligenceEngine.js';
 import { contextAssemblyPipeline } from './knowledge/ContextAssemblyPipeline.js';
+import { cognitiveCoreKernel } from './core/CognitiveCoreKernel.js';
 import { initializeModelProviderLayer } from './ai/initAI.js';
 import { providerRegistry } from './ai/providerRegistry.js';
 import { providerManager } from './ai/providerManager.js';
@@ -2905,6 +2906,24 @@ app.put('/api/knowledge/user-model', (req, res) => {
   }
   const updated = projectUserIntelligence.updateUserModel(key, value);
   res.json({ success: true, userModel: updated });
+});
+
+// --- Track B Phase B1: Cognitive Core Kernel Endpoints ---
+app.post('/api/cognitive/kernel/intent', async (req, res) => {
+  const { intent, options } = req.body || {};
+  if (!intent) {
+    return res.status(400).json({ error: 'Missing required parameter: intent' });
+  }
+  try {
+    const result = await cognitiveCoreKernel.processIntent(intent, options || {});
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/cognitive/kernel/health', (req, res) => {
+  res.json(cognitiveCoreKernel.getSystemHealth());
 });
 
 // SPA Fallback Handler: Serve dist/index.html for non-API GET requests

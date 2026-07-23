@@ -4,9 +4,9 @@ import { worldModelEngine } from '../worldModel/WorldModelEngine.js';
 
 export class ContextAssemblyPipeline {
   async assembleContext(goal, options = {}) {
-    const working = await cognitiveMemoryEngine.query('working', 5);
-    const session = await cognitiveMemoryEngine.query('session', 5);
-    const identity = await cognitiveMemoryEngine.query('identity', 5);
+    const working = await cognitiveMemoryEngine.recall('', { layer: 'working', limit: 5 });
+    const session = await cognitiveMemoryEngine.recall('', { layer: 'session', limit: 5 });
+    const identity = await cognitiveMemoryEngine.recall('', { layer: 'identity', limit: 5 });
 
     const graphSummary = dynamicKnowledgeGraph.getGraphSummary();
     const relatedEdges = dynamicKnowledgeGraph.search(goal);
@@ -23,9 +23,9 @@ export class ContextAssemblyPipeline {
 
     const formattedPromptContext = `
 === AEGISOS COGNITIVE SYSTEM CONTEXT ===
-Identity Preferences: ${JSON.stringify(identity.map(m => m.data || m.content))}
-Active Working Goals: ${JSON.stringify(working.map(m => m.data || m.content))}
-Recent Session Trails: ${JSON.stringify(session.map(m => m.data || m.content))}
+Identity Preferences: ${JSON.stringify(identity.map(m => m.key || m.id))}
+Active Working Goals: ${JSON.stringify(working.map(m => m.key || m.id))}
+Recent Session Trails: ${JSON.stringify(session.map(m => m.key || m.id))}
 World Model Entities: ${worldState.map(e => `${e.type}:${e.label}`).join(', ')}
 Knowledge Graph: ${graphSummary.nodeCount} nodes, ${graphSummary.edgeCount} edges.
 ========================================
