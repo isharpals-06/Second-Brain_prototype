@@ -872,10 +872,92 @@ app.get('/api/memory/metrics', (req, res) => {
   res.json({ metrics: memoryAPI.getMetrics() });
 });
 
-app.post('/api/memory/store', (req, res) => {
+app.post('/api/memory/store', async (req, res) => {
   try {
-    const memory = memoryAPI.storeMemory(req.body);
+    const memory = await memoryAPI.storeMemory(req.body);
     res.json({ memory });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Cognitive Memory Unified API Endpoints (v1.3.0)
+
+app.post('/api/memory/remember', async (req, res) => {
+  try {
+    const { layer = 'semantic', ...data } = req.body;
+    const memory = await memoryAPI.remember(layer, data);
+    res.json({ success: true, memory });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/memory/recall', async (req, res) => {
+  try {
+    const { query, ...options } = req.body;
+    const results = await memoryAPI.recall(query, options);
+    res.json({ results });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/memory/update', async (req, res) => {
+  try {
+    const { id, updates, layer = 'semantic' } = req.body;
+    const memory = await memoryAPI.update(id, updates, layer);
+    res.json({ success: true, memory });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/memory/forget', async (req, res) => {
+  try {
+    const { id, layer = 'semantic', reason = 'user_request' } = req.body;
+    const success = await memoryAPI.forget(id, reason, layer);
+    res.json({ success, id, layer });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/memory/link', (req, res) => {
+  try {
+    const { sourceId, targetId, relationType, sourceLayer, targetLayer } = req.body;
+    const link = memoryAPI.link(sourceId, targetId, relationType, sourceLayer, targetLayer);
+    res.json({ success: true, link });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/memory/unlink', (req, res) => {
+  try {
+    const { sourceId, targetId, relationType } = req.body;
+    const success = memoryAPI.unlink(sourceId, targetId, relationType);
+    res.json({ success, sourceId, targetId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/memory/summarize', async (req, res) => {
+  try {
+    const { layer = 'episodic', filter } = req.body;
+    const summary = await memoryAPI.summarize(layer, filter);
+    res.json({ summary });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/memory/ingest', async (req, res) => {
+  try {
+    const { filePath, options } = req.body;
+    const result = await memoryAPI.ingestDocument(filePath, options || {});
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

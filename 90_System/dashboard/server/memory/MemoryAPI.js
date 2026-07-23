@@ -1,56 +1,92 @@
-import { memoryStore } from './MemoryStore.js';
-import { retrievalEngine } from './RetrievalEngine.js';
-import { consolidationEngine } from './ConsolidationEngine.js';
-import { reflectionEngine } from './ReflectionEngine.js';
-import { forgettingEngine } from './ForgettingEngine.js';
-import { experienceStore } from './ExperienceStore.js';
+import { cognitiveMemoryEngine } from './initMemory.js';
+import { documentIngestionEngine } from './initMemory.js';
 
 class MemoryAPI {
+  // --- Backward Compatible Facade Methods ---
   search(params = {}) {
-    return retrievalEngine.search(params);
+    const query = typeof params === 'string' ? params : (params.query || params.term || '');
+    return cognitiveMemoryEngine.recall(query, params);
   }
 
   listRecent(limit = 10) {
-    const list = memoryStore.listMemories();
-    list.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    return list.slice(0, limit);
+    return cognitiveMemoryEngine.storage.listEpisodic(limit);
   }
 
   listImportant(limit = 10) {
-    const list = memoryStore.listMemories();
-    list.sort((a, b) => b.importance - a.importance);
-    return list.slice(0, limit);
+    const semantics = cognitiveMemoryEngine.storage.listSemantic();
+    return semantics.slice(0, limit);
   }
 
   storeMemory(data) {
-    return memoryStore.createMemory(data);
+    const layer = data.layer || (data.type === 'experience' ? 'episodic' : 'semantic');
+    return cognitiveMemoryEngine.remember(layer, data);
   }
 
   consolidate() {
-    return consolidationEngine.consolidateMemories();
+    return cognitiveMemoryEngine.summarize('episodic');
   }
 
   reflect() {
-    return reflectionEngine.generateReflectionReport();
+    return cognitiveMemoryEngine.summarize('identity');
   }
 
-  forget(id, reason) {
-    return forgettingEngine.forgetMemory(id, reason);
+  forget(id, reason = 'user_request', layer = 'semantic') {
+    return cognitiveMemoryEngine.forget(id, layer, reason);
   }
 
   listExperiences() {
-    return experienceStore.listExperiences();
+    return cognitiveMemoryEngine.storage.listEpisodic();
   }
 
   getMetrics() {
-    const all = memoryStore.listMemories();
+    const sessionCount = cognitiveMemoryEngine.storage.purgeExpiredSessions();
+    const working = cognitiveMemoryEngine.storage.listWorking();
+    const episodic = cognitiveMemoryEngine.storage.listEpisodic();
+    const semantic = cognitiveMemoryEngine.storage.listSemantic();
+    const procedural = cognitiveMemoryEngine.storage.listProcedural();
+    const identity = cognitiveMemoryEngine.storage.listIdentity();
+
     return {
-      totalMemories: all.length,
-      activeMemories: all.filter(m => m.lifecycleStatus === 'active').length,
-      consolidatedMemories: all.filter(m => m.lifecycleStatus === 'consolidated').length,
-      totalExperiences: experienceStore.listExperiences().length,
-      forgettingAuditLogsCount: forgettingEngine.getAuditLogs().length
+      architecture: 'AEGISOS Cognitive Memory Foundation (v1.3.0)',
+      layers: {
+        session: sessionCount,
+        working: working.length,
+        episodic: episodic.length,
+        semantic: semantic.length,
+        procedural: procedural.length,
+        identity: identity.length
+      },
+      totalMemories: working.length + episodic.length + semantic.length + procedural.length + identity.length
     };
+  }
+
+  // --- Unified Cognitive Memory API (v1.3.0) ---
+  remember(layer, data) {
+    return cognitiveMemoryEngine.remember(layer, data);
+  }
+
+  recall(query, options) {
+    return cognitiveMemoryEngine.recall(query, options);
+  }
+
+  update(id, updates, layer) {
+    return cognitiveMemoryEngine.update(id, updates, layer);
+  }
+
+  summarize(layer, filter) {
+    return cognitiveMemoryEngine.summarize(layer, filter);
+  }
+
+  link(sourceId, targetId, relationType, sourceLayer, targetLayer) {
+    return cognitiveMemoryEngine.link(sourceId, targetId, relationType, sourceLayer, targetLayer);
+  }
+
+  unlink(sourceId, targetId, relationType) {
+    return cognitiveMemoryEngine.unlink(sourceId, targetId, relationType);
+  }
+
+  ingestDocument(filePath, options) {
+    return documentIngestionEngine.ingestFile(filePath, options);
   }
 }
 
