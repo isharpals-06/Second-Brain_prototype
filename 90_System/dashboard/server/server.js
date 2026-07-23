@@ -55,6 +55,12 @@ import { semanticIntelligenceEngine } from './knowledge/SemanticIntelligenceEngi
 import { contextAssemblyPipeline } from './knowledge/ContextAssemblyPipeline.js';
 import { cognitiveCoreKernel } from './core/CognitiveCoreKernel.js';
 import { initializeModelProviderLayer } from './ai/initAI.js';
+import { initializePlatformKernel } from './platform/initPlatform.js';
+import { platformKernel } from './platform/PlatformKernel.js';
+import { secretsManager } from './platform/SecretsManager.js';
+import { capabilityRegistry } from './platform/CapabilityRegistry.js';
+import { mcpManager } from './platform/MCPManager.js';
+import { pluginManager } from './platform/PluginManager.js';
 import { providerRegistry } from './ai/providerRegistry.js';
 import { providerManager } from './ai/providerManager.js';
 import { modelManager } from './ai/modelManager.js';
@@ -107,6 +113,9 @@ const aegisCore = initializeAegisCore();
 
 // Boot Model Provider Abstraction Layer (MPAL v1.2.0)
 initializeModelProviderLayer().catch(err => console.error('[MPAL Boot] Failed:', err));
+
+// Boot Platform Kernel (v1.0.0)
+initializePlatformKernel();
 
 // Initialize SQLite database
 const dbPath = path.join(__dirname, 'vault_assistant.db');
@@ -2950,6 +2959,32 @@ app.post('/api/memory/import', (req, res) => {
   const data = req.body || {};
   const result = cognitiveMemoryEngine.import(data);
   res.json(result);
+});
+
+// --- Track C Phase C1: Platform Kernel Endpoints ---
+app.get('/api/platform/diagnostics', (req, res) => {
+  res.json(platformKernel.getDiagnostics());
+});
+
+app.get('/api/platform/capabilities', (req, res) => {
+  res.json({ capabilities: capabilityRegistry.listCapabilities() });
+});
+
+app.get('/api/platform/mcp', (req, res) => {
+  res.json({ mcpServers: mcpManager.listServers() });
+});
+
+app.get('/api/platform/plugins', (req, res) => {
+  res.json({ plugins: pluginManager.listPlugins() });
+});
+
+app.post('/api/platform/secrets', (req, res) => {
+  const { key, value } = req.body || {};
+  if (!key || !value) {
+    return res.status(400).json({ error: 'Missing required parameters: key, value' });
+  }
+  secretsManager.setSecret(key, value);
+  res.json({ success: true, key, status: 'updated' });
 });
 
 // SPA Fallback Handler: Serve dist/index.html for non-API GET requests
