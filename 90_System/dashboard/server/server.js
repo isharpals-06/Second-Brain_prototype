@@ -65,6 +65,7 @@ import { providerRegistry } from './ai/providerRegistry.js';
 import { providerManager } from './ai/providerManager.js';
 import { modelManager } from './ai/modelManager.js';
 import { aiRouter } from './ai/router.js';
+import { streamingGateway } from './ai/streamingGateway.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -2985,6 +2986,40 @@ app.post('/api/platform/secrets', (req, res) => {
   }
   secretsManager.setSecret(key, value);
   res.json({ success: true, key, status: 'updated' });
+});
+
+// --- Track C Phase C2: Universal Provider Manager & Router Endpoints ---
+app.get('/api/providers/health', (req, res) => {
+  const providers = providerRegistry.getAllProviders().map(p => p.health());
+  res.json({ status: 'active', providers });
+});
+
+app.get('/api/providers/models', async (req, res) => {
+  const models = await modelManager.listModels();
+  res.json({ models });
+});
+
+app.get('/api/providers/routing', (req, res) => {
+  res.json({ activePolicy: aiRouter.getPolicy(), availablePolicies: ['performance', 'quality', 'local_first', 'budget', 'privacy', 'balanced'] });
+});
+
+app.post('/api/providers/routing', (req, res) => {
+  const { policy } = req.body || {};
+  if (!policy) {
+    return res.status(400).json({ error: 'Missing required parameter: policy' });
+  }
+  aiRouter.setPolicy(policy);
+  res.json({ success: true, activePolicy: aiRouter.getPolicy() });
+});
+
+app.post('/api/providers/route', async (req, res) => {
+  const { category, provider, model } = req.body || {};
+  try {
+    const route = await aiRouter.resolveRoute({ category, provider, model });
+    res.json({ success: true, provider: route.provider.id, model: route.model });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // SPA Fallback Handler: Serve dist/index.html for non-API GET requests

@@ -24,6 +24,10 @@ export class ProviderRegistry {
     return Array.from(this.providers.values()).map(p => p.health());
   }
 
+  getAllProviders() {
+    return Array.from(this.providers.values());
+  }
+
   getAvailableProviders() {
     return Array.from(this.providers.values()).filter(p => p.isAvailable());
   }
