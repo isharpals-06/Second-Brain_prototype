@@ -94,3 +94,5 @@ export class DynamicKnowledgeGraph {
     };
   }
 }
+
+export const dynamicKnowledgeGraph = new DynamicKnowledgeGraph();

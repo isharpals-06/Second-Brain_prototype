@@ -41,8 +41,12 @@ import { productionAPI } from './production/ProductionAPI.js';
 import { companionEngine } from './core/companionEngine.js';
 import { reasoningEngine } from './core/ReasoningEngine.js';
 import { contextAssembler } from './core/ContextAssembler.js';
+import { autonomousInsightsEngine } from './core/AutonomousInsightsEngine.js';
+import { selfLearningEngine } from './core/SelfLearningEngine.js';
 import { reflectionEngine } from './memory/ReflectionEngine.js';
 import { hybridRetrievalEngine } from './memory/HybridRetrievalEngine.js';
+import { memoryConsolidationEngine } from './memory/MemoryConsolidationEngine.js';
+import { dynamicKnowledgeGraph } from './knowledge/DynamicKnowledgeGraph.js';
 import { initializeModelProviderLayer } from './ai/initAI.js';
 import { providerRegistry } from './ai/providerRegistry.js';
 import { providerManager } from './ai/providerManager.js';
@@ -101,6 +105,7 @@ initializeModelProviderLayer().catch(err => console.error('[MPAL Boot] Failed:',
 const dbPath = path.join(__dirname, 'vault_assistant.db');
 const db = new DatabaseSync(dbPath);
 reasoningEngine.setDatabase(db);
+dynamicKnowledgeGraph.setDatabase(db);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS flashcards (
@@ -398,6 +403,38 @@ app.post('/api/cognitive/reflect', async (req, res) => {
   try {
     const lesson = await reflectionEngine.reflectOnExecution(req.body || {});
     res.json({ success: true, lesson });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Stage 3 — Autonomous Cognitive OS Dashboard APIs (v1.5.0)
+
+app.get('/api/cognitive/dashboard', (req, res) => {
+  res.json({
+    architecture: 'AEGISOS Autonomous Cognitive OS (v1.5.0)',
+    status: companionEngine.isRunning ? 'running' : 'stopped',
+    tickCount: companionEngine.tickCount,
+    recentReasoning: reasoningEngine.getRecentSessions(5),
+    insights: autonomousInsightsEngine.getInsights(5),
+    learning: selfLearningEngine.getLearningSummary(),
+    graph: dynamicKnowledgeGraph.getGraphSummary()
+  });
+});
+
+app.get('/api/cognitive/insights', (req, res) => {
+  const limit = parseInt(req.query.limit || '10', 10);
+  res.json({ insights: autonomousInsightsEngine.getInsights(limit) });
+});
+
+app.get('/api/cognitive/learning', (req, res) => {
+  res.json({ learning: selfLearningEngine.getLearningSummary() });
+});
+
+app.post('/api/cognitive/consolidate', async (req, res) => {
+  try {
+    const summary = await memoryConsolidationEngine.runConsolidationPass();
+    res.json({ success: true, summary });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

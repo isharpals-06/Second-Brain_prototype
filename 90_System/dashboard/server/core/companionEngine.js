@@ -2,9 +2,12 @@ import { serverEventBus, SystemEvents, EventSeverity } from './eventBus.js';
 import { serverServiceRegistry } from './serviceRegistry.js';
 import { reasoningEngine } from './ReasoningEngine.js';
 import { contextAssembler } from './ContextAssembler.js';
+import { autonomousInsightsEngine } from './AutonomousInsightsEngine.js';
+import { selfLearningEngine } from './SelfLearningEngine.js';
 import { knowledgeExtractor } from '../knowledge/KnowledgeExtractor.js';
 import { hybridRetrievalEngine } from '../memory/HybridRetrievalEngine.js';
 import { reflectionEngine } from '../memory/ReflectionEngine.js';
+import { memoryConsolidationEngine } from '../memory/MemoryConsolidationEngine.js';
 import { aegisLogger } from './logger.js';
 
 const log = aegisLogger.child('CompanionEngine');
@@ -15,14 +18,13 @@ export class CompanionEngine {
     this.timer = null;
     this.tickIntervalMs = 10000; // 10s loop tick
     this.tickCount = 0;
-    this.recentReasoning = [];
     this.pendingSuggestions = [];
   }
 
   start() {
     if (this.isRunning) return;
     this.isRunning = true;
-    log.info('Starting AEGISOS Persistent AI Companion Cognitive Loop (Stage 2)...');
+    log.info('Starting AEGISOS Persistent Autonomous Cognitive OS Loop (Stage 3)...');
 
     // Subscribe to Sentinel perception events
     serverEventBus.subscribe(SystemEvents.FILE_CHANGED, (payload) => this.handlePerceptionEvent('FILE_CHANGED', payload));
@@ -42,25 +44,25 @@ export class CompanionEngine {
       clearInterval(this.timer);
       this.timer = null;
     }
-    log.info('Stopped AEGISOS AI Companion Loop.');
+    log.info('Stopped AEGISOS Autonomous Cognitive OS Loop.');
   }
 
   async handlePerceptionEvent(type, payload) {
     const filePath = payload.filename || payload.filePath || 'vault';
     log.info(`[Perception Pipeline] Observed [${type}] on target: ${filePath}`);
 
-    // Step 1: Knowledge Extraction
+    // 1. Knowledge Extraction
     const entities = knowledgeExtractor.extractEntities(filePath);
 
-    // Step 2: Start Reasoning Session
+    // 2. Start Reasoning Session
     const goal = `Process perception event ${type} on ${filePath}`;
     const reasoningSession = await reasoningEngine.startReasoningSession(goal, { eventType: type, payload, entities });
 
-    // Step 3: Multi-Factor Memory Retrieval
+    // 3. Multi-Factor Memory Retrieval
     const contextMemories = await hybridRetrievalEngine.retrieveRankedContext(goal, { activeGoal: goal });
     reasoningEngine.addStep(reasoningSession.id, 'Memory Retrieval', `Retrieved ${contextMemories.length} relevant memories.`);
 
-    // Step 4: Decision & Reflection
+    // 4. Decision & Reflection
     const decision = 'LOG_AND_MONITOR';
     reasoningEngine.completeReasoningSession(reasoningSession.id, {
       decision,
@@ -69,7 +71,7 @@ export class CompanionEngine {
       memories: contextMemories
     });
 
-    // Step 5: Reflection Engine & Memory Update
+    // 5. Reflection Engine & Memory Update
     await reflectionEngine.reflectOnExecution({
       title: `Perception Processing: ${type}`,
       status: 'completed',
@@ -82,43 +84,35 @@ export class CompanionEngine {
     this.tickCount += 1;
 
     try {
-      // 1. Observe: Subsystem state check
-      const sentinelService = serverServiceRegistry.get('Sentinel');
-      const agentService = serverServiceRegistry.get('AgentRuntime');
-
-      // 2. Reason & Synthesize
-      const goal = `Routine Subsystem Health & Memory Reflection Pass (Tick #${this.tickCount})`;
+      // 1. Reason & Synthesize Tick Session
+      const goal = `Autonomous Cognitive Pass (Tick #${this.tickCount})`;
       const reasoningSession = await reasoningEngine.startReasoningSession(goal, { tickCount: this.tickCount });
 
       reasoningEngine.addStep(reasoningSession.id, 'Subsystem Inspection', `Inspected ${serverServiceRegistry.list().length} registered services.`);
 
-      const decision = 'CONTINUE_AUTONOMOUS_LOOP';
+      // 2. Autonomous Insights Scanner (Every 3 ticks / 30 seconds)
+      if (this.tickCount % 3 === 0) {
+        await autonomousInsightsEngine.scanForInsights();
+      }
+
+      // 3. Self-Learning Optimization Pass (Every 5 ticks / 50 seconds)
+      if (this.tickCount % 5 === 0) {
+        await selfLearningEngine.runLearningOptimizationPass();
+      }
+
+      // 4. Memory Consolidation Pass (Every 10 ticks / 100 seconds)
+      if (this.tickCount % 10 === 0) {
+        await memoryConsolidationEngine.runConsolidationPass();
+      }
+
+      // Complete Tick Reasoning Session
       reasoningEngine.completeReasoningSession(reasoningSession.id, {
-        decision,
+        decision: 'CONTINUE_AUTONOMOUS_LOOP',
         confidence: 0.99,
         summary: `Tick #${this.tickCount} completed cleanly. Systems nominal.`
       });
 
-      // 3. Autonomous Suggestion Generation
-      if (this.tickCount % 3 === 0) {
-        const suggestion = {
-          id: `sug_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          title: 'Cognitive Memory Consolidation Pass',
-          description: 'Synthesize procedural lessons from recent workflow execution history.',
-          subsystem: 'MemoryOS',
-          autoExecute: true,
-          timestamp: new Date().toISOString()
-        };
-        this.pendingSuggestions.push(suggestion);
-        if (this.pendingSuggestions.length > 20) this.pendingSuggestions.shift();
-
-        serverEventBus.publish(SystemEvents.COMPANION_SUGGESTION, suggestion, {
-          subsystem: 'Companion',
-          severity: EventSeverity.INFO
-        });
-      }
-
-      // 4. Publish loop tick telemetry
+      // Publish loop tick telemetry
       serverEventBus.publish(SystemEvents.COMPANION_LOOP_TICK, {
         tickCount: this.tickCount,
         timestamp: new Date().toISOString(),
@@ -127,7 +121,7 @@ export class CompanionEngine {
       }, { subsystem: 'Companion', severity: EventSeverity.DEBUG });
 
     } catch (err) {
-      log.error(`Error in AI Companion Loop tick #${this.tickCount}: ${err.message}`);
+      log.error(`Error in Autonomous Cognitive OS Loop tick #${this.tickCount}: ${err.message}`);
     }
   }
 
@@ -136,7 +130,7 @@ export class CompanionEngine {
   }
 
   getPendingSuggestions() {
-    return this.pendingSuggestions;
+    return autonomousInsightsEngine.getInsights(10);
   }
 }
 

@@ -2,6 +2,8 @@ import { CognitiveStorage } from './CognitiveStorage.js';
 import { CognitiveMemoryEngine } from './CognitiveMemoryEngine.js';
 import { DocumentIngestionEngine } from './DocumentIngestionEngine.js';
 import { memoryAPI } from './MemoryAPI.js';
+import { memoryConsolidationEngine } from './MemoryConsolidationEngine.js';
+import { hybridRetrievalEngine } from './HybridRetrievalEngine.js';
 import { serverServiceRegistry } from '../core/serviceRegistry.js';
 import { aegisLogger } from '../core/logger.js';
 
@@ -25,7 +27,11 @@ export function initializeMemoryPlatform(dbInstance) {
   // 3. Initialize Document Ingestion Engine
   documentIngestionEngine = new DocumentIngestionEngine(cognitiveMemoryEngine);
 
-  // 4. Seed Essential Identity & Procedural Memory Baselines if empty
+  // 4. Bind Storage to Engines
+  memoryConsolidationEngine.setStorage(cognitiveStorage);
+  hybridRetrievalEngine.setStorage(cognitiveStorage);
+
+  // 5. Seed Essential Identity & Procedural Memory Baselines if empty
   seedMemoryBaselines(cognitiveStorage, cognitiveMemoryEngine);
 
   // 5. Register MemoryOS Service in ServiceRegistry
