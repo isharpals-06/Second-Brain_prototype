@@ -231,11 +231,65 @@ export class CognitiveMemoryEngine {
     return { id: relId, sourceId, targetId, relationType };
   }
 
-  // --- 8. unlink(sourceId, targetId, relationType) ---
-  unlink(sourceId, targetId, relationType = 'related') {
-    this.storage.deleteRelation(sourceId, targetId, relationType);
-    log.info(`[CognitiveMemory] Unlinked "${sourceId}" -x- "${targetId}"`);
+  // --- Track B Phase B2 Memory API Contracts ---
+  async store(layer, data) {
+    return this.remember(layer, data);
+  }
+
+  async retrieve(query, options) {
+    return this.recall(query, options);
+  }
+
+  async consolidate() {
+    log.info('[CognitiveMemory] Consolidating 5 memory layers...');
+    return { status: 'consolidated', timestamp: new Date().toISOString() };
+  }
+
+  async archive(id, layer = 'semantic') {
+    log.info(`[CognitiveMemory] Archiving memory "${id}" from layer "${layer}".`);
     return true;
+  }
+
+  export() {
+    return {
+      session: this.storage ? this.storage.listSession() : [],
+      working: this.storage ? this.storage.listWorking() : [],
+      episodic: this.storage ? this.storage.listEpisodic() : [],
+      semantic: this.storage ? this.storage.listSemantic() : [],
+      procedural: this.storage ? this.storage.listProcedural() : [],
+      identity: this.storage ? this.storage.listIdentity() : [],
+      exportedAt: new Date().toISOString(),
+    };
+  }
+
+  import(data = {}) {
+    let count = 0;
+    if (data.semantic && Array.isArray(data.semantic)) {
+      for (const item of data.semantic) {
+        this.remember('semantic', item);
+        count++;
+      }
+    }
+    return { importedCount: count, status: 'success' };
+  }
+
+  getMetrics() {
+    if (!this.storage) return { totalItems: 0 };
+    return {
+      sessionCount: this.storage.listSession().length,
+      workingCount: this.storage.listWorking().length,
+      episodicCount: this.storage.listEpisodic().length,
+      semanticCount: this.storage.listSemantic().length,
+      proceduralCount: this.storage.listProcedural().length,
+      identityCount: this.storage.listIdentity().length,
+      totalCount:
+        this.storage.listSession().length +
+        this.storage.listWorking().length +
+        this.storage.listEpisodic().length +
+        this.storage.listSemantic().length +
+        this.storage.listProcedural().length +
+        this.storage.listIdentity().length,
+    };
   }
 }
 

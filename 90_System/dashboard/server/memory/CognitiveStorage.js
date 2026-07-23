@@ -138,6 +138,12 @@ export class CognitiveStorage {
     return { ...row, value: row.value_json ? JSON.parse(row.value_json) : null };
   }
 
+  listSession() {
+    if (!this.db) return [];
+    const stmt = this.db.prepare('SELECT * FROM memory_session ORDER BY created_at DESC');
+    return stmt.all().map(r => ({ ...r, value: r.value_json ? JSON.parse(r.value_json) : null }));
+  }
+
   purgeExpiredSessions() {
     if (!this.db) return 0;
     const now = new Date().toISOString();

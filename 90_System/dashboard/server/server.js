@@ -46,6 +46,7 @@ import { selfLearningEngine } from './core/SelfLearningEngine.js';
 import { reflectionEngine } from './memory/ReflectionEngine.js';
 import { hybridRetrievalEngine } from './memory/HybridRetrievalEngine.js';
 import { memoryConsolidationEngine } from './memory/MemoryConsolidationEngine.js';
+import { cognitiveMemoryEngine } from './memory/CognitiveMemoryEngine.js';
 import { worldModelEngine } from './worldModel/WorldModelEngine.js';
 import { dynamicKnowledgeGraph } from './knowledge/DynamicKnowledgeGraph.js';
 import { projectUserIntelligence } from './knowledge/ProjectUserIntelligence.js';
@@ -2924,6 +2925,31 @@ app.post('/api/cognitive/kernel/intent', async (req, res) => {
 
 app.get('/api/cognitive/kernel/health', (req, res) => {
   res.json(cognitiveCoreKernel.getSystemHealth());
+});
+
+// --- Track B Phase B2: Memory Architecture Endpoints ---
+app.get('/api/memory/stats', (req, res) => {
+  res.json(memoryAPI.getMetrics());
+});
+
+app.post('/api/memory/forget', async (req, res) => {
+  const { id, layer, reason } = req.body || {};
+  if (!id) {
+    return res.status(400).json({ error: 'Missing required parameter: id' });
+  }
+  const result = await cognitiveMemoryEngine.forget(id, layer || 'semantic', reason || 'user_request');
+  res.json({ success: result, id, layer, reason });
+});
+
+app.post('/api/memory/export', (req, res) => {
+  const snapshot = cognitiveMemoryEngine.export();
+  res.json({ success: true, snapshot });
+});
+
+app.post('/api/memory/import', (req, res) => {
+  const data = req.body || {};
+  const result = cognitiveMemoryEngine.import(data);
+  res.json(result);
 });
 
 // SPA Fallback Handler: Serve dist/index.html for non-API GET requests
