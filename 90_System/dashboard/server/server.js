@@ -61,6 +61,9 @@ import { secretsManager } from './platform/SecretsManager.js';
 import { capabilityRegistry } from './platform/CapabilityRegistry.js';
 import { mcpManager } from './platform/MCPManager.js';
 import { pluginManager } from './platform/PluginManager.js';
+import { mcpRuntime } from './platform/mcp/MCPRuntime.js';
+import { mcpRegistry } from './platform/mcp/MCPRegistry.js';
+import { mcpAuditLogger } from './platform/mcp/AuditLogger.js';
 import { providerRegistry } from './ai/providerRegistry.js';
 import { providerManager } from './ai/providerManager.js';
 import { modelManager } from './ai/modelManager.js';
@@ -3017,6 +3020,30 @@ app.post('/api/providers/route', async (req, res) => {
   try {
     const route = await aiRouter.resolveRoute({ category, provider, model });
     res.json({ success: true, provider: route.provider.id, model: route.model });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Track C Phase C3: MCP Runtime & Tool Ecosystem Endpoints ---
+app.get('/api/mcp/health', (req, res) => {
+  res.json(mcpRuntime.getDiagnostics());
+});
+
+app.get('/api/mcp/tools', (req, res) => {
+  res.json({ tools: mcpRegistry.listTools() });
+});
+
+app.get('/api/mcp/audit', (req, res) => {
+  const limit = parseInt(req.query.limit || '50', 10);
+  res.json({ logs: mcpAuditLogger.getLogs(limit) });
+});
+
+app.post('/api/mcp/execute', async (req, res) => {
+  const { capability, toolName, args, context } = req.body || {};
+  try {
+    const result = await mcpRuntime.executeTool(capability, toolName, args, context);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
