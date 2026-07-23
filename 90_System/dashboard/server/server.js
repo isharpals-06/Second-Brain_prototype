@@ -575,7 +575,7 @@ app.get('/api/sentinel/metrics', (req, res) => {
 
 app.get('/api/sentinel/events', (req, res) => {
   const limit = parseInt(req.query.limit || '20', 10);
-  const events = serverEventBus.getHistory(100).filter(e => e.event.startsWith('sentinel:'));
+  const events = serverEventBus.getHistory(100).filter(e => e.event && typeof e.event === 'string' && e.event.startsWith('sentinel:'));
   res.json({ events: events.slice(-limit) });
 });
 

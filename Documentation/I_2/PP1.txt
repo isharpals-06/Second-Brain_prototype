@@ -1,0 +1,452 @@
+# AEGISOS Architecture Alignment Directive (AAD-001)
+Version: 1.0
+Priority: CRITICAL
+Role: Chief Product Architect + Principal UX Architect
+
+---
+
+## CONTEXT
+
+The previous Frontend Migration Audit successfully identified the technical migration path.
+
+However, after reviewing the architecture, one major issue remains:
+
+The implementation still thinks like software.
+
+AEGISOS is NOT software.
+
+AEGISOS is an AI Operating System.
+
+Before writing production code, the architecture must be aligned with this philosophy.
+
+This loop does NOT implement features.
+
+It refines the architecture.
+
+---
+
+# PRIMARY OBJECTIVE
+
+Review the entire migration plan.
+
+Review every workspace.
+
+Review every component.
+
+Review every interaction.
+
+Review every navigation decision.
+
+Then verify that every decision supports the AEGISOS vision.
+
+Do NOT optimize for engineering.
+
+Optimize for cognition.
+
+---
+
+# DESIGN PHILOSOPHY
+
+Never ask:
+
+"What screen should this feature belong to?"
+
+Instead ask:
+
+"What is the user trying to accomplish?"
+
+The interface should organize around human intent.
+
+Not software modules.
+
+---
+
+# PART 1
+
+## Replace Screen Thinking
+
+The migration still defines:
+
+Mission Workspace
+
+Knowledge Workspace
+
+Planner Workspace
+
+Memory Workspace
+
+Agent Workspace
+
+Canvas Workspace
+
+Control Center
+
+These are still traditional software pages.
+
+Instead rethink them as adaptive operating modes.
+
+Examples:
+
+Focus
+
+Think
+
+Research
+
+Build
+
+Review
+
+Observe
+
+The same workspace should evolve depending on context.
+
+Avoid hard page transitions whenever possible.
+
+---
+
+# PART 2
+
+## Reduce Navigation Complexity
+
+Review the proposed navigation.
+
+Determine whether every destination truly deserves permanent navigation.
+
+Challenge every item.
+
+Prefer contextual appearance over permanent menus.
+
+Users should never feel they are browsing software.
+
+Navigation should become awareness.
+
+---
+
+# PART 3
+
+## AI Presence
+
+The migration currently treats AI as a feature.
+
+Instead make AI a constant presence.
+
+Define:
+
+Idle behaviour
+
+Thinking behaviour
+
+Waiting behaviour
+
+Planning behaviour
+
+Executing behaviour
+
+Learning behaviour
+
+Reviewing behaviour
+
+Every state should subtly change the environment.
+
+Never overwhelm the user.
+
+The AI should feel alive even when not speaking.
+
+---
+
+# PART 4
+
+## Adaptive Workspace
+
+The workspace should evolve.
+
+It should never simply change pages.
+
+Examples:
+
+Planning gradually becomes execution.
+
+Execution gradually becomes review.
+
+Review gradually becomes memory.
+
+Memory gradually enriches future planning.
+
+Design these transitions.
+
+---
+
+# PART 5
+
+## Product Personality
+
+Define the personality of AEGISOS.
+
+Avoid generic AI assistant behaviour.
+
+Examples:
+
+Professional
+
+Calm
+
+Confident
+
+Analytical
+
+Purposeful
+
+Never:
+
+Overly friendly
+
+Chatty
+
+Cartoonish
+
+Marketing language
+
+Emoji-heavy
+
+The interface should feel like an aerospace engineering workstation.
+
+---
+
+# PART 6
+
+## Desktop vs Mobile
+
+Stop thinking responsive.
+
+Think different products.
+
+Desktop
+
+↓
+
+AI Workstation
+
+Tablet
+
+↓
+
+Portable Workstation
+
+Phone
+
+↓
+
+AI Companion
+
+The Companion should prioritize:
+
+Conversation
+
+Current Objective
+
+Running Agents
+
+Approvals
+
+Voice
+
+Quick Capture
+
+Status
+
+Do not shrink desktop onto mobile.
+
+---
+
+# PART 7
+
+## Interaction Philosophy
+
+Review every interaction.
+
+Ask:
+
+Can this interaction become more natural?
+
+Prefer:
+
+Dragging
+
+Connecting
+
+Delegating
+
+Approving
+
+Inspecting
+
+Grouping
+
+Rather than:
+
+Opening pages
+
+Navigating menus
+
+Switching tabs
+
+The interface should encourage collaboration.
+
+---
+
+# PART 8
+
+## Product Identity
+
+Review the current product.
+
+Could users mistake it for:
+
+Cursor?
+
+VS Code?
+
+ChatGPT?
+
+Claude?
+
+Linear?
+
+Notion?
+
+If yes,
+
+redesign those areas.
+
+AEGISOS must establish its own interaction language.
+
+---
+
+# PART 9
+
+## System Control Center
+
+Expand the current proposal.
+
+The Control Center should become the operational heart of AEGISOS.
+
+Include:
+
+Providers
+
+Models
+
+Memory
+
+Knowledge
+
+Agents
+
+Permissions
+
+Integrations
+
+MCP Servers
+
+Tool Registry
+
+Diagnostics
+
+Autonomy
+
+Security
+
+Backups
+
+Workspace Preferences
+
+Developer Mode
+
+The user should feel they are configuring an operating system.
+
+Not an application.
+
+---
+
+# PART 10
+
+## Product Rituals
+
+Define moments that give AEGISOS identity.
+
+Examples:
+
+Startup Sequence
+
+Provider Connection
+
+Mission Ready
+
+Memory Consolidation
+
+Agent Launch
+
+Knowledge Sync
+
+Workflow Complete
+
+Learning Complete
+
+Mission Summary
+
+These moments should make AEGISOS memorable.
+
+Avoid generic:
+
+Loading...
+
+Done.
+
+Complete.
+
+Use language that reinforces the operating system identity.
+
+---
+
+# FINAL REVIEW
+
+Review the migration plan once more.
+
+Identify any remaining elements that still resemble traditional dashboard software.
+
+Recommend improvements before implementation begins.
+
+Do NOT generate production code.
+
+Generate an updated Architecture Alignment Report.
+
+This report becomes the governing document for every future implementation loop.
+
+---
+
+# SUCCESS CRITERIA
+
+After this review,
+
+the implementation roadmap should no longer resemble the migration of a dashboard.
+
+It should resemble the construction of a Cognitive Operating System.
+
+Every engineering decision should reinforce:
+
+Presence.
+
+Collaboration.
+
+Adaptability.
+
+Intelligence.
+
+Focus.
+
+Confidence.
+
+AEGISOS should feel less like software,
+
+and more like an intelligent engineering partner.
