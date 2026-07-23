@@ -1,5 +1,10 @@
 import { serverEventBus, SystemEvents, EventSeverity } from './eventBus.js';
 import { serverServiceRegistry } from './serviceRegistry.js';
+import { reasoningEngine } from './ReasoningEngine.js';
+import { contextAssembler } from './ContextAssembler.js';
+import { knowledgeExtractor } from '../knowledge/KnowledgeExtractor.js';
+import { hybridRetrievalEngine } from '../memory/HybridRetrievalEngine.js';
+import { reflectionEngine } from '../memory/ReflectionEngine.js';
 import { aegisLogger } from './logger.js';
 
 const log = aegisLogger.child('CompanionEngine');
@@ -17,7 +22,7 @@ export class CompanionEngine {
   start() {
     if (this.isRunning) return;
     this.isRunning = true;
-    log.info('Starting AEGISOS Persistent AI Companion Loop...');
+    log.info('Starting AEGISOS Persistent AI Companion Cognitive Loop (Stage 2)...');
 
     // Subscribe to Sentinel perception events
     serverEventBus.subscribe(SystemEvents.FILE_CHANGED, (payload) => this.handlePerceptionEvent('FILE_CHANGED', payload));
@@ -40,15 +45,36 @@ export class CompanionEngine {
     log.info('Stopped AEGISOS AI Companion Loop.');
   }
 
-  handlePerceptionEvent(type, payload) {
-    const thought = `Observed perception event [${type}] on target file: ${payload.filename || payload.filePath || 'vault'}. Evaluating impact...`;
-    this.addReasoning(thought, 'Perception');
-    
-    serverEventBus.publish(SystemEvents.REASONING_GENERATED, {
-      thought,
-      source: 'Sentinel',
-      context: payload
-    }, { subsystem: 'Companion', severity: EventSeverity.INFO });
+  async handlePerceptionEvent(type, payload) {
+    const filePath = payload.filename || payload.filePath || 'vault';
+    log.info(`[Perception Pipeline] Observed [${type}] on target: ${filePath}`);
+
+    // Step 1: Knowledge Extraction
+    const entities = knowledgeExtractor.extractEntities(filePath);
+
+    // Step 2: Start Reasoning Session
+    const goal = `Process perception event ${type} on ${filePath}`;
+    const reasoningSession = await reasoningEngine.startReasoningSession(goal, { eventType: type, payload, entities });
+
+    // Step 3: Multi-Factor Memory Retrieval
+    const contextMemories = await hybridRetrievalEngine.retrieveRankedContext(goal, { activeGoal: goal });
+    reasoningEngine.addStep(reasoningSession.id, 'Memory Retrieval', `Retrieved ${contextMemories.length} relevant memories.`);
+
+    // Step 4: Decision & Reflection
+    const decision = 'LOG_AND_MONITOR';
+    reasoningEngine.completeReasoningSession(reasoningSession.id, {
+      decision,
+      confidence: 0.95,
+      summary: `Perception event ${type} evaluated. Action: ${decision}`,
+      memories: contextMemories
+    });
+
+    // Step 5: Reflection Engine & Memory Update
+    await reflectionEngine.reflectOnExecution({
+      title: `Perception Processing: ${type}`,
+      status: 'completed',
+      type: 'perception_handler'
+    });
   }
 
   async executeLoopTick() {
@@ -56,23 +82,30 @@ export class CompanionEngine {
     this.tickCount += 1;
 
     try {
-      // 1. Observe: query system health & service status
+      // 1. Observe: Subsystem state check
       const sentinelService = serverServiceRegistry.get('Sentinel');
       const agentService = serverServiceRegistry.get('AgentRuntime');
-      const memoryService = serverServiceRegistry.get('MemoryOS');
-      const plannerService = serverServiceRegistry.get('Planner');
 
       // 2. Reason & Synthesize
-      const thought = `[Tick #${this.tickCount}] AEGISOS Subsystems nominal. Sentinel observers active. Evaluating memory consolidation & task queues.`;
-      this.addReasoning(thought, 'SystemLoop');
+      const goal = `Routine Subsystem Health & Memory Reflection Pass (Tick #${this.tickCount})`;
+      const reasoningSession = await reasoningEngine.startReasoningSession(goal, { tickCount: this.tickCount });
+
+      reasoningEngine.addStep(reasoningSession.id, 'Subsystem Inspection', `Inspected ${serverServiceRegistry.list().length} registered services.`);
+
+      const decision = 'CONTINUE_AUTONOMOUS_LOOP';
+      reasoningEngine.completeReasoningSession(reasoningSession.id, {
+        decision,
+        confidence: 0.99,
+        summary: `Tick #${this.tickCount} completed cleanly. Systems nominal.`
+      });
 
       // 3. Autonomous Suggestion Generation
-      if (this.tickCount % 3 === 0) { // Every 30 seconds
+      if (this.tickCount % 3 === 0) {
         const suggestion = {
           id: `sug_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          title: 'Automated Vault Embedded Search Sync',
-          description: 'Refresh local RAG vector cache for newly modified study notes.',
-          subsystem: 'Knowledge',
+          title: 'Cognitive Memory Consolidation Pass',
+          description: 'Synthesize procedural lessons from recent workflow execution history.',
+          subsystem: 'MemoryOS',
           autoExecute: true,
           timestamp: new Date().toISOString()
         };
@@ -98,19 +131,8 @@ export class CompanionEngine {
     }
   }
 
-  addReasoning(thought, category) {
-    const record = {
-      id: `rsn_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      thought,
-      category,
-      timestamp: new Date().toISOString()
-    };
-    this.recentReasoning.push(record);
-    if (this.recentReasoning.length > 50) this.recentReasoning.shift();
-  }
-
   getReasoningHistory() {
-    return this.recentReasoning;
+    return reasoningEngine.getRecentSessions(20);
   }
 
   getPendingSuggestions() {

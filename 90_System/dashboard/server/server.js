@@ -39,6 +39,10 @@ import { initializeAutomationPlatform } from './automation/initAutomation.js';
 import { automationAPI } from './automation/AutomationAPI.js';
 import { productionAPI } from './production/ProductionAPI.js';
 import { companionEngine } from './core/companionEngine.js';
+import { reasoningEngine } from './core/ReasoningEngine.js';
+import { contextAssembler } from './core/ContextAssembler.js';
+import { reflectionEngine } from './memory/ReflectionEngine.js';
+import { hybridRetrievalEngine } from './memory/HybridRetrievalEngine.js';
 import { initializeModelProviderLayer } from './ai/initAI.js';
 import { providerRegistry } from './ai/providerRegistry.js';
 import { providerManager } from './ai/providerManager.js';
@@ -96,6 +100,7 @@ initializeModelProviderLayer().catch(err => console.error('[MPAL Boot] Failed:',
 // Initialize SQLite database
 const dbPath = path.join(__dirname, 'vault_assistant.db');
 const db = new DatabaseSync(dbPath);
+reasoningEngine.setDatabase(db);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS flashcards (
@@ -358,6 +363,44 @@ app.get('/api/companion/suggestions', (req, res) => {
   res.json({
     suggestions: companionEngine.getPendingSuggestions()
   });
+});
+
+// ----------------------------------------------------
+// Stage 2 — Cognitive Engine APIs (v1.4.0)
+// ----------------------------------------------------
+
+app.get('/api/cognitive/reasoning', (req, res) => {
+  const limit = parseInt(req.query.limit || '10', 10);
+  res.json({ sessions: reasoningEngine.getRecentSessions(limit) });
+});
+
+app.post('/api/cognitive/reason', async (req, res) => {
+  try {
+    const { goal, context } = req.body;
+    const session = await reasoningEngine.startReasoningSession(goal, context || {});
+    res.json({ success: true, session });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/cognitive/assemble-context', async (req, res) => {
+  try {
+    const { prompt, options } = req.body;
+    const context = await contextAssembler.assemblePromptContext(prompt || '', options || {});
+    res.json(context);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/cognitive/reflect', async (req, res) => {
+  try {
+    const lesson = await reflectionEngine.reflectOnExecution(req.body || {});
+    res.json({ success: true, lesson });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ----------------------------------------------------

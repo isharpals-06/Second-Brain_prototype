@@ -25,6 +25,53 @@ export class PlanningEngine {
     const planId = `plan_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const now = new Date().toISOString();
 
+    // Risk Assessment
+    const riskLevel = goal.title.toLowerCase().includes('delete') || goal.title.toLowerCase().includes('refactor') ? 'HIGH' : 'LOW';
+    const requiresApproval = riskLevel === 'HIGH' || riskLevel === 'CRITICAL';
+
+    // Goal Decomposition with Task Dependencies
+    const tasks = [
+      {
+        id: 'task_1',
+        title: 'Inspect context & dependencies',
+        type: 'telemetry_inspection',
+        dependsOn: [],
+        risk: 'LOW',
+        steps: ['Read instruction spec', 'Verify component state'],
+        suggestedAgents: ['Librarian Agent']
+      },
+      {
+        id: 'task_2',
+        title: 'Execute core task operations',
+        type: 'tool_execution',
+        toolId: 'tool_git_status',
+        dependsOn: ['task_1'],
+        risk: riskLevel,
+        requiresCheckpoint: requiresApproval,
+        steps: ['Execute target operation', 'Gather runtime output'],
+        suggestedAgents: ['Coprocessor Agent']
+      },
+      {
+        id: 'task_3',
+        title: 'Verify results & update memory',
+        type: 'reflection',
+        dependsOn: ['task_2'],
+        risk: 'LOW',
+        steps: ['Validate output correctness', 'Persist reflection to Procedural Memory'],
+        suggestedAgents: ['Memory Agent']
+      }
+    ];
+
+    // Alternative Fallback Plan (Plan B)
+    const alternativePlan = {
+      name: 'Fallback Strategy (Plan B)',
+      strategy: 'Safe Read-Only State Inspection & Rollback Checkpoint',
+      tasks: [
+        { id: 'fallback_1', title: 'Capture System Snapshot', type: 'system_snapshot' },
+        { id: 'fallback_2', title: 'Log Inspection Diagnostics', type: 'diagnostics' }
+      ]
+    };
+
     const plan = {
       id: planId,
       timestamp: now,
@@ -32,49 +79,30 @@ export class PlanningEngine {
       goalTitle: goal.title,
       priority: goalPriority,
       intent: intent.primaryIntent,
+      riskLevel,
+      requiresApproval,
+      approvalStatus: requiresApproval ? 'PENDING_CHECKPOINT' : 'AUTO_APPROVED',
       contextSnapshot: {
         intentCategory: intent.category,
         estimatedDurationMin: goal.estimatedDurationMin
       },
       objectives: [
-        {
-          id: 'obj_1',
-          title: `Fulfill objective for ${goal.title}`,
-          status: 'pending'
-        }
+        { id: 'obj_1', title: `Decomposed Objectives for ${goal.title}`, status: 'pending' }
       ],
-      tasks: [
-        {
-          id: 'task_1',
-          title: 'Review system context & requirements',
-          type: 'telemetry_inspection',
-          steps: ['Read instruction spec', 'Verify component state'],
-          requiredResources: goal.relatedResources || [],
-          requiredSkills: ['summarize', 'search_notes'],
-          suggestedAgents: ['Librarian Agent']
-        },
-        {
-          id: 'task_2',
-          title: 'Synthesize architecture deliverables',
-          type: 'tool_execution',
-          toolId: 'tool_git_status',
-          steps: ['Inspect repository state', 'Verify build stability'],
-          requiredResources: [],
-          requiredSkills: ['refactor_notes', 'commit_to_vault'],
-          suggestedAgents: ['Coprocessor Agent']
-        }
-      ],
+      tasks,
+      alternativePlan,
       requiredSkills: ['summarize', 'search_notes', 'refactor_notes', 'commit_to_vault'],
-      suggestedAgents: ['Librarian Agent', 'Coprocessor Agent'],
+      suggestedAgents: ['Librarian Agent', 'Coprocessor Agent', 'Memory Agent'],
       requiredTools: ['tool_git_status', 'tool_file_read'],
       confidence: 0.94,
       reasoningTrace: [
         `Inferred intent: "${intent.primaryIntent}"`,
         `Goal priority evaluated as "${goalPriority}"`,
-        `Identified 2 core objectives and 2 executable tasks`
+        `Risk level assessed: "${riskLevel}" (Requires Approval: ${requiresApproval})`,
+        `Generated 3-stage dependency task graph and Plan B fallback strategy`
       ],
       validationStatus: PlanStatus.DRAFT,
-      version: '1.0.0'
+      version: '1.4.0'
     };
 
     // Validate plan
@@ -82,7 +110,7 @@ export class PlanningEngine {
     plan.validationStatus = validation.isValid ? PlanStatus.VALIDATED : PlanStatus.REJECTED;
 
     this.plans.set(planId, plan);
-    log.info(`Generated plan "${planId}" for goal "${goal.title}" (Status: ${plan.validationStatus})`);
+    log.info(`Generated plan "${planId}" for goal "${goal.title}" (Risk: ${riskLevel}, Status: ${plan.validationStatus})`);
 
     // Auto-enqueue tasks into AgentScheduler if plan is validated
     if (plan.validationStatus === PlanStatus.VALIDATED) {
@@ -94,10 +122,35 @@ export class PlanningEngine {
       planId,
       goalId: goal.id,
       goalTitle: goal.title,
+      riskLevel,
       status: plan.validationStatus,
       tasksCount: plan.tasks.length
     }, { subsystem: 'Planner', severity: EventSeverity.INFO });
 
+    return plan;
+  }
+
+  replanPlan(planId, failureReason = 'Task execution failed') {
+    const plan = this.plans.get(planId);
+    if (!plan) return null;
+
+    log.info(`Adaptive Replanning triggered for Plan "${planId}". Reason: ${failureReason}`);
+
+    // Switch to Alternative Strategy tasks
+    plan.tasks = [
+      ...plan.alternativePlan.tasks.map((t, idx) => ({
+        id: `replan_task_${idx + 1}`,
+        title: t.title,
+        type: t.type,
+        dependsOn: idx > 0 ? [`replan_task_${idx}`] : [],
+        steps: ['Executing adaptive fallback step']
+      }))
+    ];
+
+    plan.version = `1.4.1-adaptive`;
+    plan.reasoningTrace.push(`Adaptive Replanning triggered: ${failureReason}`);
+
+    agentScheduler.enqueuePlanTasks(plan);
     return plan;
   }
 
