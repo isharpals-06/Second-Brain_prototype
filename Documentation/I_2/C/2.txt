@@ -1,0 +1,609 @@
+# ==========================================================
+# TRACK C — PLATFORM
+#
+# Phase C2
+#
+# Universal Provider Manager
+# Intelligent Model Routing
+#
+# Version:
+# 1.0
+#
+# Role:
+#
+# Principal AI Infrastructure Architect
+# Platform Engineer
+# Backend Engineer
+# Security Engineer
+#
+# ==========================================================
+
+# OBJECTIVE
+
+Transform AEGISOS into a provider-independent AI operating system.
+
+AEGISOS must never depend on one model vendor.
+
+Instead,
+
+all providers should become interchangeable compute backends.
+
+The Cognitive Core requests capabilities.
+
+The Platform Kernel selects providers.
+
+==========================================================
+
+# PHILOSOPHY
+
+Current AI apps:
+
+User
+
+↓
+
+Choose Model
+
+↓
+
+Send Request
+
+↓
+
+Receive Response
+
+AEGISOS:
+
+User
+
+↓
+
+Intent
+
+↓
+
+Planner
+
+↓
+
+Capability Required
+
+↓
+
+Provider Router
+
+↓
+
+Best Model Selected
+
+↓
+
+Response
+
+The user should think about goals,
+
+not models.
+
+==========================================================
+
+# PHASE 1
+
+## Universal Provider Interface
+
+Every provider must implement exactly the same contract.
+
+interface AIProvider
+
+Methods:
+
+health()
+
+listModels()
+
+chat()
+
+stream()
+
+embeddings()
+
+vision()
+
+imageGeneration()
+
+toolCalling()
+
+reasoning()
+
+tokenCount()
+
+estimateCost()
+
+supportsCapability()
+
+cancel()
+
+Provider implementations:
+
+OllamaProvider
+
+OpenRouterProvider
+
+GeminiProvider
+
+HuggingFaceProvider
+
+Future providers:
+
+Anthropic
+
+OpenAI
+
+Groq
+
+Azure OpenAI
+
+Local Custom Providers
+
+==========================================================
+
+# PHASE 2
+
+## Provider Registry
+
+Build a Provider Registry.
+
+Responsibilities:
+
+Register providers
+
+Enable/disable
+
+Health monitoring
+
+Versioning
+
+Capability discovery
+
+Default provider selection
+
+Priority ordering
+
+Latency tracking
+
+Cost tracking
+
+Status events
+
+Registry should be dynamic.
+
+Providers may be installed or removed without changing backend logic.
+
+==========================================================
+
+# PHASE 3
+
+## Model Registry
+
+Providers expose models.
+
+Models become first-class objects.
+
+Each model stores:
+
+Name
+
+Provider
+
+Context Length
+
+Capabilities
+
+Latency
+
+Cost
+
+Supports Streaming
+
+Supports Vision
+
+Supports Tools
+
+Supports Embeddings
+
+Supports Reasoning
+
+Local/Remote
+
+Availability
+
+Version
+
+==========================================================
+
+# PHASE 4
+
+## Capability-Based Routing
+
+Never ask:
+
+"Use Gemini."
+
+Instead ask:
+
+"I need..."
+
+Reasoning
+
+Vision
+
+Embeddings
+
+Coding
+
+Translation
+
+Summarization
+
+Planning
+
+Image Generation
+
+Speech
+
+Long Context
+
+Fast Response
+
+The router selects the optimal model.
+
+==========================================================
+
+# PHASE 5
+
+## Intelligent Routing Policies
+
+Support routing modes.
+
+Performance
+
+↓
+
+Lowest latency
+
+Quality
+
+↓
+
+Highest reasoning
+
+Local First
+
+↓
+
+Prefer Ollama
+
+Budget
+
+↓
+
+Lowest cost
+
+Privacy
+
+↓
+
+Only local models
+
+Balanced
+
+↓
+
+Best compromise
+
+Developer can customize policies.
+
+==========================================================
+
+# PHASE 6
+
+## Automatic Failover
+
+If provider fails:
+
+Detect outage
+
+↓
+
+Retry
+
+↓
+
+Fallback Provider
+
+↓
+
+Continue response
+
+Never expose failures to user unless unavoidable.
+
+Maintain session continuity where possible.
+
+==========================================================
+
+# PHASE 7
+
+## Multi-Provider Execution
+
+Allow one task to use multiple providers.
+
+Example:
+
+Planner
+
+↓
+
+Claude
+
+Embeddings
+
+↓
+
+Hugging Face
+
+Code Review
+
+↓
+
+OpenRouter
+
+Local Chat
+
+↓
+
+Ollama
+
+Image Generation
+
+↓
+
+Future Provider
+
+Planner orchestrates.
+
+Provider Manager executes.
+
+==========================================================
+
+# PHASE 8
+
+## Streaming Layer
+
+Unify streaming.
+
+Regardless of provider,
+
+frontend receives identical stream events.
+
+Examples:
+
+ThinkingStarted
+
+TokenGenerated
+
+ToolRequested
+
+ToolFinished
+
+ReasoningStep
+
+Completed
+
+Error
+
+Frontend should never know provider differences.
+
+==========================================================
+
+# PHASE 9
+
+## Secrets Management
+
+Support secure configuration.
+
+Store:
+
+API Keys
+
+Tokens
+
+Local URLs
+
+Provider Settings
+
+Organization IDs
+
+Future OAuth credentials
+
+Never expose secrets to frontend.
+
+Support key rotation.
+
+==========================================================
+
+# PHASE 10
+
+## Provider Dashboard
+
+Expose diagnostics.
+
+Connected Providers
+
+Available Models
+
+Capabilities
+
+Latency
+
+Token Usage
+
+Estimated Cost
+
+Errors
+
+Health
+
+Last Activity
+
+Future frontend Control Center consumes this API.
+
+==========================================================
+
+# PHASE 11
+
+## User Preferences
+
+Allow users to configure:
+
+Preferred Providers
+
+Preferred Models
+
+Routing Policies
+
+Local First
+
+Privacy Rules
+
+Fallback Providers
+
+Maximum Cost
+
+Maximum Latency
+
+Reasoning Threshold
+
+Preferences should override defaults.
+
+==========================================================
+
+# PHASE 12
+
+## Internal APIs
+
+ProviderRegistry
+
+ProviderRouter
+
+ModelRegistry
+
+CapabilityResolver
+
+StreamingGateway
+
+ProviderHealth
+
+SecretsManager
+
+UsageTracker
+
+CostEstimator
+
+Keep interfaces stable.
+
+==========================================================
+
+# PHASE 13
+
+## Folder Structure
+
+platform/
+
+providers/
+
+contracts/
+
+registry/
+
+router/
+
+streaming/
+
+models/
+
+health/
+
+usage/
+
+security/
+
+diagnostics/
+
+Each module independent.
+
+==========================================================
+
+# PHASE 14
+
+## Engineering Rules
+
+No provider-specific logic in Planner.
+
+No provider-specific code in Agents.
+
+No provider-specific UI.
+
+No duplicated adapters.
+
+Everything capability-driven.
+
+Everything observable.
+
+Everything replaceable.
+
+==========================================================
+
+# DELIVERABLES
+
+Generate:
+
+✔ Universal Provider Interface
+
+✔ Provider Registry
+
+✔ Model Registry
+
+✔ Intelligent Router
+
+✔ Routing Policies
+
+✔ Streaming Layer
+
+✔ Failover Strategy
+
+✔ Diagnostics APIs
+
+✔ Secrets Architecture
+
+✔ Folder Structure
+
+✔ Sequence Diagrams
+
+Do NOT hardcode providers.
+
+Do NOT implement cloud sync.
+
+Do NOT build billing systems.
+
+Build the provider infrastructure only.
+
+==========================================================
+
+# SUCCESS
+
+At the end of this phase,
+
+AEGISOS should no longer be "an Ollama app" or "an OpenRouter app."
+
+It should become an AI Operating System capable of orchestrating multiple intelligence providers seamlessly.
+
+Adding a new provider should require implementing the AIProvider contract and registering it—nothing more.

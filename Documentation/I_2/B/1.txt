@@ -1,0 +1,574 @@
+# ==========================================================
+# TRACK B — COGNITIVE CORE
+#
+# Phase B1
+#
+# Build the Intelligence Layer
+#
+# Role:
+#
+# Chief AI Systems Architect
+# Principal Backend Engineer
+# Agent Systems Engineer
+# Memory Systems Engineer
+#
+# IMPORTANT
+#
+# DO NOT build isolated AI features.
+#
+# DO NOT hardcode agent workflows.
+#
+# DO NOT create independent planners.
+#
+# First build the Cognitive Core that every subsystem will share.
+# ==========================================================
+
+# OBJECTIVE
+
+AEGISOS must behave as one coherent intelligence.
+
+Planner.
+
+Memory.
+
+Knowledge.
+
+Agents.
+
+Tools.
+
+Automation.
+
+Simulation.
+
+These are NOT independent systems.
+
+They are modules connected through a single Cognitive Core.
+
+Everything should share context.
+
+==========================================================
+
+# COGNITIVE CORE ARCHITECTURE
+
+Build the following hierarchy.
+
+User
+
+↓
+
+Perception Layer
+
+↓
+
+Context Engine
+
+↓
+
+Working Memory
+
+↓
+
+Reasoning Engine
+
+↓
+
+Planner
+
+↓
+
+Agent Runtime
+
+↓
+
+Tool Runtime
+
+↓
+
+Knowledge Layer
+
+↓
+
+Reflection Layer
+
+↓
+
+Long-term Memory
+
+↓
+
+Response
+
+Every interaction must flow through this pipeline.
+
+==========================================================
+
+# PHASE 1
+
+## Perception Layer
+
+Purpose:
+
+Understand everything entering AEGISOS.
+
+Inputs include:
+
+Chat
+
+Voice (future)
+
+Files
+
+Folders
+
+Repositories
+
+System Events
+
+MCP
+
+API Responses
+
+Notifications
+
+Calendar
+
+Emails
+
+Images (future)
+
+Tasks
+
+Convert raw input into structured observations.
+
+Never pass raw data directly to downstream modules.
+
+==========================================================
+
+# PHASE 2
+
+## Context Engine
+
+Maintain live awareness.
+
+Track:
+
+Current objective
+
+Current project
+
+Active conversation
+
+Running agents
+
+Recent files
+
+Current workflow
+
+Recent memories
+
+Open tasks
+
+System status
+
+The Context Engine becomes the single source of truth.
+
+==========================================================
+
+# PHASE 3
+
+## Working Memory
+
+Implement a bounded working memory.
+
+Contains:
+
+Recent interactions
+
+Temporary reasoning artifacts
+
+Planner state
+
+Agent state
+
+Execution context
+
+Scratchpad
+
+Automatically prune irrelevant context.
+
+Keep it fast.
+
+==========================================================
+
+# PHASE 4
+
+## Knowledge Layer
+
+Separate knowledge from memory.
+
+Knowledge is:
+
+Persistent
+
+Structured
+
+Searchable
+
+Connected
+
+Support:
+
+Documents
+
+Projects
+
+Entities
+
+Relationships
+
+Tags
+
+Embeddings
+
+Knowledge Graph
+
+Prepare for Cognee integration.
+
+==========================================================
+
+# PHASE 5
+
+## Long-Term Memory
+
+Implement layered memory.
+
+Layer 1
+
+Session Memory
+
+Layer 2
+
+Persistent Memory
+
+Layer 3
+
+Knowledge Graph
+
+Layer 4
+
+Embeddings
+
+Layer 5
+
+Reflection Archive
+
+Each layer has distinct responsibilities.
+
+Avoid one giant memory store.
+
+==========================================================
+
+# PHASE 6
+
+## Reflection Engine
+
+After important tasks:
+
+Summarize
+
+Extract lessons
+
+Generate reusable knowledge
+
+Update memories
+
+Link related projects
+
+Detect duplicate information
+
+This engine continuously improves AEGISOS.
+
+==========================================================
+
+# PHASE 7
+
+## Planner
+
+Planner should NOT execute work.
+
+Planner should:
+
+Understand goals
+
+Break goals into tasks
+
+Estimate dependencies
+
+Estimate risks
+
+Prioritize
+
+Delegate
+
+Track progress
+
+Remain model-agnostic.
+
+==========================================================
+
+# PHASE 8
+
+## Agent Runtime
+
+Agents are workers.
+
+Not decision-makers.
+
+Lifecycle:
+
+Spawn
+
+Receive context
+
+Receive tools
+
+Execute
+
+Report
+
+Reflect
+
+Terminate
+
+Support future multi-agent collaboration.
+
+==========================================================
+
+# PHASE 9
+
+## Tool Runtime
+
+Create a unified tool abstraction.
+
+Examples:
+
+Filesystem
+
+Git
+
+Shell
+
+Browser
+
+Web Search
+
+Database
+
+Python
+
+MCP
+
+Future plugins
+
+Every tool should expose a consistent interface.
+
+==========================================================
+
+# PHASE 10
+
+## Provider Layer
+
+Separate providers from reasoning.
+
+Support:
+
+Ollama
+
+OpenRouter
+
+Gemini
+
+Hugging Face
+
+Future providers
+
+Routing logic must be independent of providers.
+
+Support model selection based on task.
+
+==========================================================
+
+# PHASE 11
+
+## Event Bus
+
+Everything communicates through events.
+
+Examples:
+
+MemoryUpdated
+
+TaskCreated
+
+AgentStarted
+
+WorkflowCompleted
+
+KnowledgeIndexed
+
+ProviderChanged
+
+ReflectionGenerated
+
+Avoid tight coupling.
+
+==========================================================
+
+# PHASE 12
+
+## Cognitive APIs
+
+Design stable internal APIs.
+
+Examples:
+
+Context API
+
+Memory API
+
+Planner API
+
+Knowledge API
+
+Agent API
+
+Tool API
+
+Reflection API
+
+Do not expose implementation details.
+
+==========================================================
+
+# PHASE 13
+
+## Observability
+
+Every cognitive subsystem reports:
+
+Health
+
+Latency
+
+Errors
+
+Current activity
+
+Dependencies
+
+The frontend Cognitive Stream should consume these events.
+
+Do not expose private model reasoning.
+
+Expose meaningful progress.
+
+==========================================================
+
+# PHASE 14
+
+## Persistence
+
+Define storage responsibilities.
+
+SQLite
+
+Structured metadata
+
+Knowledge index
+
+User preferences
+
+Cognee / Vector Layer
+
+Embeddings
+
+Semantic retrieval
+
+Filesystem
+
+Raw artifacts
+
+Logs
+
+Audit trail
+
+Never overload one storage system.
+
+==========================================================
+
+# PHASE 15
+
+## Engineering Rules
+
+No subsystem owns global state.
+
+Everything accesses context through the Context Engine.
+
+No duplicated memory.
+
+No duplicated embeddings.
+
+No provider-specific logic inside planners.
+
+No tool-specific logic inside agents.
+
+Composition over coupling.
+
+==========================================================
+
+# DELIVERABLES
+
+Generate:
+
+✔ Cognitive Core architecture
+
+✔ Module dependency diagram
+
+✔ Internal API contracts
+
+✔ Event definitions
+
+✔ Memory architecture
+
+✔ Knowledge architecture
+
+✔ Agent lifecycle
+
+✔ Planner lifecycle
+
+✔ Tool abstraction
+
+✔ Provider abstraction
+
+✔ Persistence strategy
+
+✔ Folder structure
+
+DO NOT implement advanced autonomous behavior.
+
+DO NOT implement multi-agent planning yet.
+
+Build only the foundation all future intelligence will share.
+
+==========================================================
+
+# SUCCESS
+
+At the end of this phase:
+
+AEGISOS should possess one unified intelligence architecture.
+
+Every future capability should plug into the Cognitive Core instead of becoming another isolated backend service.
+
+Think of this as building the kernel of an operating system—not a collection of AI features.

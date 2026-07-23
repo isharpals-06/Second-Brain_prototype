@@ -1,0 +1,58 @@
+/* AEGISOS Systematic Intelligence Design Tokens (Stitch Canonical Reference: projects/1451802319451370177) */
+
+:root {
+  /* Color Palette (Obsidian Base + Tactical Accents) */
+  --color-surface-base: #0A0A0C;       /* Level 0: Primary Canvas */
+  --color-surface-panel: #131316;      /* Level 1: Workspace Tiled Panels */
+  --color-surface-container: #1C1C1F;  /* Level 2: In-panel Content & Cards */
+  --color-surface-overlay: #2D2D30;    /* Level 3: Dropdowns & Modals */
+  
+  --color-on-surface: #E4E1E5;         /* Primary Text */
+  --color-on-surface-variant: #C3C6D7; /* Secondary Metadata */
+  --color-outline: #434655;            /* Structural Borders (1px solid) */
+  --color-outline-subtle: #2A2A2D;     /* Low-priority Dividers */
+
+  /* Tactical Accents */
+  --color-primary-blue: #2563EB;       /* Active Agency & System Health */
+  --color-primary-blue-glow: rgba(37, 99, 235, 0.25);
+  --color-secondary-purple: #7C3AED;   /* Reasoning & Synthesis */
+  --color-secondary-purple-glow: rgba(124, 58, 237, 0.25);
+  --color-status-success: #00E676;     /* Nominal State */
+  --color-status-warning: #FFB596;     /* Subsystem Attention */
+  --color-status-error: #FFB4AB;       /* Critical Fault */
+
+  /* Dual Typography System */
+  --font-family-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Typography Scale */
+  --font-headline-lg: 600 32px/1.2 var(--font-family-ui);
+  --font-headline-md: 600 24px/1.2 var(--font-family-ui);
+  --font-headline-sm: 600 18px/1.4 var(--font-family-ui);
+  --font-body-md: 400 14px/1.5 var(--font-family-ui);
+  --font-body-sm: 400 13px/1.5 var(--font-family-ui);
+  --font-mono-md: 450 14px/1.5 var(--font-family-mono);
+  --font-mono-sm: 450 12px/1.4 var(--font-family-mono);
+  --font-label-caps: 700 11px/1.0 var(--font-family-mono);
+
+  /* Spacing Scale (4px Baseline Grid) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Layout Dimensions */
+  --header-height: 48px;
+  --rail-width: 64px;
+  --inspector-width: 320px;
+  --console-height: 240px;
+
+  /* Shape Rules: STRICT 0px Sharp Edges */
+  --radius-sharp: 0px;
+  --border-width: 1px;
+
+  /* Transitions & Motion */
+  --transition-fast: 100ms ease;
+  --transition-normal: 200ms ease;
+}

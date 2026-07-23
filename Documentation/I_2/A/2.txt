@@ -1,0 +1,661 @@
+# ==========================================================
+# TRACK B — COGNITIVE CORE
+#
+# Phase B3
+#
+# World Model
+# Knowledge Graph
+# Semantic Intelligence
+#
+# Version:
+# 1.0
+#
+# Role:
+#
+# Chief Knowledge Architect
+# Principal AI Systems Engineer
+# Semantic Systems Architect
+#
+# ==========================================================
+
+# OBJECTIVE
+
+Transform AEGISOS from a retrieval system into a reasoning system.
+
+The goal is NOT to build another RAG pipeline.
+
+The goal is to build an evolving World Model.
+
+AEGISOS should understand:
+
+People
+
+Projects
+
+Files
+
+Ideas
+
+Goals
+
+Tasks
+
+Relationships
+
+Dependencies
+
+History
+
+Context
+
+Knowledge should become interconnected rather than remaining isolated documents.
+
+==========================================================
+
+# PHILOSOPHY
+
+Traditional RAG:
+
+Document
+
+↓
+
+Embedding
+
+↓
+
+Search
+
+↓
+
+Answer
+
+AEGISOS:
+
+Observation
+
+↓
+
+Entity Extraction
+
+↓
+
+Relationship Detection
+
+↓
+
+Knowledge Graph Update
+
+↓
+
+World Model Update
+
+↓
+
+Semantic Index
+
+↓
+
+Reasoning
+
+↓
+
+Response
+
+The Knowledge Graph is the brain's map of reality.
+
+==========================================================
+
+# PHASE 1
+
+## World Model
+
+Create a persistent World Model.
+
+It represents the current known state of the user's ecosystem.
+
+Examples:
+
+Projects
+
+Repositories
+
+Files
+
+Meetings
+
+Goals
+
+Agents
+
+Models
+
+Tools
+
+Workflows
+
+Preferences
+
+External services
+
+Every entity has:
+
+Identity
+
+Type
+
+Attributes
+
+Relationships
+
+History
+
+Confidence
+
+Source
+
+Timestamp
+
+==========================================================
+
+# PHASE 2
+
+## Entity Extraction
+
+Whenever new information arrives,
+
+extract entities.
+
+Examples:
+
+Person
+
+Organization
+
+Project
+
+Repository
+
+Document
+
+Folder
+
+Task
+
+Goal
+
+API
+
+Library
+
+Framework
+
+Model
+
+Provider
+
+Tool
+
+Language
+
+Platform
+
+Do NOT rely on manual tagging.
+
+Entity extraction should be automatic.
+
+==========================================================
+
+# PHASE 3
+
+## Relationship Engine
+
+Detect relationships automatically.
+
+Examples:
+
+Project USES Library
+
+Task BELONGS_TO Project
+
+Repository IMPLEMENTS Project
+
+Goal DEPENDS_ON Task
+
+Agent EXECUTES Workflow
+
+Workflow USES Tool
+
+Memory REFERENCES Entity
+
+Document DESCRIBES Project
+
+Provider RUNS Model
+
+Store these relationships.
+
+Continuously refine them.
+
+==========================================================
+
+# PHASE 4
+
+## Knowledge Graph
+
+Build a persistent graph.
+
+Node Types:
+
+Projects
+
+People
+
+Files
+
+Concepts
+
+Goals
+
+Tasks
+
+Agents
+
+Providers
+
+Workflows
+
+Repositories
+
+Documents
+
+Tools
+
+Models
+
+Edges:
+
+USES
+
+OWNS
+
+IMPLEMENTS
+
+GENERATED
+
+REFERENCES
+
+RELATES_TO
+
+DEPENDS_ON
+
+EXECUTES
+
+CREATED
+
+MODIFIED
+
+CONNECTED_TO
+
+Every edge has:
+
+Weight
+
+Confidence
+
+Timestamp
+
+Source
+
+==========================================================
+
+# PHASE 5
+
+## Semantic Intelligence
+
+Integrate Cognee here.
+
+Responsibilities:
+
+Entity linking
+
+Semantic clustering
+
+Embedding retrieval
+
+Concept discovery
+
+Relationship suggestions
+
+Duplicate detection
+
+Topic evolution
+
+Context enrichment
+
+Cognee should enrich the graph.
+
+Not own the graph.
+
+==========================================================
+
+# PHASE 6
+
+## Context Assembly
+
+When responding,
+
+construct context dynamically.
+
+Pipeline:
+
+Working Memory
+
+↓
+
+Session Memory
+
+↓
+
+Knowledge Graph
+
+↓
+
+Semantic Retrieval
+
+↓
+
+World Model
+
+↓
+
+Planner Context
+
+↓
+
+Final Prompt
+
+Avoid unnecessary information.
+
+Prioritize relevance.
+
+==========================================================
+
+# PHASE 7
+
+## Temporal Intelligence
+
+Knowledge changes over time.
+
+Track:
+
+Creation
+
+Updates
+
+History
+
+Activity
+
+Version
+
+State transitions
+
+Never overwrite history.
+
+Preserve evolution.
+
+==========================================================
+
+# PHASE 8
+
+## Project Intelligence
+
+Each project should become a living entity.
+
+Example attributes:
+
+Vision
+
+Architecture
+
+Repositories
+
+Tasks
+
+Milestones
+
+Dependencies
+
+Current status
+
+Future ideas
+
+Documentation
+
+Related conversations
+
+Agents
+
+Memory
+
+Lessons learned
+
+This enables AEGISOS to "know" your projects.
+
+==========================================================
+
+# PHASE 9
+
+## User Model
+
+Create a lightweight user model.
+
+Track only information relevant to collaboration.
+
+Examples:
+
+Current objectives
+
+Active projects
+
+Preferred tools
+
+Working habits
+
+Frequently used providers
+
+Coding stack
+
+Do NOT infer sensitive personal attributes.
+
+Allow users to inspect, edit, and delete stored information.
+
+The user model should remain transparent and under user control.
+
+==========================================================
+
+# PHASE 10
+
+## Query Engine
+
+Support queries like:
+
+"What am I forgetting?"
+
+"Continue yesterday's work."
+
+"Show everything related to NASA."
+
+"What depends on this project?"
+
+"What changed this week?"
+
+"Which agent knows this?"
+
+The graph should answer these naturally.
+
+==========================================================
+
+# PHASE 11
+
+## Knowledge Evolution
+
+Background processes should:
+
+Merge duplicate entities
+
+Resolve aliases
+
+Strengthen relationships
+
+Remove obsolete links
+
+Detect conflicting information
+
+Suggest missing connections
+
+Improve confidence scores
+
+==========================================================
+
+# PHASE 12
+
+## APIs
+
+Design APIs:
+
+Graph.createNode()
+
+Graph.createEdge()
+
+Graph.search()
+
+Graph.expand()
+
+Graph.related()
+
+Graph.timeline()
+
+Graph.merge()
+
+Graph.remove()
+
+WorldModel.observe()
+
+WorldModel.update()
+
+WorldModel.snapshot()
+
+WorldModel.diff()
+
+Keep these independent of the storage engine.
+
+==========================================================
+
+# PHASE 13
+
+## Visualization
+
+Expose graph data for future frontend use.
+
+Support:
+
+Interactive graph
+
+Timeline
+
+Dependency explorer
+
+Project relationships
+
+Agent relationships
+
+Knowledge clusters
+
+Do not couple visualization to backend logic.
+
+==========================================================
+
+# PHASE 14
+
+## Storage
+
+Separate responsibilities.
+
+SQLite
+
+Metadata
+
+Graph Database (or graph representation)
+
+Relationships
+
+Cognee
+
+Semantic enrichment
+
+Vector Store
+
+Embeddings
+
+Filesystem
+
+Artifacts
+
+Do not duplicate data unnecessarily.
+
+==========================================================
+
+# ENGINEERING RULES
+
+No orphan entities.
+
+No duplicate nodes.
+
+Every edge must have meaning.
+
+Every node must have provenance.
+
+Keep graph updates incremental.
+
+Never rebuild the entire graph unless explicitly requested.
+
+==========================================================
+
+# DELIVERABLES
+
+Generate:
+
+✔ World Model architecture
+
+✔ Knowledge Graph schema
+
+✔ Entity extraction pipeline
+
+✔ Relationship engine
+
+✔ Semantic enrichment pipeline
+
+✔ Query engine
+
+✔ APIs
+
+✔ Storage strategy
+
+✔ Background maintenance jobs
+
+✔ Sequence diagrams
+
+Do NOT implement advanced reasoning yet.
+
+Build the knowledge infrastructure first.
+
+==========================================================
+
+# SUCCESS
+
+At the end of this phase,
+
+AEGISOS should possess a living World Model rather than a collection of indexed files.
+
+It should understand relationships, history, and project context, enabling future planners and agents to reason instead of merely retrieve.

@@ -1,0 +1,534 @@
+# ==========================================================
+# TRACK B — COGNITIVE CORE
+#
+# Phase B2
+#
+# Memory Architecture
+#
+# Role:
+#
+# Principal AI Memory Architect
+# Backend Systems Engineer
+# Knowledge Systems Engineer
+#
+# ==========================================================
+
+# OBJECTIVE
+
+Design and implement the memory system that powers AEGISOS.
+
+The goal is NOT to store conversations.
+
+The goal is to build persistent cognition.
+
+Memory should evolve.
+
+Reflect.
+
+Connect.
+
+Forget.
+
+Consolidate.
+
+Retrieve.
+
+Learn.
+
+AEGISOS should remember meaning,
+
+not just messages.
+
+==========================================================
+
+# MEMORY PHILOSOPHY
+
+Memory is layered.
+
+Every layer has one responsibility.
+
+Never build one giant memory database.
+
+Different memories have different lifetimes.
+
+==========================================================
+
+# MEMORY LAYERS
+
+Implement five independent layers.
+
+────────────────────────
+
+Layer 1
+
+Working Memory
+
+Purpose:
+
+Current thought.
+
+Current execution.
+
+Temporary reasoning.
+
+Current planner state.
+
+Current agent state.
+
+Current context.
+
+Lifetime:
+
+Minutes.
+
+Fast.
+
+In-memory.
+
+Automatically pruned.
+
+────────────────────────
+
+Layer 2
+
+Session Memory
+
+Purpose:
+
+Everything important during one session.
+
+Goals.
+
+Files.
+
+Conversation.
+
+Recent decisions.
+
+Planner output.
+
+Workflow state.
+
+Lifetime:
+
+Session.
+
+Persist until session ends.
+
+Reload if application restarts.
+
+────────────────────────
+
+Layer 3
+
+Long-Term Memory
+
+Purpose:
+
+Stable user knowledge.
+
+Projects.
+
+Preferences.
+
+Patterns.
+
+Completed work.
+
+Decisions.
+
+Lessons.
+
+Should survive forever unless deleted.
+
+SQLite metadata.
+
+Filesystem artifacts.
+
+==========================================================
+
+Layer 4
+
+Semantic Memory
+
+THIS IS WHERE COGNEE BELONGS.
+
+Cognee should NOT replace Memory.
+
+Cognee should power semantic understanding.
+
+Responsibilities:
+
+Embedding generation.
+
+Semantic indexing.
+
+Entity extraction.
+
+Relationship discovery.
+
+Similarity search.
+
+Concept clustering.
+
+Context retrieval.
+
+Knowledge enrichment.
+
+Treat Cognee as an intelligence layer,
+
+not a storage engine.
+
+==========================================================
+
+Layer 5
+
+Reflection Archive
+
+After important work,
+
+generate:
+
+Lessons learned.
+
+Mistakes.
+
+Successful workflows.
+
+Useful prompts.
+
+Patterns.
+
+Decision summaries.
+
+Automatically feed these into semantic memory.
+
+This is how AEGISOS becomes smarter over time.
+
+==========================================================
+
+# MEMORY FLOW
+
+User interacts
+
+↓
+
+Working Memory updates
+
+↓
+
+Planner uses Working Memory
+
+↓
+
+Agents execute
+
+↓
+
+Reflection Engine summarizes
+
+↓
+
+Long-Term Memory updated
+
+↓
+
+Cognee indexes knowledge
+
+↓
+
+Knowledge Graph expands
+
+↓
+
+Future retrieval improves
+
+Every interaction should improve future intelligence.
+
+==========================================================
+
+# COGNEE INTEGRATION
+
+Integrate Cognee carefully.
+
+Responsibilities:
+
+Document ingestion
+
+Embedding generation
+
+Semantic search
+
+Knowledge graph
+
+Relationship extraction
+
+Concept clustering
+
+Retrieval
+
+Do NOT allow Cognee to:
+
+Own user preferences.
+
+Own planner state.
+
+Own runtime context.
+
+Own active sessions.
+
+These belong elsewhere.
+
+==========================================================
+
+# MEMORY CONSOLIDATION
+
+Implement background consolidation.
+
+Examples:
+
+Merge duplicate memories.
+
+Compress repetitive interactions.
+
+Update embeddings.
+
+Strengthen relationships.
+
+Archive obsolete context.
+
+Generate summaries.
+
+Should run automatically.
+
+Prefer idle execution.
+
+==========================================================
+
+# RETRIEVAL PIPELINE
+
+When answering:
+
+Search Working Memory.
+
+↓
+
+Search Session Memory.
+
+↓
+
+Search Long-Term Memory.
+
+↓
+
+Query Cognee.
+
+↓
+
+Query Knowledge Graph.
+
+↓
+
+Rank results.
+
+↓
+
+Return only relevant context.
+
+Avoid dumping irrelevant memories.
+
+==========================================================
+
+# FORGETTING
+
+Memory should decay.
+
+Not everything deserves permanence.
+
+Examples:
+
+Temporary conversations.
+
+Failed experiments.
+
+Duplicate notes.
+
+Old planner state.
+
+Obsolete context.
+
+Design configurable forgetting rules.
+
+==========================================================
+
+# KNOWLEDGE GRAPH
+
+Every memory may generate:
+
+Entities
+
+Projects
+
+People
+
+Files
+
+Concepts
+
+Goals
+
+Relationships
+
+Store graph separately.
+
+Do not duplicate embeddings.
+
+==========================================================
+
+# INTERNAL APIS
+
+Design APIs:
+
+Memory.store()
+
+Memory.retrieve()
+
+Memory.reflect()
+
+Memory.consolidate()
+
+Memory.archive()
+
+Memory.forget()
+
+Memory.search()
+
+Memory.link()
+
+Memory.merge()
+
+Memory.export()
+
+Memory.import()
+
+Keep APIs provider-independent.
+
+==========================================================
+
+# STORAGE
+
+Working Memory
+
+RAM
+
+Session Memory
+
+SQLite
+
+Long-Term Memory
+
+SQLite + Filesystem
+
+Semantic Memory
+
+Cognee
+
+Knowledge Graph
+
+Graph storage
+
+Embeddings
+
+Vector store
+
+Reflection
+
+Markdown + Metadata
+
+Each layer should own only its data.
+
+==========================================================
+
+# OBSERVABILITY
+
+Expose metrics:
+
+Memory count
+
+Embedding count
+
+Knowledge nodes
+
+Relationships
+
+Consolidation status
+
+Last reflection
+
+Search latency
+
+Memory growth
+
+Frontend should visualize these.
+
+==========================================================
+
+# ENGINEERING RULES
+
+No duplicate memories.
+
+No duplicated embeddings.
+
+No duplicated entities.
+
+No duplicated relationships.
+
+Every memory has lifecycle metadata.
+
+Every memory has source attribution.
+
+Every memory can be traced.
+
+==========================================================
+
+# DELIVERABLES
+
+Generate:
+
+✔ Memory architecture
+
+✔ Cognee integration plan
+
+✔ Retrieval pipeline
+
+✔ Memory lifecycle
+
+✔ Reflection pipeline
+
+✔ Consolidation engine
+
+✔ Internal APIs
+
+✔ Storage architecture
+
+✔ Folder structure
+
+✔ Sequence diagrams
+
+Do NOT implement autonomous learning.
+
+Do NOT implement advanced reflection.
+
+Build the infrastructure first.
+
+==========================================================
+
+# SUCCESS
+
+At the end of this phase,
+
+AEGISOS should possess a production-grade memory architecture capable of growing intelligently over years rather than simply storing conversations.
+
+Cognee should enhance memory—not replace it.
+
+The result should feel closer to a cognitive operating system than a chatbot with history.
