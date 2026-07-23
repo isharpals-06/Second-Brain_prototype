@@ -1,5 +1,5 @@
 import { CognitiveStorage } from './CognitiveStorage.js';
-import { CognitiveMemoryEngine } from './CognitiveMemoryEngine.js';
+import { CognitiveMemoryEngine, cognitiveMemoryEngine as singletonEngine } from './CognitiveMemoryEngine.js';
 import { DocumentIngestionEngine } from './DocumentIngestionEngine.js';
 import { memoryAPI } from './MemoryAPI.js';
 import { memoryConsolidationEngine } from './MemoryConsolidationEngine.js';
@@ -23,6 +23,7 @@ export function initializeMemoryPlatform(dbInstance) {
 
   // 2. Initialize Cognitive Memory Engine
   cognitiveMemoryEngine = new CognitiveMemoryEngine(cognitiveStorage);
+  singletonEngine.setStorage(cognitiveStorage);
 
   // 3. Initialize Document Ingestion Engine
   documentIngestionEngine = new DocumentIngestionEngine(cognitiveMemoryEngine);

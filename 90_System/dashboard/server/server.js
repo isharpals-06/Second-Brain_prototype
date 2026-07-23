@@ -46,7 +46,12 @@ import { selfLearningEngine } from './core/SelfLearningEngine.js';
 import { reflectionEngine } from './memory/ReflectionEngine.js';
 import { hybridRetrievalEngine } from './memory/HybridRetrievalEngine.js';
 import { memoryConsolidationEngine } from './memory/MemoryConsolidationEngine.js';
+import { worldModelEngine } from './worldModel/WorldModelEngine.js';
 import { dynamicKnowledgeGraph } from './knowledge/DynamicKnowledgeGraph.js';
+import { projectUserIntelligence } from './knowledge/ProjectUserIntelligence.js';
+import { entityExtractionEngine } from './knowledge/EntityExtractionEngine.js';
+import { semanticIntelligenceEngine } from './knowledge/SemanticIntelligenceEngine.js';
+import { contextAssemblyPipeline } from './knowledge/ContextAssemblyPipeline.js';
 import { initializeModelProviderLayer } from './ai/initAI.js';
 import { providerRegistry } from './ai/providerRegistry.js';
 import { providerManager } from './ai/providerManager.js';
@@ -2833,6 +2838,74 @@ Up: [[${subject} MOC]]
     }
   });
 }
+
+// --- Track B Phase B3: World Model & Knowledge Graph Endpoints ---
+app.get('/api/worldmodel/state', (req, res) => {
+  res.json({
+    status: 'healthy',
+    entities: worldModelEngine.getState(),
+  });
+});
+
+app.post('/api/worldmodel/snapshot', (req, res) => {
+  const result = worldModelEngine.snapshot();
+  res.json({ success: true, snapshot: result });
+});
+
+app.get('/api/worldmodel/diff', (req, res) => {
+  const result = worldModelEngine.diff();
+  res.json({ success: true, diff: result });
+});
+
+app.get('/api/knowledge/nodes', (req, res) => {
+  const limit = parseInt(req.query.limit || '100', 10);
+  const nodes = dynamicKnowledgeGraph.getNodes(limit);
+  res.json({ nodes });
+});
+
+app.get('/api/knowledge/edges', (req, res) => {
+  const limit = parseInt(req.query.limit || '200', 10);
+  const edges = dynamicKnowledgeGraph.getEdges(limit);
+  res.json({ edges });
+});
+
+app.post('/api/knowledge/query', (req, res) => {
+  const { query, typeFilter } = req.body || {};
+  const results = dynamicKnowledgeGraph.search(query || '', typeFilter);
+  res.json({ success: true, query, count: results.length, results });
+});
+
+app.post('/api/knowledge/node', (req, res) => {
+  const { id, label, type, properties } = req.body || {};
+  if (!id || !label || !type) {
+    return res.status(400).json({ error: 'Missing required parameters: id, label, type' });
+  }
+  const node = dynamicKnowledgeGraph.createNode(id, label, type, properties || {});
+  entityExtractionEngine.extractAndIndex(`${label} ${JSON.stringify(properties || {})}`, 'user_api');
+  res.json({ success: true, node });
+});
+
+app.post('/api/knowledge/edge', (req, res) => {
+  const { sourceId, targetId, relation, weight } = req.body || {};
+  if (!sourceId || !targetId) {
+    return res.status(400).json({ error: 'Missing required parameters: sourceId, targetId' });
+  }
+  const edge = dynamicKnowledgeGraph.createEdge(sourceId, targetId, relation || 'RELATING_TO', weight || 1.0);
+  res.json({ success: true, edge });
+});
+
+app.get('/api/knowledge/user-model', (req, res) => {
+  res.json({ userModel: projectUserIntelligence.getUserModel() });
+});
+
+app.put('/api/knowledge/user-model', (req, res) => {
+  const { key, value } = req.body || {};
+  if (!key || value === undefined) {
+    return res.status(400).json({ error: 'Missing required parameters: key, value' });
+  }
+  const updated = projectUserIntelligence.updateUserModel(key, value);
+  res.json({ success: true, userModel: updated });
+});
 
 // SPA Fallback Handler: Serve dist/index.html for non-API GET requests
 app.get('*', (req, res, next) => {

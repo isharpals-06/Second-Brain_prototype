@@ -238,3 +238,5 @@ export class CognitiveMemoryEngine {
     return true;
   }
 }
+
+export const cognitiveMemoryEngine = new CognitiveMemoryEngine();
