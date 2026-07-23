@@ -18,12 +18,14 @@ export function initializeExecutivePlanner(dbInstance) {
   // 2. Auto-generate plan for active default goal
   planningEngine.generatePlanForGoal('goal_aegisos_core');
 
-  // 3. Register ExecutivePlanner Service in ServiceRegistry
-  serverServiceRegistry.register('ExecutivePlanner', {
+  // 3. Register ExecutivePlanner & Planner Service in ServiceRegistry
+  const serviceObj = {
     name: 'Executive Planner Strategic Reasoning Layer',
     status: 'running',
     plannerAPI
-  });
+  };
+  serverServiceRegistry.register('ExecutivePlanner', serviceObj);
+  serverServiceRegistry.register('Planner', serviceObj);
 
   log.info('[Executive Planner] Intent Engine, Goal Engine, Priority Engine, Decision Engine & Plan Generator active (Thinking mode only).');
 

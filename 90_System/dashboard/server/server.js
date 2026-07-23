@@ -39,6 +39,11 @@ import { initializeAutomationPlatform } from './automation/initAutomation.js';
 import { automationAPI } from './automation/AutomationAPI.js';
 import { productionAPI } from './production/ProductionAPI.js';
 import { companionEngine } from './core/companionEngine.js';
+import { initializeModelProviderLayer } from './ai/initAI.js';
+import { providerRegistry } from './ai/providerRegistry.js';
+import { providerManager } from './ai/providerManager.js';
+import { modelManager } from './ai/modelManager.js';
+import { aiRouter } from './ai/router.js';
 import { sentinelObserverRegistry } from './sentinel/ObserverRegistry.js';
 import { sentinelObserverManager } from './sentinel/ObserverManager.js';
 import { serverEventBus } from './core/eventBus.js';
@@ -84,6 +89,9 @@ app.use(express.static(DIST_DIR));
 
 // Initialize AEGISOS Core Architecture
 const aegisCore = initializeAegisCore();
+
+// Boot Model Provider Abstraction Layer (MPAL v1.2.0)
+initializeModelProviderLayer().catch(err => console.error('[MPAL Boot] Failed:', err));
 
 // Initialize SQLite database
 const dbPath = path.join(__dirname, 'vault_assistant.db');
@@ -350,6 +358,88 @@ app.get('/api/companion/suggestions', (req, res) => {
   res.json({
     suggestions: companionEngine.getPendingSuggestions()
   });
+});
+
+// ----------------------------------------------------
+// Model Provider Abstraction Layer (MPAL v1.2.0) APIs
+// ----------------------------------------------------
+
+app.get('/api/providers', (req, res) => {
+  res.json({
+    providers: providerRegistry.listProviders(),
+    defaultProvider: providerRegistry.defaultProviderId
+  });
+});
+
+app.get('/api/providers/status', (req, res) => {
+  res.json(providerManager.getTelemetry());
+});
+
+app.get('/api/models', async (req, res) => {
+  try {
+    const category = req.query.category;
+    const models = category 
+      ? await modelManager.getModelsByCategory(category) 
+      : await modelManager.listAllModels();
+    res.json({ models });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/provider/select', (req, res) => {
+  const { providerId, category, modelId } = req.body;
+  if (providerId && !category) {
+    const success = providerRegistry.setDefaultProvider(providerId);
+    return res.json({ success, defaultProvider: providerRegistry.defaultProviderId });
+  }
+  if (category && providerId && modelId) {
+    modelManager.setCategoryPreference(category, providerId, modelId);
+    return res.json({ success: true, categoryDefaults: modelManager.userPreferences.categoryDefaults });
+  }
+  res.status(400).json({ error: 'Provide providerId or (category, providerId, modelId)' });
+});
+
+app.get('/api/provider/current', (req, res) => {
+  const defaultProv = providerRegistry.getDefaultProvider();
+  res.json({
+    defaultProvider: defaultProv ? defaultProv.health() : null,
+    userPreferences: modelManager.userPreferences
+  });
+});
+
+app.get('/api/provider/health', async (req, res) => {
+  const healthResults = await providerRegistry.checkAllHealth();
+  res.json({ health: healthResults });
+});
+
+app.post('/api/ai/generate', async (req, res) => {
+  try {
+    const result = await providerManager.generate(req.body);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/ai/stream', async (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  try {
+    await providerManager.stream({
+      ...req.body,
+      onChunk: (chunk) => {
+        res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+      }
+    });
+    res.write('data: [DONE]\n\n');
+    res.end();
+  } catch (err) {
+    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    res.end();
+  }
 });
 
 app.get('/api/aegis/agents', (req, res) => {
