@@ -1,0 +1,53 @@
+:root {
+  /* Semantic Colors */
+  --color-semantic-mission: #2563EB;
+  --color-semantic-execution: #F59E0B;
+  --color-semantic-reasoning: #7C3AED;
+  --color-semantic-planning: #06B6D4;
+  --color-semantic-memory: #10B981;
+  --color-semantic-knowledge: #6366F1;
+  --color-semantic-agent: #8B5CF6;
+  --color-semantic-warning: #F97316;
+  --color-semantic-error: #EF4444;
+  --color-semantic-success: #10B981;
+  --color-semantic-passive: #71717A;
+
+  /* Surface & Panel Colors */
+  --color-surface-base: #0A0A0C;
+  --color-surface-panel: #131316;
+  --color-surface-card: #1C1C1F;
+  --color-surface-hover: #27272A;
+  
+  --color-outline: #27272A;
+  --color-outline-subtle: #1E1E22;
+  
+  --color-on-surface: #FAFAFA;
+  --color-on-surface-variant: #A1A1AA;
+
+  /* Typography */
+  --font-family-mono: 'JetBrains Mono', monospace;
+  --font-family-ui: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Strict Sharp Radius */
+  --radius-sharp: 0px;
+
+  /* Spacing */
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Layout Dimensions */
+  --header-height: 48px;
+  --rail-width: 64px;
+  --inspector-width: 320px;
+  --console-height: 240px;
+
+  /* Motion Curves */
+  --motion-snappy: all 100ms cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-smooth: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: var(--motion-snappy);
+  --transition-normal: var(--motion-smooth);
+}
