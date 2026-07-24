@@ -5,6 +5,11 @@ const log = aegisLogger.child('Runtime:Store');
 export class RuntimeStore {
   constructor() {
     this.state = {
+      intentState: { lastIntent: null, category: null },
+      missionDraft: null,
+      goalState: { activeGoals: null },
+      taskGraphState: null,
+      validationState: null,
       missionState: { activeMissions: [], currentMission: null },
       executionState: { activeExecutions: [], history: [] },
       providerState: { activeProvider: 'gemini', status: 'online' },
@@ -21,8 +26,8 @@ export class RuntimeStore {
   }
 
   updateState(domain, payload) {
-    if (this.state[domain]) {
-      this.state[domain] = { ...this.state[domain], ...payload };
+    if (this.state.hasOwnProperty(domain)) {
+      this.state[domain] = payload;
       log.info(`RuntimeStore updated domain "${domain}".`);
     } else {
       log.warn(`Unknown domain "${domain}" passed to RuntimeStore.`);

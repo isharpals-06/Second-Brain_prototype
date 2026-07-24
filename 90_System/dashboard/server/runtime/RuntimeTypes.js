@@ -1,6 +1,9 @@
 export const MissionStateEnum = {
   IDLE: 'Idle',
   INTENT_RECEIVED: 'IntentReceived',
+  INTENT_CLASSIFIED: 'IntentClassified',
+  MISSION_DRAFTED: 'MissionDrafted',
+  MISSION_VALIDATED: 'MissionValidated',
   MISSION_CREATED: 'MissionCreated',
   PLANNING: 'Planning',
   CONTEXT_LOADING: 'ContextLoading',

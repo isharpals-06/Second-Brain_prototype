@@ -3081,6 +3081,29 @@ app.post('/api/runtime/cancel', (req, res) => {
   res.json({ success, missionId });
 });
 
+// --- Track A Phase A2: Intent Engine Endpoints ---
+app.post('/api/runtime/intent', (req, res) => {
+  const { intent } = req.body || {};
+  if (!intent) {
+    return res.status(400).json({ error: 'Missing required parameter: intent' });
+  }
+  const result = runtimeAPI.submitIntent(intent);
+  res.json(result);
+});
+
+app.get('/api/runtime/mission/:missionId/graph', (req, res) => {
+  const taskGraph = runtimeAPI.getTaskGraph(req.params.missionId);
+  if (!taskGraph) {
+    return res.status(404).json({ error: 'Task graph not found for specified mission' });
+  }
+  res.json({ success: true, taskGraph });
+});
+
+app.post('/api/runtime/mission/validate', (req, res) => {
+  const validation = runtimeAPI.validateMission(req.body || {});
+  res.json({ success: true, validation });
+});
+
 // SPA Fallback Handler: Serve dist/index.html for non-API GET requests
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
