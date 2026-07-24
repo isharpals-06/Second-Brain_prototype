@@ -56,6 +56,8 @@ import { contextAssemblyPipeline } from './knowledge/ContextAssemblyPipeline.js'
 import { cognitiveCoreKernel } from './core/CognitiveCoreKernel.js';
 import { initializeModelProviderLayer } from './ai/initAI.js';
 import { initializePlatformKernel } from './platform/initPlatform.js';
+import { initializeRuntimeCore } from './runtime/initRuntime.js';
+import { runtimeAPI } from './runtime/RuntimeAPI.js';
 import { platformKernel } from './platform/PlatformKernel.js';
 import { secretsManager } from './platform/SecretsManager.js';
 import { capabilityRegistry } from './platform/CapabilityRegistry.js';
@@ -120,6 +122,9 @@ initializeModelProviderLayer().catch(err => console.error('[MPAL Boot] Failed:',
 
 // Boot Platform Kernel (v1.0.0)
 initializePlatformKernel();
+
+// Boot Runtime Core (v1.0.0)
+initializeRuntimeCore();
 
 // Initialize SQLite database
 const dbPath = path.join(__dirname, 'vault_assistant.db');
@@ -3047,6 +3052,33 @@ app.post('/api/mcp/execute', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// --- Track A Phase A1: Runtime Core Endpoints ---
+app.get('/api/runtime/health', (req, res) => {
+  res.json(runtimeAPI.getHealth());
+});
+
+app.get('/api/runtime/state', (req, res) => {
+  res.json(runtimeAPI.getRuntimeState());
+});
+
+app.post('/api/runtime/mission', (req, res) => {
+  const { intent } = req.body || {};
+  if (!intent) {
+    return res.status(400).json({ error: 'Missing required parameter: intent' });
+  }
+  const mission = runtimeAPI.createMission(intent);
+  res.json({ success: true, mission });
+});
+
+app.post('/api/runtime/cancel', (req, res) => {
+  const { missionId } = req.body || {};
+  if (!missionId) {
+    return res.status(400).json({ error: 'Missing required parameter: missionId' });
+  }
+  const success = runtimeAPI.cancelMission(missionId);
+  res.json({ success, missionId });
 });
 
 // SPA Fallback Handler: Serve dist/index.html for non-API GET requests

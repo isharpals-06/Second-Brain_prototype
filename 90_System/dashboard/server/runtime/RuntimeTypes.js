@@ -1,0 +1,32 @@
+export const MissionStateEnum = {
+  IDLE: 'Idle',
+  INTENT_RECEIVED: 'IntentReceived',
+  MISSION_CREATED: 'MissionCreated',
+  PLANNING: 'Planning',
+  CONTEXT_LOADING: 'ContextLoading',
+  AGENT_ALLOCATION: 'AgentAllocation',
+  EXECUTION: 'Execution',
+  REFLECTION: 'Reflection',
+  MEMORY_UPDATE: 'MemoryUpdate',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+  FAILED: 'Failed',
+};
+
+export const RuntimeEventTypes = {
+  MISSION_CREATED: 'MissionCreated',
+  MISSION_UPDATED: 'MissionUpdated',
+  MISSION_COMPLETED: 'MissionCompleted',
+  MISSION_CANCELLED: 'MissionCancelled',
+  PLANNER_STARTED: 'PlannerStarted',
+  PLANNER_FINISHED: 'PlannerFinished',
+  AGENT_CREATED: 'AgentCreated',
+  AGENT_THINKING: 'AgentThinking',
+  AGENT_EXECUTING: 'AgentExecuting',
+  EXECUTION_STARTED: 'ExecutionStarted',
+  EXECUTION_COMPLETED: 'ExecutionCompleted',
+  CONTEXT_UPDATED: 'ContextUpdated',
+  MEMORY_RETRIEVED: 'MemoryRetrieved',
+  WORKSPACE_CHANGED: 'WorkspaceChanged',
+  PROVIDER_CHANGED: 'ProviderChanged',
+};
