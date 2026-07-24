@@ -5,13 +5,12 @@ export function LivingContextRail() {
   const { state, dispatch } = useAppState();
   const { workspace } = state;
 
-  const modes = [
-    { id: 'OBSERVE', icon: '👁️', label: 'OBSERVE', desc: 'Telemetry & Environmental Perception' },
-    { id: 'THINK', icon: '🧠', label: 'THINK', desc: 'Cognitive Canvas & Multi-modal Reasoning' },
-    { id: 'RESEARCH', icon: '🔍', label: 'RESEARCH', desc: 'Knowledge Base & Relational Memory' },
-    { id: 'BUILD', icon: '⚡', label: 'BUILD', desc: 'Executive Planning & Subagent Execution' },
-    { id: 'REVIEW', icon: '⚖️', label: 'REVIEW', desc: 'Reflection, Diffs & System Audit' },
-    { id: 'FOCUS', icon: '🎯', label: 'FOCUS', desc: 'Single-Intent Deep Synthesis' },
+  const surfaces = [
+    { id: 'mission', icon: '🎯', label: 'MISSION', mode: 'OBSERVE', desc: 'Active Goals, Execution & Subagents' },
+    { id: 'conversation', icon: '🧠', label: 'CHAT', mode: 'THINK', desc: 'Living Cognitive Conversation Engine' },
+    { id: 'knowledge', icon: '🌐', label: 'GRAPH', mode: 'RESEARCH', desc: 'Knowledge Graph & Relational Web' },
+    { id: 'memory', icon: '💾', label: 'MEMORY', mode: 'REVIEW', desc: '5-Layer Memory & Active Recall' },
+    { id: 'platform', icon: '⚙️', label: 'KERNEL', mode: 'BUILD', desc: 'Platform Kernel, Providers & MCP' },
   ];
 
   return (
@@ -30,18 +29,21 @@ export function LivingContextRail() {
         zIndex: 40,
       }}
     >
-      {/* Top Operating Mode Triggers */}
+      {/* Surface Triggers */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', alignItems: 'center' }}>
-        {modes.map((m) => {
-          const isActive = workspace.activeMode === m.id;
+        {surfaces.map((s) => {
+          const isActive = workspace.activeSubsystem === s.id;
           return (
             <button
-              key={m.id}
-              onClick={() => dispatch({ type: 'SET_ACTIVE_MODE', payload: m.id })}
-              title={`${m.label}: ${m.desc}`}
+              key={s.id}
+              onClick={() => {
+                dispatch({ type: 'SET_ACTIVE_SUBSYSTEM', payload: s.id });
+                dispatch({ type: 'SET_ACTIVE_MODE', payload: s.mode });
+              }}
+              title={`${s.label}: ${s.desc}`}
               style={{
                 width: '100%',
-                height: '48px',
+                height: '52px',
                 backgroundColor: isActive ? 'var(--color-surface-panel)' : 'transparent',
                 border: 'none',
                 borderLeft: isActive ? '3px solid var(--color-primary-blue)' : '3px solid transparent',
@@ -56,39 +58,13 @@ export function LivingContextRail() {
                 position: 'relative',
               }}
             >
-              <span style={{ fontSize: '16px' }}>{m.icon}</span>
-              <span style={{ fontFamily: 'var(--font-family-mono)', fontSize: '9px', fontWeight: '700', marginTop: '2px' }}>
-                {m.id}
+              <span style={{ fontSize: '18px' }}>{s.icon}</span>
+              <span style={{ fontFamily: 'var(--font-family-mono)', fontSize: '8px', fontWeight: '700', marginTop: '2px' }}>
+                {s.label}
               </span>
             </button>
           );
         })}
-      </div>
-
-      {/* Bottom Contextual Indicators & System Control */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', alignItems: 'center' }}>
-        <button
-          onClick={() => dispatch({ type: 'SET_ACTIVE_SUBSYSTEM', payload: 'control' })}
-          title="System Control Center (OS Heart)"
-          style={{
-            width: '100%',
-            height: '44px',
-            backgroundColor: workspace.activeSubsystem === 'control' ? 'var(--color-surface-panel)' : 'transparent',
-            border: 'none',
-            borderLeft: workspace.activeSubsystem === 'control' ? '3px solid var(--color-secondary-purple)' : '3px solid transparent',
-            color: 'var(--color-on-surface-variant)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-        >
-          <span style={{ fontSize: '16px' }}>⚙️</span>
-          <span style={{ fontFamily: 'var(--font-family-mono)', fontSize: '8px', fontWeight: '700', marginTop: '2px' }}>
-            CONTROL
-          </span>
-        </button>
       </div>
     </aside>
   );
