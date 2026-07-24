@@ -5,6 +5,8 @@ import { missionRuntime } from './MissionRuntime.js';
 import { intentRuntimeEngine } from './IntentRuntime/IntentRuntimeEngine.js';
 import { missionValidator } from './IntentRuntime/MissionValidator.js';
 import { intentEvents } from './IntentRuntime/IntentEvents.js';
+import { plannerRuntimeEngine } from './PlannerRuntime/PlannerRuntimeEngine.js';
+import { plannerEvents } from './PlannerRuntime/PlannerEvents.js';
 
 export class RuntimeAPI {
   // --- A1 Base Methods ---
@@ -52,6 +54,27 @@ export class RuntimeAPI {
 
   subscribeToIntent(eventType, callback) {
     return intentEvents.subscribe(eventType, callback);
+  }
+
+  // --- A3 Planner Runtime Methods ---
+  planMission(missionId) {
+    return plannerRuntimeEngine.planMission(missionId);
+  }
+
+  getExecutionPlan(planId) {
+    return plannerRuntimeEngine.getExecutionPlan(planId);
+  }
+
+  getPlanByMissionId(missionId) {
+    return plannerRuntimeEngine.getPlanByMissionId(missionId);
+  }
+
+  getPlanningState() {
+    return runtimeStore.getState().planningState;
+  }
+
+  subscribeToPlanning(eventType, callback) {
+    return plannerEvents.subscribe(eventType, callback);
   }
 }
 

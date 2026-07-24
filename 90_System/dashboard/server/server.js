@@ -3104,6 +3104,35 @@ app.post('/api/runtime/mission/validate', (req, res) => {
   res.json({ success: true, validation });
 });
 
+// --- Track A Phase A3: Planner Runtime Endpoints ---
+app.post('/api/runtime/plan', (req, res) => {
+  const { missionId } = req.body || {};
+  if (!missionId) {
+    return res.status(400).json({ error: 'Missing required parameter: missionId' });
+  }
+  const plan = runtimeAPI.planMission(missionId);
+  if (!plan) {
+    return res.status(404).json({ error: 'Failed to generate plan for specified missionId' });
+  }
+  res.json({ success: true, plan });
+});
+
+app.get('/api/runtime/plan/:planId', (req, res) => {
+  const plan = runtimeAPI.getExecutionPlan(req.params.planId);
+  if (!plan) {
+    return res.status(404).json({ error: 'Execution plan not found' });
+  }
+  res.json({ success: true, plan });
+});
+
+app.get('/api/runtime/plan/mission/:missionId', (req, res) => {
+  const plan = runtimeAPI.getPlanByMissionId(req.params.missionId);
+  if (!plan) {
+    return res.status(404).json({ error: 'Execution plan not found for specified mission' });
+  }
+  res.json({ success: true, plan });
+});
+
 // SPA Fallback Handler: Serve dist/index.html for non-API GET requests
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
