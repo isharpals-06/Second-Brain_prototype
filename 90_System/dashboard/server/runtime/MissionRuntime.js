@@ -74,6 +74,15 @@ export class MissionRuntime {
       this.transitionState(missionId, MissionStateEnum.EXECUTION_PLAN_READY);
       setTimeout(() => this.advanceMission(missionId), 100);
     } else if (mission.state === MissionStateEnum.EXECUTION_PLAN_READY) {
+      this.transitionState(missionId, MissionStateEnum.BUILDING_CONTEXT);
+      setTimeout(() => this.advanceMission(missionId), 100);
+    } else if (mission.state === MissionStateEnum.BUILDING_CONTEXT) {
+      this.transitionState(missionId, MissionStateEnum.CONTEXT_READY);
+      setTimeout(() => this.advanceMission(missionId), 100);
+    } else if (mission.state === MissionStateEnum.CONTEXT_READY) {
+      this.transitionState(missionId, MissionStateEnum.WAITING_FOR_AGENTS);
+      setTimeout(() => this.advanceMission(missionId), 150);
+    } else if (mission.state === MissionStateEnum.WAITING_FOR_AGENTS) {
       this.transitionState(missionId, MissionStateEnum.WAITING_FOR_EXECUTION);
       setTimeout(() => this.advanceMission(missionId), 150);
     } else if (mission.state === MissionStateEnum.WAITING_FOR_EXECUTION) {

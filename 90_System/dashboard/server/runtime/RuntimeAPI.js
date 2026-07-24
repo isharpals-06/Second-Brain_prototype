@@ -7,6 +7,8 @@ import { missionValidator } from './IntentRuntime/MissionValidator.js';
 import { intentEvents } from './IntentRuntime/IntentEvents.js';
 import { plannerRuntimeEngine } from './PlannerRuntime/PlannerRuntimeEngine.js';
 import { plannerEvents } from './PlannerRuntime/PlannerEvents.js';
+import { contextRuntimeEngine } from './ContextRuntime/ContextRuntimeEngine.js';
+import { contextEvents } from './ContextRuntime/ContextEvents.js';
 
 export class RuntimeAPI {
   // --- A1 Base Methods ---
@@ -75,6 +77,23 @@ export class RuntimeAPI {
 
   subscribeToPlanning(eventType, callback) {
     return plannerEvents.subscribe(eventType, callback);
+  }
+
+  // --- A4 Context Runtime Methods ---
+  buildContext(missionId) {
+    return contextRuntimeEngine.buildContext(missionId);
+  }
+
+  getWorkingContext(missionId) {
+    return contextRuntimeEngine.getWorkingContext(missionId);
+  }
+
+  invalidateContext(missionId) {
+    return contextRuntimeEngine.invalidateContext(missionId);
+  }
+
+  subscribeToContext(eventType, callback) {
+    return contextEvents.subscribe(eventType, callback);
   }
 }
 

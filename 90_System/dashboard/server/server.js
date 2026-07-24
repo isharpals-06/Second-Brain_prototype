@@ -3133,6 +3133,32 @@ app.get('/api/runtime/plan/mission/:missionId', (req, res) => {
   res.json({ success: true, plan });
 });
 
+// --- Track A Phase A4: Context Runtime Endpoints ---
+app.post('/api/runtime/context', (req, res) => {
+  const { missionId } = req.body || {};
+  if (!missionId) {
+    return res.status(400).json({ error: 'Missing required parameter: missionId' });
+  }
+  const workingContext = runtimeAPI.buildContext(missionId);
+  if (!workingContext) {
+    return res.status(404).json({ error: 'Failed to build context for specified missionId' });
+  }
+  res.json({ success: true, context: workingContext });
+});
+
+app.get('/api/runtime/context/:missionId', (req, res) => {
+  const workingContext = runtimeAPI.getWorkingContext(req.params.missionId);
+  if (!workingContext) {
+    return res.status(404).json({ error: 'Working context not found or expired' });
+  }
+  res.json({ success: true, context: workingContext });
+});
+
+app.delete('/api/runtime/context/:missionId', (req, res) => {
+  const success = runtimeAPI.invalidateContext(req.params.missionId);
+  res.json({ success, missionId: req.params.missionId });
+});
+
 // SPA Fallback Handler: Serve dist/index.html for non-API GET requests
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) {
